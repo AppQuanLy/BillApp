@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHIẾU GIAO HỤI</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            padding: 15mm;
+            box-sizing: border-box;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #000;
+            background-color: #fff;
+        }
+        
+        .header {
+            margin-bottom: 10px;
+            border-bottom: 2px solid #1a5276;
+            padding-bottom: 5px;
+        }
+        
+        .header-info {
+            margin-bottom: 5px;
+            color: #1a5276;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 18px;
+            margin: 15px 0;
+            color: #1a5276;
+            text-transform: uppercase;
+        }
+        
+        h2 {
+            font-size: 16px;
+            margin: 10px 0 5px 0;
+            color: #1a5276;
+            background-color: #d4e6f1;
+            padding: 3px 8px;
+            border-radius: 3px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0 15px 0;
+        }
+        
+        td {
+            padding: 5px 8px;
+            border: 1px solid #7fb3d5;
+        }
+        
+        .payment-table {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .payment-table td {
+            border: none;
+            padding: 3px 0;
+            border-bottom: 1px dashed #aed6f1;
+        }
+        
+        .payment-table .label {
+            width: 50%;
+            font-weight: bold;
+            color: #2874a6;
+        }
+        
+        .total {
+            font-weight: bold;
+            color: #1a5276;
+        }
+        
+        .signature {
+            margin-top: 30px;
+            color: #1a5276;
+        }
+        
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+        }
+        
+        .signature-box {
+            text-align: center;
+            width: 45%;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #1a5276;
+            margin-top: 40px;
+            padding-top: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .highlight {
+            background-color: #d4e6f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        @media print {
+            body {
+                padding: 15mm;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+    <table>
+        <tr>
+            <td><strong>Chủ Hụi:</strong> <span class="highlight">{{TEN}}</span><br>
+            <strong>SĐT:</strong> <span class="highlight">{{SDT}}</span></td>
+            <td><span class="highlight">{{NH}}: {{STK}}</span><br>
+            <span class="highlight">{{ChuTK}}</span></td>
+        </tr>
+        
+    </table>
+    
+    <h1>PHIẾU GIAO HỤI</h1>
+    
+    <h2>Thông Tin Hui: Hui Ngày 500k</h2>
+    
+    <table>
+        <tr>
+            <td>Ngày mở:</td>
+            <td><span class="highlight">{{NgayKhui}}</span></td>
+        </tr>
+        <tr>
+            <td>Dây Hụi:</td>
+            <td><span class="highlight">{{TienHui}}</span></td>
+        </tr>
+        <tr>
+            <td>Số Phần:</td>
+            <td><span class="highlight">{{SoKy}}</span></td>
+        </tr>
+        <tr>
+            <td>Khui:</td>
+            <td><span class="highlight">{{KyHan}}</span></td>
+        </tr>
+    </table>
+    
+    <h2>Thanh Toán</h2>
+    
+    <table class="payment-table">
+        <tr>
+            <td class="label">Hui Viên:</td>
+            <td><span class="highlight">{{HV}}</span></td>
+        </tr>
+        <tr>
+            <td class="label">Ngày Hốt:</td>
+            <td><span class="highlight">{{Ngay}}</span></td>
+        </tr>
+        <tr>
+            <td class="label">Số Kỳ:</td>
+            <td><span class="highlight">{{KY}}</span></td>
+        </tr>
+        <tr>
+            <td class="label">Thăm Kêu:</td>
+            <td><span class="highlight">{{THAM}}</span></td>
+        </tr>
+        <tr>
+            <td class="label">Số Chân Chết:</td>
+            <td><span class="highlight">0 x 500.000 = 0</span></td>
+        </tr>
+        <tr>
+            <td class="label">Số Chân Sống:</td>
+            <td><span class="highlight">5 x 470.000 = 2.350.000</span></td>
+        </tr>
+        <tr class="total">
+            <td class="label">Tiền hụi (Sống + Chết):</td>
+            <td><span class="highlight">{{TienHot}}</span></td>
+        </tr>
+        <tr>
+            <td class="label">Trừ Thảo:</td>
+            <td><span class="highlight">{{Thao}}</span></td>
+        </tr>
+        <tr>
+            <td class="label">Trừ Đúp:</td>
+            <td><span class="highlight">0</span></td>
+        </tr>
+        <tr class="total">
+            <td class="label">Giao</td>
+            <td><strong class="highlight">{{SoTien}}</strong></td>
+        </tr>
+    </table>
+    
+    <p>Còn đóng lại <span class="highlight">5 phần</span> là mãn hụi.</p>
+    
+    <div class="signature">
+        <strong><p style="color: red;">Tôi đã đọc, kiểm điểm và nhận đủ số tiền giao hụi trên trong tình trạng hoàn toàn tính táo, không bị ép buộc, phải đóng lại hoàn thành dây hụi cho đến mãn dây. Mọi phát sinh về sau tôi sẽ chịu trách nhiệm trước Pháp Luật !</p></strong>
+        
+        <div class="signature-row">
+            <div class="signature-box">
+                <div class="signature-line">BÊN NHẬN</div>
+                <div><span class="highlight">{{HV}}</span></div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line">BÊN GIAO</div>
+                <div><span class="highlight">{{TEN}}</span></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
