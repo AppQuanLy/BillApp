@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Báo Hụi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="toolbar">
+        <button id="copyButton">📄 Copy thành ảnh (để gửi Zalo)</button>
+    </div>
+    <div id="bill-container">
+        <div class="qr-code">
+            <img id="qrImage" src="" alt="QR Code">
+        </div>
+        <div class="header-info">
+            <p><strong>Chủ hụi:</strong> <span id="chuHui"></span></p>
+            <p><strong>SĐT:</strong> <span id="sdt"></span></p>
+            <p><strong>TPBank:</strong> <span id="bankInfo"></span></p>
+        </div>
+        <h1 class="bill-title">BILL BÁO HỤI</h1>
+        <p class="bill-date">Ngày: <span id="ngay"></span></p>
+
+        <h2 class="section-title">Hụi Viên: <span id="tenHuiVien"></span></h2>
+        
+        <table id="detailTable">
+            </table>
+
+        <table class="summary-table">
+            <tr>
+                <td>Tổng Tiền Đóng:</td>
+                <td id="tongTienDong"></td>
+            </tr>
+            <tr>
+                <td>Tổng Tiền Hốt:</td>
+                <td id="tongTienHot"></td>
+            </tr>
+            <tr class="final-row">
+                <td><strong>Phải Đóng:</strong></td>
+                <td id="phaiDong"></td>
+            </tr>
+        </table>
+        
+        <p class="footer-note">Chủ Hụi phải thu tiền Hụi Viên: <strong id="tenHuiVienFooter"></strong></p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
