@@ -60,7 +60,7 @@
                 
                 // Giải mã dữ liệu: Base64 -> Chuỗi JSON
                 const jsonData = decodeURIComponent(encodedData);
-                
+                alert(jsonData);
                 // Gọi hàm tạo bill với dữ liệu đã được giải mã
                 generateBills(jsonData);
                 infoPanel.style.display = 'none';
