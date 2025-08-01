@@ -40,7 +40,7 @@
 
     <template id="bill-template">
         <div class="bill-page">
-            <div class="bill-controls"><button class="copy-btn">Tải Bill</button><button class="share-btn">Share</button></div>
+            <div class="bill-controls"><button class="copy-btn">Tải Bill</button><button class="share-btn">Gửi Bill</button></div>
             <table class="header-table no-border">
                 <tr><td class="font-bold" style="width: 33%;">Chủ hụi: <span data-field="chu_hui"></span></td><td class="font-bold" style="width: 33%;">SDT: <span data-field="sdt"></span></td><td class="font-bold" style="width: 34%;" data-field="bank_info"></td></tr>
                 <tr><td colspan="2" class="text-center"><h2 style="margin: 5px 0 0 0; font-size: 20pt;">BILL BÁO HỤI</h2><p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p></td><td class="text-right"><img data-field="qr_bill_url" class="qr-code" alt="QR"></td></tr>
@@ -132,4 +132,5 @@
         async function shareBillAsImage(element, tenHuiVien) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const canvas = await html2canvas(element, { scale: 2, useCORS: true }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], `bill_${tenHuiVien || 'bill'}.png`, { type: 'image/png' }); if (navigator.canShare({ files: [file] })) { await navigator.share({ title: `Bill Báo Hụi - ${tenHuiVien}`, text: `Đây là bill báo hụi của ${tenHuiVien}.`, files: [file], }); } else { alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } } catch (error) { console.error(error); alert('Lỗi khi chia sẻ: ' + error); } finally { c.style.display = 'flex'; } }
     </script>
 </body>
+
 </html>
