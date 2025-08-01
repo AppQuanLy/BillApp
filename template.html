@@ -34,6 +34,8 @@
 
     <div class="info-panel">
         <h1 id="status-message">Đang tải và tạo bill...</h1>
+        <h3 style="margin-bottom: 5px; margin-top: 20px;">Dữ liệu JSON nhận được từ link:</h3>
+    <textarea id="debug-output" style="width: 95%; height: 150px;"></textarea>
     </div>
     
     <div id="bills-container">
@@ -60,7 +62,7 @@
                 
                 // Giải mã dữ liệu: Base64 -> Chuỗi JSON
                 const jsonData = decodeURIComponent(encodedData);
-                alert(jsonData);
+                
                 // Gọi hàm tạo bill với dữ liệu đã được giải mã
                 generateBills(jsonData);
                 infoPanel.style.display = 'none';
