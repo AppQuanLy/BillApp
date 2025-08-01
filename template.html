@@ -62,10 +62,13 @@
                 
                 // Giải mã dữ liệu: Base64 -> Chuỗi JSON
                 const jsonData = decodeURIComponent(encodedData);
+
+                document.getElementById('debug-output').value = jsonData;
+                return;
                 
                 // Gọi hàm tạo bill với dữ liệu đã được giải mã
-                generateBills(jsonData);
-                infoPanel.style.display = 'none';
+                //generateBills(jsonData);
+               // infoPanel.style.display = 'none';
 
             } catch (error) {
                 statusMessage.textContent = 'Lỗi! Dữ liệu bill trong link không hợp lệ hoặc đã bị hỏng.';
