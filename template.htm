@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HÛa don Bill H?i</title>
+    <title>H√≥a don Bill H?i</title>
     
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
@@ -12,7 +12,7 @@
             background-color: white; max-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: 'Times New Roman', Times, serif; font-size: 10pt;
         }
-        /* ... D·n to‡n b? CSS t? file tru?c dÛ c?a b?n v‡o d‚y ... */
+        /* ... D√°n to√†n b? CSS t? file tru?c d√≥ c?a b?n v√†o d√¢y ... */
         .bill-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 10px; z-index: 10; }
         .bill-controls button { padding: 5px 10px; font-size: 12px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; opacity: 0.6; transition: opacity 0.2s; }
         .bill-controls button:hover { opacity: 1; }
@@ -33,45 +33,45 @@
 <body>
 
     <div class="info-panel">
-        <h1 id="status-message">–ang t?i v‡ t?o bill...</h1>
+        <h1 id="status-message">√êang t?i v√† t?o bill...</h1>
     </div>
     
     <div id="bills-container">
         </div>
 
     <template id="bill-template">
-        <div class="bill-page"><div class="bill-controls"><button class="copy-btn">Copy ?nh</button><button class="share-btn">Share</button></div><table class="header-table no-border"><tr><td class="font-bold" style="width: 33%;">Ch? h?i: <span data-field="chu_hui"></span></td><td class="font-bold" style="width: 33%;">SDT: <span data-field="sdt"></span></td><td class="font-bold" style="width: 34%;" data-field="bank_info"></td></tr><tr><td colspan="2" class="text-center"><h2 style="margin: 5px 0 0 0; font-size: 20pt;">BILL B¡O H?I</h2><p style="margin: 0;">Ng‡y: <span data-field="ngay_tao_bill"></span></p></td><td class="text-right"><img data-field="qr_bill_url" class="qr-code" alt="QR"></td></tr></table><table class="summary-table text-center"><thead><tr><th data-field="summary_title_hui_vien"></th><th data-field="summary_title_hui_chet"></th><th data-field="summary_title_hui_song"></th><th class="highlight">¬m/Duong *</th><th class="highlight">L?i Nhu?n</th></tr></thead><tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="highlight font-bold text-blue" data-field="am_duong"></td><td class="highlight font-bold text-red" data-field="loi_nhuan"></td></tr></tbody></table><table class="details-table text-center"><thead><tr><th>Ng‡y m?</th><th>D‚y H?i</th><th>K?</th><th>Khui</th><th>S?NG</th><th>CH?T</th><th>Ti?n H?t</th><th>Ti?n –Ûng</th><th>Tham</th><th>–˙p</th></tr></thead><tbody data-field="details_tbody"></tbody></table><div class="footer-container"><div class="footer-left"><div class="footer-banner" data-field="footer_banner"></div><span data-field="footer_hoi_vien"></span></div><div class="footer-right"><table class="totals-table no-border"><tr><td class="font-bold">T?ng Ti?n –Ûng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham"></td></tr><tr><td class="font-bold">T?ng Ti?n H?t:</td><td class="text-right font-large font-bold" data-field="bill_tong_hot"></td><td class="text-center">(2)</td><td class="text-blue font-bold" data-field="tong_thao"></td></tr><tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-center font-bold"></td><td class="text-center font-bold">=(1)-(2)</td></tr></table></div></div></div>
+        <div class="bill-page"><div class="bill-controls"><button class="copy-btn">Copy ?nh</button><button class="share-btn">Share</button></div><table class="header-table no-border"><tr><td class="font-bold" style="width: 33%;">Ch? h?i: <span data-field="chu_hui"></span></td><td class="font-bold" style="width: 33%;">SDT: <span data-field="sdt"></span></td><td class="font-bold" style="width: 34%;" data-field="bank_info"></td></tr><tr><td colspan="2" class="text-center"><h2 style="margin: 5px 0 0 0; font-size: 20pt;">BILL B√ÅO H?I</h2><p style="margin: 0;">Ng√†y: <span data-field="ngay_tao_bill"></span></p></td><td class="text-right"><img data-field="qr_bill_url" class="qr-code" alt="QR"></td></tr></table><table class="summary-table text-center"><thead><tr><th data-field="summary_title_hui_vien"></th><th data-field="summary_title_hui_chet"></th><th data-field="summary_title_hui_song"></th><th class="highlight">√Çm/Duong *</th><th class="highlight">L?i Nhu?n</th></tr></thead><tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="highlight font-bold text-blue" data-field="am_duong"></td><td class="highlight font-bold text-red" data-field="loi_nhuan"></td></tr></tbody></table><table class="details-table text-center"><thead><tr><th>Ng√†y m?</th><th>D√¢y H?i</th><th>K?</th><th>Khui</th><th>S?NG</th><th>CH?T</th><th>Ti?n H?t</th><th>Ti?n √ê√≥ng</th><th>Tham</th><th>√ê√∫p</th></tr></thead><tbody data-field="details_tbody"></tbody></table><div class="footer-container"><div class="footer-left"><div class="footer-banner" data-field="footer_banner"></div><span data-field="footer_hoi_vien"></span></div><div class="footer-right"><table class="totals-table no-border"><tr><td class="font-bold">T?ng Ti?n √ê√≥ng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham"></td></tr><tr><td class="font-bold">T?ng Ti?n H?t:</td><td class="text-right font-large font-bold" data-field="bill_tong_hot"></td><td class="text-center">(2)</td><td class="text-blue font-bold" data-field="tong_thao"></td></tr><tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-center font-bold"></td><td class="text-center font-bold">=(1)-(2)</td></tr></table></div></div></div>
     </template>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        // T? –?NG CH?Y KHI TRANG –U?C T?I
+        // T? √ê?NG CH?Y KHI TRANG √êU?C T?I
         window.onload = function() {
             const infoPanel = document.getElementById('info-panel');
             const statusMessage = document.getElementById('status-message');
             
             try {
-                // L?y chu?i d? li?u t? ph?n sau d?u # trÍn URL
+                // L?y chu?i d? li?u t? ph?n sau d?u # tr√™n URL
                 const encodedData = window.location.hash.substring(1);
                 if (!encodedData) {
-                    statusMessage.textContent = 'KhÙng tÏm th?y d? li?u bill trong du?ng link.';
+                    statusMessage.textContent = 'Kh√¥ng t√¨m th?y d? li?u bill trong du?ng link.';
                     return;
                 }
                 
-                // Gi?i m„ d? li?u: Base64 -> Chu?i JSON
-                const jsonData = atob(decodeURIComponent(encodedData));
+                // Gi?i m√£ d? li?u: Base64 -> Chu?i JSON
+                const jsonData = decodeURIComponent(encodedData);
                 
-                // G?i h‡m t?o bill v?i d? li?u d„ du?c gi?i m„
+                // G?i h√†m t?o bill v?i d? li?u d√£ du?c gi?i m√£
                 generateBills(jsonData);
                 infoPanel.style.display = 'none';
 
             } catch (error) {
-                statusMessage.textContent = 'L?i! D? li?u bill trong link khÙng h?p l? ho?c d„ b? h?ng.';
-                console.error("L?i gi?i m„ d? li?u:", error);
+                statusMessage.textContent = 'L?i! D? li?u bill trong link kh√¥ng h?p l? ho?c d√£ b? h?ng.';
+                console.error("L?i gi?i m√£ d? li?u:", error);
             }
         };
 
-        // H‡m generateBills gi? nh?n d? li?u JSON l‡m tham s?
+        // H√†m generateBills gi? nh?n d? li?u JSON l√†m tham s?
         function generateBills(jsonInput) {
             const billsContainer = document.getElementById('bills-container');
             billsContainer.innerHTML = '';
@@ -80,9 +80,9 @@
                 const billTemplate = document.getElementById('bill-template');
                 data.forEach(kh => {
                     const billNode = document.importNode(billTemplate.content, true);
-                    // ... TO¿N B? LOGIC –? –I?N D? LI?U V¿ G¡N S? KI?N GI? NGUY N NHU CU ...
+                    // ... TO√ÄN B? LOGIC √ê? √êI?N D? LI?U V√Ä G√ÅN S? KI?N GI? NGUY√äN NHU CU ...
                     const q = (selector) => billNode.querySelector(selector);
-                    q('[data-field="chu_hui"]').textContent = kh.chu_hui || ''; q('[data-field="sdt"]').textContent = kh.sdt || ''; q('[data-field="bank_info"]').textContent = kh.bank_info || ''; q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; q('[data-field="qr_bill_url"]').src = kh.qr_bill_url || ''; q('[data-field="summary_title_hui_vien"]').textContent = `H?i ViÍn ${kh.tong_so_day || 0} D‚y, ${kh.tong_so_chan || 0} C`; q('[data-field="summary_title_hui_chet"]').textContent = `H?i Ch?t ${kh.tong_so_chan_chet || 0} C`; q('[data-field="summary_title_hui_song"]').textContent = `H?i S?ng ${kh.tong_so_chan_song || 0} C`; q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="tong_hui_chet"]').textContent = (kh.tong_hui_chet || 0).toLocaleString('vi-VN'); q('[data-field="tong_hui_song"]').textContent = (kh.tong_hui_song || 0).toLocaleString('vi-VN'); q('[data-field="am_duong"]').textContent = (kh.am_duong || 0).toLocaleString('vi-VN'); q('[data-field="loi_nhuan"]').textContent = (kh.loi_nhuan || 0).toLocaleString('vi-VN');
+                    q('[data-field="chu_hui"]').textContent = kh.chu_hui || ''; q('[data-field="sdt"]').textContent = kh.sdt || ''; q('[data-field="bank_info"]').textContent = kh.bank_info || ''; q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; q('[data-field="qr_bill_url"]').src = kh.qr_bill_url || ''; q('[data-field="summary_title_hui_vien"]').textContent = `H?i Vi√™n ${kh.tong_so_day || 0} D√¢y, ${kh.tong_so_chan || 0} C`; q('[data-field="summary_title_hui_chet"]').textContent = `H?i Ch?t ${kh.tong_so_chan_chet || 0} C`; q('[data-field="summary_title_hui_song"]').textContent = `H?i S?ng ${kh.tong_so_chan_song || 0} C`; q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="tong_hui_chet"]').textContent = (kh.tong_hui_chet || 0).toLocaleString('vi-VN'); q('[data-field="tong_hui_song"]').textContent = (kh.tong_hui_song || 0).toLocaleString('vi-VN'); q('[data-field="am_duong"]').textContent = (kh.am_duong || 0).toLocaleString('vi-VN'); q('[data-field="loi_nhuan"]').textContent = (kh.loi_nhuan || 0).toLocaleString('vi-VN');
                     const detailsBody = q('[data-field="details_tbody"]');
                     if (kh.chan_hui_details && Array.isArray(kh.chan_hui_details)) {
                         kh.chan_hui_details.forEach(d => {
@@ -93,17 +93,17 @@
                     }
                     q('[data-field="footer_hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="bill_tong_dong"]').textContent = (kh.bill_tong_dong || 0).toLocaleString('vi-VN'); q('[data-field="bill_tong_hot"]').textContent = (kh.bill_tong_hot || 0).toLocaleString('vi-VN'); q('[data-field="tong_tham"]').textContent = `T?ng Tham: ${(kh.tong_tham || 0).toLocaleString('vi-VN')}`; q('[data-field="tong_thao"]').textContent = `T?ng Th?o: ${(kh.tong_thao || 0).toLocaleString('vi-VN')}`;
                     const banner = q('[data-field="footer_banner"]'); const tongDong = kh.bill_tong_dong || 0; const tongHot = kh.bill_tong_hot || 0;
-                    if (tongDong > tongHot) { banner.textContent = 'Ch? H?i ph?i thu ti?n H?i ViÍn'; banner.style.backgroundColor = '#d90000'; q('[data-field="final_text_label"]').textContent = 'Ph?i –Ûng:'; q('[data-field="final_amount"]').textContent = (tongDong - tongHot).toLocaleString('vi-VN'); } else { banner.textContent = 'H?i ViÍn du?c nh?n ti?n'; banner.style.backgroundColor = '#00b050'; q('[data-field="final_text_label"]').textContent = '–u?c Nh?n:'; q('[data-field="final_amount"]').textContent = (tongHot - tongDong).toLocaleString('vi-VN'); }
+                    if (tongDong > tongHot) { banner.textContent = 'Ch? H?i ph?i thu ti?n H?i Vi√™n'; banner.style.backgroundColor = '#d90000'; q('[data-field="final_text_label"]').textContent = 'Ph?i √ê√≥ng:'; q('[data-field="final_amount"]').textContent = (tongDong - tongHot).toLocaleString('vi-VN'); } else { banner.textContent = 'H?i Vi√™n du?c nh?n ti?n'; banner.style.backgroundColor = '#00b050'; q('[data-field="final_text_label"]').textContent = '√êu?c Nh?n:'; q('[data-field="final_amount"]').textContent = (tongHot - tongDong).toLocaleString('vi-VN'); }
                     const billElement = billNode.querySelector('.bill-page');
                     billNode.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
                     if (navigator.share && navigator.canShare) { billNode.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement, kh.hoi_vien)); } else { billNode.querySelector('.share-btn').style.display = 'none'; }
                     billsContainer.appendChild(billNode);
                 });
-            } catch (error) { alert('L?i c˙ ph·p JSON ho?c d? li?u khÙng h?p l?.'); console.error(error); }
+            } catch (error) { alert('L?i c√∫ ph√°p JSON ho?c d? li?u kh√¥ng h?p l?.'); console.error(error); }
         }
-        // C·c h‡m copyBillAsImage v‡ shareBillAsImage gi? nguyÍn nhu cu
-        function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 2, useCORS: true }).then(canvas => { canvas.toBlob(blob => { navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('–„ copy ?nh bill v‡o b? nh? t?m!')).catch(err => { console.error(err); alert('L?i khi copy: ' + err); }); }); c.style.display = 'flex'; }).catch(err => { console.error('L?i html2canvas:', err); c.style.display = 'flex'; }); }
-        async function shareBillAsImage(element, tenHuiVien) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const canvas = await html2canvas(element, { scale: 2, useCORS: true }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], `bill_${tenHuiVien || 'bill'}.png`, { type: 'image/png' }); if (navigator.canShare({ files: [file] })) { await navigator.share({ title: `Bill B·o H?i - ${tenHuiVien}`, text: `–‚y l‡ bill b·o h?i c?a ${tenHuiVien}.`, files: [file], }); } else { alert('TrÏnh duy?t n‡y khÙng h? tr? chia s? file.'); } } catch (error) { console.error(error); alert('L?i khi chia s?: ' + error); } finally { c.style.display = 'flex'; } }
+        // C√°c h√†m copyBillAsImage v√† shareBillAsImage gi? nguy√™n nhu cu
+        function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 2, useCORS: true }).then(canvas => { canvas.toBlob(blob => { navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('√ê√£ copy ?nh bill v√†o b? nh? t?m!')).catch(err => { console.error(err); alert('L?i khi copy: ' + err); }); }); c.style.display = 'flex'; }).catch(err => { console.error('L?i html2canvas:', err); c.style.display = 'flex'; }); }
+        async function shareBillAsImage(element, tenHuiVien) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const canvas = await html2canvas(element, { scale: 2, useCORS: true }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], `bill_${tenHuiVien || 'bill'}.png`, { type: 'image/png' }); if (navigator.canShare({ files: [file] })) { await navigator.share({ title: `Bill B√°o H?i - ${tenHuiVien}`, text: `√ê√¢y l√† bill b√°o h?i c?a ${tenHuiVien}.`, files: [file], }); } else { alert('Tr√¨nh duy?t n√†y kh√¥ng h? tr? chia s? file.'); } } catch (error) { console.error(error); alert('L?i khi chia s?: ' + error); } finally { c.style.display = 'flex'; } }
     </script>
 </body>
 </html>
