@@ -4,48 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bill Báo Hụi</title>
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* CSS không thay đổi, giữ nguyên như phiên bản trước */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+        body { font-family: 'Roboto', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; font-size: 14px; }
+        .container { width: 42cm; max-width: 100%; box-sizing: border-box; margin: auto; background: #fff; padding: 25px; border: 1px solid #ddd; margin-bottom: 30px; /* Thêm khoảng cách giữa các bill */ }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .header-left { font-weight: 500; }
+        .header-left .chu-hui { font-size: 20px; font-weight: 700; }
+        .header-center { text-align: center; font-weight: 500; padding-top: 20px; }
+        .header-right { text-align: right; }
+        .header-right .qr-code { width: 80px; height: 80px; }
+        .bill-title { text-align: center; margin-bottom: 20px; }
+        .bill-title h1 { margin: 0; font-size: 24px; }
+        .bill-title p { margin: 5px 0 0; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px 10px; text-align: center; }
+        th { background-color: #f7f7d7; font-weight: 700; }
+        .summary-table .customer-name { color: #d9534f; font-weight: 700; font-size: 16px; }
+        .details-table td:nth-child(4) { text-align: left; }
+        .footer { margin-top: 20px; }
+        .footer-banner { color: white; font-weight: 700; font-size: 18px; padding: 10px; text-align: center; margin-bottom: 15px; }
+        .red-banner { background-color: #d9534f; }
+        .green-banner { background-color: #5cb85c; }
+        .footer-summary { display: flex; justify-content: space-between; align-items: flex-start; }
+        .footer-summary .customer-name { font-size: 22px; font-weight: 700; }
+        .footer-summary .totals { text-align: right; font-size: 16px; font-weight: 500; }
+        .footer-summary .totals div { margin-bottom: 5px; }
+        .totals strong { display: inline-block; min-width: 100px; text-align: right; }
+        .totals .final-amount { color: #d9534f; font-weight: 700; font-size: 18px; }
+        .text-red { color: #d9534f; font-weight: 700; }
+        .text-blue { color: #0275d8; font-weight: 700; }
+        .actions-container { text-align: center; padding: 20px 0 10px; border-top: 1px solid #eee; margin-top: 30px; }
+        .action-button { padding: 12px 25px; font-size: 16px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; margin: 0 10px; transition: background-color 0.3s; }
+        .copy-button { background-color: #007bff; color: white; }
+        .copy-button:hover { background-color: #0056b3; }
+        .share-button { background-color: #28a745; color: white; }
+        .share-button:hover { background-color: #1e7e34; }
+    </style>
 </head>
 <body>
-    <div class="toolbar">
-        <button id="copyButton">📄 Copy thành ảnh (để gửi Zalo)</button>
-    </div>
-    <div id="bill-container">
-        <div class="qr-code">
-            <img id="qrImage" src="" alt="QR Code">
-        </div>
-        <div class="header-info">
-            <p><strong>Chủ hụi:</strong> <span id="chuHui"></span></p>
-            <p><strong>SĐT:</strong> <span id="sdt"></span></p>
-            <p><strong>TPBank:</strong> <span id="bankInfo"></span></p>
-        </div>
-        <h1 class="bill-title">BILL BÁO HỤI</h1>
-        <p class="bill-date">Ngày: <span id="ngay"></span></p>
 
-        <h2 class="section-title">Hụi Viên: <span id="tenHuiVien"></span></h2>
-        
-        <table id="detailTable">
-            </table>
+    {{#each danh_sach_bill}}
+    <div class="container" id="bill-{{this.hui_vien.ma_hv}}">
+        <div class="header">
+            <div class="header-left">
+                <div>Chủ hụi:</div>
+                <div class="chu-hui">{{../chu_hui.ten}}</div>
+                <div><strong>SĐT:</strong> {{../chu_hui.sdt}}</div>
+            </div>
+            <div class="header-center">
+                <div><strong>Vietcombank:</strong> {{../chu_hui.stk}}</div>
+                <div>{{../chu_hui.chu_tk}}</div>
+            </div>
+            <div class="header-right">
+                <img class="qr-code" src="{{../chu_hui.qr_code_url}}" alt="QR Code">
+            </div>
+        </div>
+
+        <div class="bill-title">
+            <h1>BILL BÁO HỤI</h1>
+            <p>Ngày: {{../ngay_tao_bill}}</p>
+        </div>
 
         <table class="summary-table">
-            <tr>
-                <td>Tổng Tiền Đóng:</td>
-                <td id="tongTienDong"></td>
-            </tr>
-            <tr>
-                <td>Tổng Tiền Hốt:</td>
-                <td id="tongTienHot"></td>
-            </tr>
-            <tr class="final-row">
-                <td><strong>Phải Đóng:</strong></td>
-                <td id="phaiDong"></td>
-            </tr>
+            <tbody>
+                <tr>
+                    <td class="customer-name">{{this.hui_vien.ten}}<br>{{this.hui_vien.thong_tin_day}}</td>
+                    <td>{{this.hui_vien.hui_chet}}</td><td>{{this.hui_vien.hui_song}}</td><td>{{this.hui_vien.am_duong}}</td>
+                    <td>
+                        <span class="{{#if this.hui_vien.loi_nhuan_is_positive}}text-blue{{else}}text-red{{/if}}">{{this.hui_vien.loi_nhuan}}</span>
+                    </td>
+                </tr>
+            </tbody>
         </table>
-        
-        <p class="footer-note">Chủ Hụi phải thu tiền Hụi Viên: <strong id="tenHuiVienFooter"></strong></p>
-    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="script.js"></script>
+        <table class="details-table">
+            <tbody>
+                {{#each this.chi_tiet}}
+                <tr>
+                    <td>{{this.ngay_mo}}</td><td>{{this.day_hui}}</td><td>{{this.ky}}</td><td>{{this.khui}}</td>
+                    <td>{{this.song}}</td><td>{{this.chet}}</td><td class="text-red">{{this.tien_hot}}</td><td>{{this.tien_dong}}</td><td>{{this.tham}}</td><td>{{this.dup}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+
+        <div class="footer">
+            {{#if this.tong_ket.is_hot_lon_hon_dong}}
+            <div class="footer-banner green-banner">Chủ hụi phải giao tiền</div>
+            {{else}}
+            <div class="footer-banner red-banner">Chủ Hụi phải thu tiền Hụi Viên</div>
+            {{/if}}
+            <div class="footer-summary">
+                <div class="customer-name">{{this.hui_vien.ten_footer}}</div>
+                <div class="totals">
+                    <div>Tổng Tiền Đóng: <strong>{{this.tong_ket.tien_dong}}</strong> (1)</div>
+                    <div class="text-red">Tổng Tiền Hốt: <strong>{{this.tong_ket.tien_hot}}</strong> (2)</div>
+                    <div class="final-amount">Phải Đóng: <strong>{{this.tong_ket.phai_dong}}</strong></div>
+                </div>
+                <div class="totals">
+                    <div>Tổng Thăm: {{this.tong_ket.tham}}</div>
+                    <div>Tổng Thảo: {{this.tong_ket.thao}}</div>
+                    <div>=(1)-(2)</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="actions-container" id="actions-{{this.hui_vien.ma_hv}}">
+            <button class="action-button copy-button" onclick="copyBillAsImage('bill-{{this.hui_vien.ma_hv}}', 'actions-{{this.hui_vien.ma_hv}}')">Sao chép ảnh Bill</button>
+            <button class="action-button share-button" onclick="shareBill('bill-{{this.hui_vien.ma_hv}}', 'actions-{{this.hui_vien.ma_hv}}')">Chia sẻ</button>
+        </div>
+    </div>
+    {{/each}}
+    <script>
+    // THAY ĐỔI: Cập nhật JavaScript để làm việc với ID động
+    async function captureBill(elementId, actionsId, callback) {
+        const billElement = document.getElementById(elementId);
+        const actionsElement = document.getElementById(actionsId);
+        if (actionsElement) actionsElement.style.display = 'none';
+        try {
+            const canvas = await html2canvas(billElement, { scale: 2, useCORS: true });
+            await callback(canvas);
+        } catch (error) {
+            console.error('Lỗi khi tạo ảnh bill:', error);
+            alert('Đã xảy ra lỗi khi tạo ảnh.');
+        } finally {
+            if (actionsElement) actionsElement.style.display = 'block';
+        }
+    }
+    async function copyBillAsImage(elementId, actionsId) {
+        await captureBill(elementId, actionsId, canvas => {
+            canvas.toBlob(blob => {
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                .catch(err => alert('Copy thất bại.'));
+            });
+        });
+    }
+    async function shareBill(elementId, actionsId) {
+        if (!navigator.share) {
+            alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Sao chép ảnh".');
+            return;
+        }
+        await captureBill(elementId, actionsId, canvas => {
+            canvas.toBlob(async blob => {
+                const file = new File([blob], 'bill-bao-hui.png', { type: 'image/png' });
+                try {
+                    await navigator.share({ title: 'Bill Báo Hụi', files: [file] });
+                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
+            });
+        });
+    }
+    </script>
 </body>
 </html>
