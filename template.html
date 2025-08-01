@@ -40,7 +40,7 @@
         </div>
 
     <template id="bill-template">
-        <div class="bill-page"><div class="bill-controls"><button class="copy-btn">Copy ảnh</button><button class="share-btn">Share</button></div><table class="header-table no-border"><tr><td class="font-bold" style="width: 33%;">Chủ hụi: <span data-field="chu_hui"></span></td><td class="font-bold" style="width: 33%;">SDT: <span data-field="sdt"></span></td><td class="font-bold" style="width: 34%;" data-field="bank_info"></td></tr><tr><td colspan="2" class="text-center"><h2 style="margin: 5px 0 0 0; font-size: 20pt;">BILL BÁO HỤI</h2><p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p></td><td class="text-right"><img data-field="qr_bill_url" class="qr-code" alt="QR"></td></tr></table><table class="summary-table text-center"><thead><tr><th data-field="summary_title_hui_vien"></th><th data-field="summary_title_hui_chet"></th><th data-field="summary_title_hui_song"></th><th class="highlight">Âm/Dương *</th><th class="highlight">Lợi Nhuận</th></tr></thead><tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="highlight font-bold text-blue" data-field="am_duong"></td><td class="highlight font-bold text-red" data-field="loi_nhuan"></td></tr></tbody></table><table class="details-table text-center"><thead><tr><th>Ngày mở</th><th>Dây Hụi</th><th>Kỳ</th><th>Khui</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Thăm</th><th>Đúp</th></tr></thead><tbody data-field="details_tbody"></tbody></table><div class="footer-container"><div class="footer-left"><div class="footer-banner" data-field="footer_banner"></div><span data-field="footer_hoi_vien"></span></div><div class="footer-right"><table class="totals-table no-border"><tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham"></td></tr><tr><td class="font-bold">Tổng Tiền Hốt:</td><td class="text-right font-large font-bold" data-field="bill_tong_hot"></td><td class="text-center">(2)</td><td class="text-blue font-bold" data-field="tong_thao"></td></tr><tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-center font-bold"></td><td class="text-center font-bold">=(1)-(2)</td></tr></table></div></div></div>
+        <div class="bill-page"><div class="bill-controls"><button class="copy-btn">Tải Bill</button><button class="share-btn">Share</button></div><table class="header-table no-border"><tr><td class="font-bold" style="width: 33%;">Chủ hụi: <span data-field="chu_hui"></span></td><td class="font-bold" style="width: 33%;">SDT: <span data-field="sdt"></span></td><td class="font-bold" style="width: 34%;" data-field="bank_info"></td></tr><tr><td colspan="2" class="text-center"><h2 style="margin: 5px 0 0 0; font-size: 20pt;">BILL BÁO HỤI</h2><p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p></td><td class="text-right"><img data-field="qr_bill_url" class="qr-code" alt="QR"></td></tr></table><table class="summary-table text-center"><thead><tr><th data-field="summary_title_hui_vien"></th><th data-field="summary_title_hui_chet"></th><th data-field="summary_title_hui_song"></th><th class="highlight">Âm/Dương *</th><th class="highlight">Lợi Nhuận</th></tr></thead><tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="highlight font-bold text-blue" data-field="am_duong"></td><td class="highlight font-bold text-red" data-field="loi_nhuan"></td></tr></tbody></table><table class="details-table text-center"><thead><tr><th>Ngày mở</th><th>Dây Hụi</th><th>Kỳ</th><th>Khui</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Thăm</th><th>Đúp</th></tr></thead><tbody data-field="details_tbody"></tbody></table><div class="footer-container"><div class="footer-left"><div class="footer-banner" data-field="footer_banner"></div><span data-field="footer_hoi_vien"></span></div><div class="footer-right"><table class="totals-table no-border"><tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham"></td></tr><tr><td class="font-bold">Tổng Tiền Hốt:</td><td class="text-right font-large font-bold" data-field="bill_tong_hot"></td><td class="text-center">(2)</td><td class="text-blue font-bold" data-field="tong_thao"></td></tr><tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-center font-bold"></td><td class="text-center font-bold">=(1)-(2)</td></tr></table></div></div></div>
     </template>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -95,14 +95,37 @@
                     const banner = q('[data-field="footer_banner"]'); const tongDong = kh.bill_tong_dong || 0; const tongHot = kh.bill_tong_hot || 0;
                     if (tongDong > tongHot) { banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; banner.style.backgroundColor = '#d90000'; q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; q('[data-field="final_amount"]').textContent = (tongDong - tongHot).toLocaleString('vi-VN'); } else { banner.textContent = 'Hụi Viên được nhận tiền'; banner.style.backgroundColor = '#00b050'; q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; q('[data-field="final_amount"]').textContent = (tongHot - tongDong).toLocaleString('vi-VN'); }
                     const billElement = billNode.querySelector('.bill-page');
-                    billNode.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+                    billNode.querySelector('.copy-btn').addEventListener('click', () => downloadBillAsImage(billElement, kh.hoi_vien));
                     if (navigator.share && navigator.canShare) { billNode.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement, kh.hoi_vien)); } else { billNode.querySelector('.share-btn').style.display = 'none'; }
                     billsContainer.appendChild(billNode);
                 });
             } catch (error) { alert('Lỗi cú pháp JSON hoặc dữ liệu không hợp lệ.'); console.error(error); }
         }
         // Các hàm copyBillAsImage và shareBillAsImage giữ nguyên như cũ
-        function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 2, useCORS: true }).then(canvas => { canvas.toBlob(blob => { navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
+        function downloadBillAsImage(element, tenHuiVien) {
+    const controls = element.querySelector('.bill-controls');
+    controls.style.display = 'none'; // Tạm ẩn các nút
+
+    html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+        // Tạo một đường link tạm thời trong bộ nhớ
+        const link = document.createElement('a');
+        
+        // Đặt tên file sẽ được tải về
+        link.download = `bill_${tenHuiVien || 'bill'}.png`;
+        
+        // Gán nội dung của ảnh vào đường link
+        link.href = canvas.toDataURL("image/png");
+        
+        // Tự động nhấn vào link để trình duyệt bắt đầu quá trình tải về
+        link.click();
+        
+        controls.style.display = 'flex'; // Hiện lại các nút sau khi xong
+    }).catch(err => {
+        console.error('Lỗi khi tạo ảnh:', err);
+        alert('Đã có lỗi xảy ra khi tạo ảnh.');
+        controls.style.display = 'flex';
+    });
+}
         async function shareBillAsImage(element, tenHuiVien) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const canvas = await html2canvas(element, { scale: 2, useCORS: true }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], `bill_${tenHuiVien || 'bill'}.png`, { type: 'image/png' }); if (navigator.canShare({ files: [file] })) { await navigator.share({ title: `Bill Báo Hụi - ${tenHuiVien}`, text: `Đây là bill báo hụi của ${tenHuiVien}.`, files: [file], }); } else { alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } } catch (error) { console.error(error); alert('Lỗi khi chia sẻ: ' + error); } finally { c.style.display = 'flex'; } }
     </script>
 </body>
