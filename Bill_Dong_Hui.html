@@ -12,17 +12,21 @@
             background-color: white; max-width: 800px; min-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: 'Times New Roman', Times, serif; font-size: 10pt;
         }
-        .bill-controls { position: absolute; top: 10px; right: 10px; display: flex; gap: 10px; z-index: 10; }
-        .bill-controls button { padding: 5px 10px; font-size: 12px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; opacity: 0.6; transition: opacity 0.2s; }
+        /* THAY ĐỔI 4: Vị trí các nút */
+        .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
+        .bill-controls button { padding: 5px 10px; font-size: 12px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; opacity: 0.7; transition: opacity 0.2s; }
         .bill-controls button:hover { opacity: 1; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #000; }
         th, td { border: 1px solid #666; padding: 4px 6px; vertical-align: middle; }
-        th { background-color: #f2f2f2; font-weight: bold; }
+        /* THAY ĐỔI 2: Viết hoa tiêu đề bảng */
+        th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
         .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; }
         .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
         .text-red { color: #d90000; } .text-green { color: #00b050; }
         .header-table td { padding: 0px 5px; }
-        .qr-code { width: 100px; height: 100px; } .summary-table th { background-color: #d9e1f2; }
+        /* THAY ĐỔI 5: Kích thước mã QR */
+        .qr-code { width: 100px; height: 100px; } 
+        .summary-table th { background-color: #d9e1f2; }
         .summary-table .highlight { background-color: #fff2cc; } .details-table th { background-color: #d9e1f2; }
         .details-table { margin-bottom: 10px; font-size: 9pt;} .footer-banner { padding: 5px; text-align: left; font-size: 12pt; color: white; margin-bottom: 5px;}
         .footer-container { display: flex; align-items: flex-start; gap: 10px;}
@@ -33,7 +37,7 @@
 </head>
 <body>
 
-    <div id="info-panel" class="info-panel" style="display: none;">
+    <div id="info-panel" class="info-panel">
         <h1 id="status-message">Đang tải và tạo bill...</h1>
     </div>
     
@@ -55,7 +59,7 @@
                 <tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="highlight font-bold" data-field="am_duong"></td><td class="highlight font-bold" data-field="loi_nhuan"></td></tr></tbody>
             </table>
             <table class="details-table text-center">
-                <thead><tr><th>NGÀY MỞ</th><th>DÂY</th><th>KỲ</th><th>TÊN DÂY</th><th>SỐNG</th><th>CHẾT</th><th>TIỀN HỐT</th><th>TIỀN ĐÓNG</th><th>THĂM</th><th>ĐÚP</th></tr></thead>
+                <thead><tr><th>Ngày mở</th><th>Dây Hụi</th><th>Kỳ</th><th>Khui</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Thăm</th><th>Đúp</th></tr></thead>
                 <tbody data-field="details_tbody"></tbody>
             </table>
             <div class="footer-container">
@@ -108,9 +112,7 @@
                 
                 q('[data-field="chu_hui"]').textContent = kh.chu_hui || ''; q('[data-field="sdt"]').textContent = kh.sdt || ''; q('[data-field="bank_info"]').textContent = kh.bank_info || ''; q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; q('[data-field="qr_bill_url"]').src = kh.qr_bill_url || '';
                 q('[data-field="summary_title_hui_vien"]').textContent = `Hụi Viên ${kh.tong_so_day || 0} Dây, ${kh.tong_so_chan || 0} C`; q('[data-field="summary_title_hui_chet"]').textContent = `Hụi Chết ${kh.tong_so_chan_chet || 0} C`; q('[data-field="summary_title_hui_song"]').textContent = `Hụi Sống ${kh.tong_so_chan_song || 0} C`;
-                q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="tong_hui_chet"]').textContent = formatCurrency(kh.tong_hui_chet); q('[data-field="tong_hui_song"]').textContent = formatCurrency(kh.tong_hui_song);
-                const amDuongCell = q('[data-field="am_duong"]'); const amDuongValue = kh.am_duong || 0; amDuongCell.textContent = formatCurrency(amDuongValue); if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); }
-                const loiNhuanCell = q('[data-field="loi_nhuan"]'); const loiNhuanValue = kh.loi_nhuan || 0; loiNhuanCell.textContent = formatCurrency(loiNhuanValue); if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
+                q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="tong_hui_chet"]').textContent = formatCurrency(kh.tong_hui_chet); q('[data-field="tong_hui_song"]').textContent = formatCurrency(kh.tong_hui_song); const amDuongCell = q('[data-field="am_duong"]'); const amDuongValue = kh.am_duong || 0; amDuongCell.textContent = formatCurrency(amDuongValue); if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } const loiNhuanCell = q('[data-field="loi_nhuan"]'); const loiNhuanValue = kh.loi_nhuan || 0; loiNhuanCell.textContent = formatCurrency(loiNhuanValue); if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
                 const detailsBody = q('[data-field="details_tbody"]');
                 if (kh.chan_hui_details && Array.isArray(kh.chan_hui_details)) {
                     kh.chan_hui_details.forEach(d => {
@@ -124,79 +126,19 @@
                 if (tongDong > tongHot) { banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; banner.style.backgroundColor = '#d90000'; q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; q('[data-field="final_amount"]').textContent = formatCurrency(tongDong - tongHot); q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; } else { banner.textContent = 'Hụi Viên được nhận tiền'; banner.style.backgroundColor = '#00b050'; q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; q('[data-field="final_amount"]').textContent = formatCurrency(tongHot - tongDong); q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; }
                 
                 const billElement = billNode.querySelector('.bill-page');
-                const copyBtn = billNode.querySelector('.copy-btn');
-                const shareBtn = billNode.querySelector('.share-btn');
-                const downloadBtn = billNode.querySelector('.download-btn');
-
-                downloadBtn.addEventListener('click', () => downloadBillAsImage(billElement, kh.hoi_vien));
-                copyBtn.addEventListener('click', () => copyBillAsImage(billElement));
-                shareBtn.addEventListener('click', () => shareBillAsImage(billElement, kh.hoi_vien));
                 
-                if (navigator.share) {
-                    copyBtn.style.display = 'none';
-                } else {
-                    shareBtn.style.display = 'none';
-                }
+                // --- THAY ĐỔI 3: Gán sự kiện và không ẩn nút nào cả ---
+                billNode.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement, kh.hoi_vien));
+                billNode.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+                billNode.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement, kh.hoi_vien));
+
                 billsContainer.appendChild(billNode);
             });
         }
         
-        // --- CÁC HÀM HỖ TRỢ ĐÃ ĐƯỢC THÊM LẠI ĐẦY ĐỦ ---
-        function copyBillAsImage(element) {
-            const c = element.querySelector('.bill-controls');
-            c.style.display = 'none';
-            html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
-                canvas.toBlob(blob => {
-                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-                    .then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!'))
-                    .catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); });
-                });
-                c.style.display = 'flex';
-            }).catch(err => {
-                console.error('Lỗi html2canvas:', err);
-                c.style.display = 'flex';
-            });
-        }
-
-        function downloadBillAsImage(element, tenHuiVien) {
-            const c = element.querySelector('.bill-controls');
-            c.style.display = 'none';
-            html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `bill_${tenHuiVien || 'bill'}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-                c.style.display = 'flex';
-            }).catch(err => {
-                console.error('Lỗi khi tạo ảnh:', err);
-                alert('Đã có lỗi xảy ra khi tạo ảnh.');
-                c.style.display = 'flex';
-            });
-        }
-
-        async function shareBillAsImage(element, tenHuiVien) {
-            const c = element.querySelector('.bill-controls');
-            c.style.display = 'none';
-            try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                const file = new File([blob], `bill_${tenHuiVien || 'bill'}.png`, { type: 'image/png' });
-                if (navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        title: `Bill Báo Hụi - ${tenHuiVien}`,
-                        text: `Đây là bill báo hụi của ${tenHuiVien}.`,
-                        files: [file],
-                    });
-                } else {
-                    alert('Trình duyệt này không hỗ trợ chia sẻ file.');
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Lỗi khi chia sẻ: ' + error);
-            } finally {
-                c.style.display = 'flex';
-            }
-        }
+        function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 2, useCORS: true }).then(canvas => { canvas.toBlob(blob => { navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
+        function downloadBillAsImage(element, tenHuiVien) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 2, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = `bill_${tenHuiVien || 'bill'}.png`; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi khi tạo ảnh:', err); alert('Đã có lỗi xảy ra khi tạo ảnh.'); c.style.display = 'flex'; }); }
+        async function shareBillAsImage(element, tenHuiVien) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const canvas = await html2canvas(element, { scale: 2, useCORS: true }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], `bill_${tenHuiVien || 'bill'}.png`, { type: 'image/png' }); if (navigator.canShare({ files: [file] })) { await navigator.share({ title: `Bill Báo Hụi - ${tenHuiVien}`, text: `Đây là bill báo hụi của ${tenHuiVien}.`, files: [file], }); } else { alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } } catch (error) { console.error(error); alert('Lỗi khi chia sẻ: ' + error); } finally { c.style.display = 'flex'; } }
     </script>
 </body>
 </html>
