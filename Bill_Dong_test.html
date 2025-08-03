@@ -33,6 +33,10 @@
 
         /* --- THAY ĐỔI: Sửa lại CSS cho việc in ấn --- */
         @media print {
+            * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+            }
             /* Khi in, ẩn thanh thông tin và các nút bấm trong bill đi */
             .info-panel, .bill-controls {
                 display: none !important;
