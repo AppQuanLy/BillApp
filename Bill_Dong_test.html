@@ -6,12 +6,10 @@
     <title>Phần Mềm Tính Hụi</title>
     
     <style>
+        /* CSS không thay đổi */
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
-        .bill-page {
-            background-color: white; max-width: 800px; min-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: 'Times New Roman', Times, serif; font-size: 10pt;
-        }
+        .bill-page { background-color: white; max-width: 800px; min-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: 'Times New Roman', Times, serif; font-size: 10pt; }
         .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
         .bill-controls button, .info-panel button { padding: 5px 10px; font-size: 12px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; opacity: 0.7; transition: opacity 0.2s; }
         .bill-controls button:hover, .info-panel button:hover { opacity: 1; }
@@ -30,30 +28,11 @@
         .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; }
         .footer-right { width: 60%; }
         .totals-table td { padding: 5px 7px; font-size: 14pt; }
-
-        /* --- THAY ĐỔI: Sửa lại CSS cho việc in ấn --- */
         @media print {
-            * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-            }
-            /* Khi in, ẩn thanh thông tin và các nút bấm trong bill đi */
-            .info-panel, .bill-controls {
-                display: none !important;
-            }
-            /* Mỗi bill sẽ tự động nằm trên một trang mới */
-            .bill-page {
-                page-break-after: always;
-                margin: 0;
-                box-shadow: none;
-                border: none;
-            }
-            /* Bỏ nền và padding của body khi in */
-            body {
-                background-color: #fff;
-                padding: 0;
-                margin: 0;
-            }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .info-panel, .bill-controls { display: none !important; }
+            .bill-page { page-break-after: always; margin: 0; box-shadow: none; border: none; }
+            body { background-color: #fff; padding: 0; margin: 0; }
         }
     </style>
 </head>
@@ -116,8 +95,8 @@
                 const jsonData = decodeURIComponent(encodedData);
                 generateBills(jsonData);
 
-                statusMessage.style.display = 'none'; // Ẩn thông báo tải
-                printAllBtn.style.display = 'inline-block'; // Hiện nút in
+                statusMessage.style.display = 'none';
+                printAllBtn.style.display = 'inline-block';
                 printAllBtn.addEventListener('click', () => window.print());
 
             } catch (error) {
@@ -140,33 +119,44 @@
                 const billNode = document.importNode(billTemplate.content, true);
                 const q = (selector) => billNode.querySelector(selector);
                 
+                // ... (Phần điền dữ liệu chung không đổi)
                 q('[data-field="chu_hui"]').textContent = kh.chu_hui || ''; q('[data-field="sdt"]').textContent = kh.sdt || ''; q('[data-field="bank_info"]').textContent = kh.bank_info || ''; q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; q('[data-field="qr_bill_url"]').src = kh.qr_bill_url || '';
                 q('[data-field="summary_title_hui_vien"]').textContent = `Hụi Viên ${kh.tong_so_day || 0} Dây, ${kh.tong_so_chan || 0} C`; q('[data-field="summary_title_hui_chet"]').textContent = `Hụi Chết ${kh.tong_so_chan_chet || 0} C`; q('[data-field="summary_title_hui_song"]').textContent = `Hụi Sống ${kh.tong_so_chan_song || 0} C`;
                 q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="tong_hui_chet"]').textContent = formatCurrency(kh.tong_hui_chet); q('[data-field="tong_hui_song"]').textContent = formatCurrency(kh.tong_hui_song); const amDuongCell = q('[data-field="am_duong"]'); const amDuongValue = kh.am_duong || 0; amDuongCell.textContent = formatCurrency(amDuongValue); if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } const loiNhuanCell = q('[data-field="loi_nhuan"]'); const loiNhuanValue = kh.loi_nhuan || 0; loiNhuanCell.textContent = formatCurrency(loiNhuanValue); if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
+                
+                // --- THAY ĐỔI: GỘP 3 DANH SÁCH BẰNG JAVASCRIPT ---
                 const detailsBody = q('[data-field="details_tbody"]');
-                if (kh.chan_hui_details && Array.isArray(kh.chan_hui_details)) {
-                    kh.chan_hui_details.forEach(d => {
+                const allDetails = []
+                    .concat(kh.chan_hui_details || [])
+                    .concat(kh.ghi_no_details || [])
+                    .concat(kh.hui_1_1_details || []);
+
+                if (allDetails.length > 0) {
+                    allDetails.forEach(d => {
                         const row = document.createElement('tr');
-                        row.innerHTML = `<td>${d.ngay_mo || ''}</td><td>${formatCurrency(d.day_hui)}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${d.dup || 0}</td>`;
+                        // Nếu là dòng ghi nợ thì tô màu khác
+                        if ((d.khui || '').toLowerCase().includes('nợ')) {
+                            row.style.backgroundColor = '#fff0f0';
+                            row.innerHTML = `<td colspan="7" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="2"></td>`;
+                        } else {
+                            row.innerHTML = `<td>${d.ngay_mo || ''}</td><td>${formatCurrency(d.day_hui)}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${d.dup || 0}</td>`;
+                        }
                         detailsBody.appendChild(row);
                     });
                 }
+                
+                // ... (Phần điền dữ liệu footer không đổi)
                 q('[data-field="footer_hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="bill_tong_dong"]').textContent = formatCurrency(kh.bill_tong_dong); q('[data-field="bill_tong_hot"]').textContent = formatCurrency(kh.bill_tong_hot); q('[data-field="tong_tham"]').textContent = `Tổng Thăm: ${formatCurrency(kh.tong_tham)}`; q('[data-field="tong_thao"]').textContent = `Tổng Thảo: ${formatCurrency(kh.tong_thao)}`;
                 const banner = q('[data-field="footer_banner"]'); const tongDong = kh.bill_tong_dong || 0; const tongHot = kh.bill_tong_hot || 0;
                 if (tongDong > tongHot) { banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; banner.style.backgroundColor = '#d90000'; q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; q('[data-field="final_amount"]').textContent = formatCurrency(tongDong - tongHot); q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; } else { banner.textContent = 'Hụi Viên được nhận tiền'; banner.style.backgroundColor = '#00b050'; q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; q('[data-field="final_amount"]').textContent = formatCurrency(tongHot - tongDong); q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; }
                 
                 const billElement = billNode.querySelector('.bill-page');
-                
-                // Gán sự kiện cho các nút còn lại
                 billNode.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement, kh.hoi_vien));
                 billNode.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement, kh.hoi_vien));
-
                 billsContainer.appendChild(billNode);
             });
         }
         
-        // --- THAY ĐỔI: Đã xóa hàm copyBillAsImage ---
-
         function downloadBillAsImage(element, tenHuiVien) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 2, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = `bill_${tenHuiVien || 'bill'}.png`; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi khi tạo ảnh:', err); alert('Đã có lỗi xảy ra khi tạo ảnh.'); c.style.display = 'flex'; }); }
         async function shareBillAsImage(element, tenHuiVien) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const canvas = await html2canvas(element, { scale: 2, useCORS: true }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], `bill_${tenHuiVien || 'bill'}.png`, { type: 'image/png' }); if (navigator.canShare({ files: [file] })) { await navigator.share({ title: `Bill Báo Hụi - ${tenHuiVien}`, text: `Đây là bill báo hụi của ${tenHuiVien}.`, files: [file], }); } else { alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } } catch (error) { console.error(error); alert('Lỗi khi chia sẻ: ' + error); } finally { c.style.display = 'flex'; } }
     </script>
