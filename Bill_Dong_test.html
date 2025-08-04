@@ -49,8 +49,7 @@
 
     <div id="info-panel" class="info-panel">
         <h1 id="status-message">Đang tải và tạo bill...</h1>
-        <button id="print-all-btn" style="display: none; background-color: #5cb85c;">🖨️ In tất cả (PDF)</button>
-        <button id="download-zip-btn" style="display: none; background-color: #337ab7;">💾 Tải tất cả (ZIP)</button>
+        <button id="download-zip-btn" style="display: none; background-color: #337ab7;">💾 Tải tất cả Bill (ZIP)</button>
     </div>
     
     <div id="bills-container"></div>
@@ -91,7 +90,7 @@
         window.onload = function() {
             const infoPanel = document.getElementById('info-panel');
             const statusMessage = document.getElementById('status-message');
-            const printAllBtn = document.getElementById('print-all-btn');
+            // THAY ĐỔI: Xóa nút printAllBtn
             const downloadZipBtn = document.getElementById('download-zip-btn');
             infoPanel.style.display = 'block';
 
@@ -105,10 +104,7 @@
                 generateBills(jsonData);
 
                 statusMessage.style.display = 'none';
-                printAllBtn.style.display = 'inline-block';
                 downloadZipBtn.style.display = 'inline-block';
-                
-                printAllBtn.addEventListener('click', () => window.print());
                 downloadZipBtn.addEventListener('click', downloadAllAsZip);
             } catch (error) {
                 statusMessage.textContent = 'Lỗi! Dữ liệu bill trong link không hợp lệ hoặc đã bị hỏng.';
@@ -130,18 +126,13 @@
                 const billNode = document.importNode(billTemplate.content, true);
                 const q = (selector) => billNode.querySelector(selector);
                 
+                // ... (phần điền dữ liệu chung)
                 q('[data-field="chu_hui"]').textContent = kh.chu_hui || ''; q('[data-field="sdt"]').textContent = kh.sdt || ''; q('[data-field="bank_info"]').textContent = kh.bank_info || ''; q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; q('[data-field="qr_bill_url"]').src = kh.qr_bill_url || '';
                 q('[data-field="summary_title_hui_vien"]').textContent = `Hụi Viên ${kh.tong_so_day || 0} Dây, ${kh.tong_so_chan || 0} C`; q('[data-field="summary_title_hui_chet"]').textContent = `Hụi Chết ${kh.tong_so_chan_chet || 0} C`; q('[data-field="summary_title_hui_song"]').textContent = `Hụi Sống ${kh.tong_so_chan_song || 0} C`;
                 q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="tong_hui_chet"]').textContent = formatCurrency(kh.tong_hui_chet); q('[data-field="tong_hui_song"]').textContent = formatCurrency(kh.tong_hui_song); const amDuongCell = q('[data-field="am_duong"]'); const amDuongValue = kh.am_duong || 0; amDuongCell.textContent = formatCurrency(amDuongValue); if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } const loiNhuanCell = q('[data-field="loi_nhuan"]'); const loiNhuanValue = kh.loi_nhuan || 0; loiNhuanCell.textContent = formatCurrency(loiNhuanValue); if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
                 
                 const detailsBody = q('[data-field="details_tbody"]');
-                
-                // --- THAY ĐỔI: SẮP XẾP LẠI THỨ TỰ GỘP DANH SÁCH ---
-                const allDetails = []
-                    .concat(kh.chan_hui_details || [])
-                    .concat(kh.hui_1_1_details || [])
-                    .concat(kh.ghi_no_details || []);
-
+                const allDetails = [].concat(kh.chan_hui_details || []).concat(kh.hui_1_1_details || []).concat(kh.ghi_no_details || []);
                 if (allDetails.length > 0) {
                     allDetails.forEach(d => {
                         const row = document.createElement('tr');
@@ -155,21 +146,69 @@
                     });
                 }
                 
+                // ... (phần điền dữ liệu footer)
                 q('[data-field="footer_hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="bill_tong_dong"]').textContent = formatCurrency(kh.bill_tong_dong); q('[data-field="bill_tong_hot"]').textContent = formatCurrency(kh.bill_tong_hot); q('[data-field="tong_tham"]').textContent = `Tổng Thăm: ${formatCurrency(kh.tong_tham)}`; q('[data-field="tong_thao"]').textContent = `Tổng Thảo: ${formatCurrency(kh.tong_thao)}`;
                 const banner = q('[data-field="footer_banner"]'); const tongDong = kh.bill_tong_dong || 0; const tongHot = kh.bill_tong_hot || 0;
                 if (tongDong > tongHot) { banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; banner.style.backgroundColor = '#d90000'; q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; q('[data-field="final_amount"]').textContent = formatCurrency(tongDong - tongHot); q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; } else { banner.textContent = 'Hụi Viên được nhận tiền'; banner.style.backgroundColor = '#00b050'; q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; q('[data-field="final_amount"]').textContent = formatCurrency(tongHot - tongDong); q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; }
                 
                 const billElement = billNode.querySelector('.bill-page');
-                billNode.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement, kh.hoi_vien));
+                // THAY ĐỔI: Lưu trữ sdt và ten vào element để các hàm khác sử dụng
+                billElement.dataset.sdt = kh.sdt_kh || '';
+                billElement.dataset.hoivien = kh.hoi_vien || 'bill';
+                
+                billNode.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
                 billNode.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
-                billNode.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement, kh.hoi_vien));
+                billNode.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
                 billsContainer.appendChild(billNode);
             });
         }
         
-        function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 2, useCORS: true }).then(canvas => { canvas.toBlob(blob => { navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
-        function downloadBillAsImage(element, tenHuiVien) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 2, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = `bill_${tenHuiVien || 'bill'}.png`; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi khi tạo ảnh:', err); alert('Đã có lỗi xảy ra khi tạo ảnh.'); c.style.display = 'flex'; }); }
-        async function shareBillAsImage(element, tenHuiVien) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const canvas = await html2canvas(element, { scale: 2, useCORS: true }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], `bill_${tenHuiVien || 'bill'}.png`, { type: 'image/png' }); if (navigator.canShare({ files: [file] })) { await navigator.share({ title: `Bill Báo Hụi - ${tenHuiVien}`, text: `Đây là bill báo hụi của ${tenHuiVien}.`, files: [file], }); } else { alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } } catch (error) { console.error(error); alert('Lỗi khi chia sẻ: ' + error); } finally { c.style.display = 'flex'; } }
+        // --- THAY ĐỔI: Cập nhật hàm downloadBillAsImage để lấy tên file từ element ---
+        function downloadBillAsImage(element) {
+            const sdt = element.dataset.sdt;
+            const hoivien = element.dataset.hoivien;
+            const filename = (sdt ? sdt : `Bill_${hoivien.replace(/\s+/g, '_')}`) + '.png';
+
+            const c = element.querySelector('.bill-controls'); 
+            c.style.display = 'none'; 
+            html2canvas(element, { scale: 2, useCORS: true }).then(canvas => { 
+                const link = document.createElement('a'); 
+                link.download = filename; 
+                link.href = canvas.toDataURL("image/png"); 
+                link.click(); 
+                c.style.display = 'flex'; 
+            }).catch(err => { 
+                console.error('Lỗi khi tạo ảnh:', err); 
+                alert('Đã có lỗi xảy ra khi tạo ảnh.'); 
+                c.style.display = 'flex'; 
+            }); 
+        }
+
+        // --- THAY ĐỔI: Cập nhật hàm shareBillAsImage để lấy tên file từ element ---
+        async function shareBillAsImage(element) {
+            const sdt = element.dataset.sdt;
+            const hoivien = element.dataset.hoivien;
+            const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png';
+            const textshare = `Đây là bill báo hụi của ${hoivien}.`;
+
+            const c = element.querySelector('.bill-controls'); 
+            c.style.display = 'none'; 
+            try { 
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true }); 
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
+                const file = new File([blob], filename, { type: 'image/png' }); 
+                if (navigator.canShare && navigator.canShare({ files: [file] })) { 
+                    await navigator.share({ title: `Bill Báo Hụi - ${hoivien}`, text: textshare, files: [file], }); 
+                } else { 
+                    alert('Trình duyệt này không hỗ trợ chia sẻ file.'); 
+                } 
+            } catch (error) { 
+                console.error(error); 
+            } finally { 
+                c.style.display = 'flex'; 
+            } 
+        }
+
         async function downloadAllAsZip() {
             const bills = document.querySelectorAll('.bill-page');
             if (bills.length === 0) { alert('Không có bill nào để tải.'); return; }
@@ -184,12 +223,12 @@
                 try {
                     const canvas = await html2canvas(bill, { scale: 2, useCORS: true });
                     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                    const customerNameElement = bill.querySelector('[data-field="hoi_vien"]');
-                    let fileName = `Bill-${bill.id || Math.random()}.png`;
-                    if (customerNameElement) {
-                        const customerName = customerNameElement.textContent.trim().replace(/\s+/g, '_');
-                        fileName = `Bill_${customerName}.png`;
-                    }
+                    
+                    // --- THAY ĐỔI: Lấy sdt và hoivien từ dataset để đặt tên file ---
+                    const sdt = bill.dataset.sdt;
+                    const hoivien = bill.dataset.hoivien;
+                    const fileName = (sdt ? sdt : `Bill_${hoivien.replace(/\s+/g, '_')}`) + '.png';
+                    
                     zip.file(fileName, blob);
                 } catch (error) {
                     console.error(`Lỗi khi xử lý bill:`, error);
@@ -209,6 +248,22 @@
                 });
             button.innerHTML = originalText;
             button.disabled = false;
+        }
+
+        function copyBillAsImage(element) {
+             const c = element.querySelector('.bill-controls'); 
+            c.style.display = 'none'; 
+            html2canvas(element, { scale: 2, useCORS: true }).then(canvas => { 
+                canvas.toBlob(blob => { 
+                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                    .then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!'))
+                    .catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); 
+                }); 
+                c.style.display = 'flex'; 
+            }).catch(err => { 
+                console.error('Lỗi html2canvas:', err); 
+                c.style.display = 'flex'; 
+            });
         }
     </script>
 </body>
