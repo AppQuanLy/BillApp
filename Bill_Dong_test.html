@@ -167,7 +167,7 @@
         function downloadBillAsImage(element) {
             const sdt = element.dataset.sdt;
             const hoivien = element.dataset.hoivien;
-            const filename = (sdt ? sdt : `Bill_${hoivien.replace(/\s+/g, '_')}`) + '.png';
+            const filename = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png';
 
             const c = element.querySelector('.bill-controls'); 
             c.style.display = 'none'; 
@@ -188,7 +188,7 @@
         async function shareBillAsImage(element) {
             const sdt = element.dataset.sdt;
             const hoivien = element.dataset.hoivien;
-            const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png';
+            const filename = (sdt ? sdt : `${hoivien}`) + '.png';
             const textshare = `Đây là bill báo hụi của ${hoivien}.`;
 
             const c = element.querySelector('.bill-controls'); 
@@ -227,7 +227,7 @@
                     // --- THAY ĐỔI: Lấy sdt và hoivien từ dataset để đặt tên file ---
                     const sdt = bill.dataset.sdt;
                     const hoivien = bill.dataset.hoivien;
-                    const fileName = (sdt ? sdt : `Bill_${hoivien.replace(/\s+/g, '_')}`) + '.png';
+                    const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png';
                     
                     zip.file(fileName, blob);
                 } catch (error) {
