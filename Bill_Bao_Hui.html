@@ -183,7 +183,7 @@
                 const controls = bill.querySelector('.bill-controls');
                 if (controls) controls.style.display = 'none';
                 try {
-                    const canvas = await html2canvas(bill, { scale: 2, useCORS: true });
+                    const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true });
                     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                     const sdt = bill.dataset.sdt;
                     const hoivien = bill.dataset.hoivien;
