@@ -113,7 +113,7 @@
         <div class="settings-panel">
             <h2>Tùy chỉnh Tỷ lệ</h2>
             <div id="participants-list">
-                </div>
+            </div>
             <div class="controls">
                 <button id="spin-button" onclick="startSpin()">QUAY</button>
                 <button id="reset-button" onclick="resetWeights()">Reset Tỷ lệ</button>
@@ -126,7 +126,6 @@
         </div>
     </div>
     
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/winwheeljs@2.8.0/dist/Winwheel.min.js"></script>
 
@@ -135,16 +134,19 @@
         let wheelSpinning = false;
         let participantNames = [];
 
+        // --- THAY ĐỔI LỚN NẰM Ở ĐÂY ---
         window.onload = function() {
             try {
                 const encodedData = window.location.hash.substring(1);
                 if (!encodedData) { throw new Error('Không tìm thấy danh sách người chơi.'); }
                 
-                const jsonData = decodeURIComponent(encodedData);
-                participantNames = JSON.parse(jsonData);
+                const decodedData = decodeURIComponent(encodedData);
+                
+                // Tách chuỗi bằng ký tự "|||" và lọc bỏ các mục rỗng
+                participantNames = decodedData.split('|||').filter(name => name.trim() !== '');
 
                 if (!Array.isArray(participantNames) || participantNames.length === 0) {
-                     throw new Error('Danh sách không hợp lệ.');
+                     throw new Error('Danh sách không hợp lệ hoặc không có ai để quay.');
                 }
 
                 displayParticipants(participantNames);
@@ -153,12 +155,13 @@
             } catch (error) {
                 const settingsPanel = document.querySelector('.settings-panel');
                 settingsPanel.innerHTML = `<h2 style="color: red;">Lỗi!</h2><p>${error.message}</p><p>Vui lòng kiểm tra lại link hoặc công thức trong AppSheet.</p>`;
-                document.getElementById('spin-button').disabled = true;
-                document.getElementById('reset-button').disabled = true;
+                const wheelContainer = document.querySelector('.wheel-container');
+                if (wheelContainer) wheelContainer.style.display = 'none'; // Ẩn vòng quay nếu có lỗi
                 console.error("Lỗi xử lý dữ liệu:", error);
             }
         };
 
+        // Các hàm bên dưới không thay đổi
         function displayParticipants(names) {
             const listContainer = document.getElementById('participants-list');
             listContainer.innerHTML = '';
@@ -205,19 +208,16 @@
         
         function calculateWeightedWinner(participantsData) {
             const totalWeight = participantsData.reduce((sum, p) => sum + p.ty_le, 0);
-            if (totalWeight <= 0) { // Nếu tất cả tỷ lệ là 0
+            if (totalWeight <= 0) {
                 alert("Tất cả tỷ lệ đều bằng 0, không thể quay. Vui lòng đặt tỷ lệ > 0.");
                 return null;
             }
             let random = Math.random() * totalWeight;
-
             for (const participant of participantsData) {
                 random -= participant.ty_le;
-                if (random <= 0) {
-                    return participant.originalIndex;
-                }
+                if (random <= 0) { return participant.originalIndex; }
             }
-            return participantsData[0].originalIndex; // Failsafe
+            return participantsData[0].originalIndex;
         }
 
         function startSpin() {
@@ -255,9 +255,7 @@
 
         function resetWeights() {
             const inputs = document.querySelectorAll('.weight-input');
-            inputs.forEach(input => {
-                input.value = "10";
-            });
+            inputs.forEach(input => { input.value = "10"; });
         }
     </script>
 </body>
