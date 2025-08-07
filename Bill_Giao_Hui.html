@@ -112,37 +112,37 @@
     <div class="container" id="bill-to-capture">
         <div class="header">
             <div class="left">
-                <div>Chủ Hụi: {{chu_hui_ten}}</div>
-                <div>SĐT: {{chu_hui_sdt}}</div>
+                <div>Chủ Hụi: <span data-field="chu_hui_ten"></span></div>
+                <div>SĐT: <span data-field="chu_hui_sdt"></span></div>
             </div>
             <div class="right">
-                <div>{{chu_hui_bank}}</div>
-                <div>{{chu_hui_bank_name}}</div>
+                <div data-field="chu_hui_bank"></div>
+                <div data-field="chu_hui_bank_name"></div>
             </div>
         </div>
         <div class="title">PHIẾU GIAO HỤI</div>
         <table>
             <thead>
                 <tr>
-                    <th colspan="2">Thông Tin Hụi: {{ma_day_hui}}</th>
+                    <th colspan="2">Thông Tin Hụi: <span data-field="ma_day_hui"></span></th>
                 </tr>
             </thead>
             <tbody class="info-table">
                 <tr>
                     <td>Ngày mở:</td>
-                    <td>{{ngay_mo}}</td>
+                    <td data-field="ngay_mo"></td>
                 </tr>
                 <tr>
                     <td>Dây Hụi:</td>
-                    <td>{{day_hui_value}}</td>
+                    <td data-field="day_hui_value"></td>
                 </tr>
                 <tr>
                     <td>Số Phần:</td>
-                    <td>{{so_phan}}</td>
+                    <td data-field="so_phan"></td>
                 </tr>
                 <tr>
                     <td>Khui:</td>
-                    <td>{{khui}}</td>
+                    <td data-field="khui"></td>
                 </tr>
             </tbody>
         </table>
@@ -155,58 +155,58 @@
             <tbody class="payment-table">
                 <tr class="hui-vien-row">
                     <td>Hụi Viên:</td>
-                    <td style="text-align: center;">{{hui_vien_ten}}</td>
+                    <td style="text-align: center;" data-field="hui_vien_ten"></td>
                 </tr>
                 <tr>
                     <td>Ngày Hốt:</td>
-                    <td class="value">{{ngay_hot}}</td>
+                    <td class="value" data-field="ngay_hot"></td>
                 </tr>
                 <tr>
                     <td>Số Kỳ:</td>
-                    <td class="value">{{so_ky}}</td>
+                    <td class="value" data-field="so_ky"></td>
                 </tr>
                 <tr>
                     <td>Thăm Kêu:</td>
-                    <td class="value">{{tham_keu}}</td>
+                    <td class="value" data-field="tham_keu"></td>
                 </tr>
                 <tr>
                     <td class="text-red">Số Chân Chết:</td>
-                    <td class="value text-red">{{so_chan_chet_text}}</td>
+                    <td class="value text-red" data-field="so_chan_chet_text"></td>
                 </tr>
                 <tr>
                     <td class="text-orange">Số Chân Sống:</td>
-                    <td class="value text-orange">{{so_chan_song_text}}</td>
+                    <td class="value text-orange" data-field="so_chan_song_text"></td>
                 </tr>
                 <tr>
                     <td class="text-green">Tiền Hụi ( Sống + Chết ):</td>
-                    <td class="value text-green">{{tien_hui_tong}}</td>
+                    <td class="value text-green" data-field="tien_hui_tong"></td>
                 </tr>
                 <tr>
                     <td>Trừ Thảo:</td>
-                    <td class="value">{{tru_thao}}</td>
+                    <td class="value" data-field="tru_thao"></td>
                 </tr>
                 <tr>
                     <td>Trừ Đúp:</td>
-                    <td class="value">{{tru_dup}}</td>
+                    <td class="value" data-field="tru_dup"></td>
                 </tr>
                 <tr class="total-row">
                     <td>Giao</td>
-                    <td class="value">{{giao_tong_tien}}</td>
+                    <td class="value" data-field="giao_tong_tien"></td>
                 </tr>
             </tbody>
         </table>
-        <div class="footer-note">{{man_hui_text}}</div>
+        <div class="footer-note" data-field="man_hui_text"></div>
         <div class="disclaimer">
             Tôi đã đọc, kiểm đếm và nhận đủ số tiền giao hụi trên trong tình trạng hoàn toàn tỉnh táo, không bị ép buộc, phải đóng lại hoàn thành dây hụi cho đến mãn dây. Mọi phát sinh về sau tôi sẽ chịu trách nhiệm trước Pháp Luật !
         </div>
         <div class="signatures">
             <div class="signature-block">
                 <div>BÊN NHẬN</div>
-                <div class="signer">{{hui_vien_ten}}</div>
+                <div class="signer" data-field="signer_ben_nhan"></div>
             </div>
             <div class="signature-block">
                 <div>BÊN GIAO</div>
-                <div class="signer">{{chu_hui_ten}}</div>
+                <div class="signer" data-field="signer_ben_giao"></div>
             </div>
         </div>
     </div>
@@ -297,5 +297,6 @@
     </script>
 </body>
 </html>
+
 
 
