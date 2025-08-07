@@ -104,13 +104,13 @@
             font-size: 14pt;
         }
         .signatures .signer {
-            margin-top: 80px;
+            margin-top: 15px;
         }
-           .bill-controls {
+        .bill-controls {
             position: absolute;
             bottom: 1.5cm;
-            left: 50%; /* Đưa vào giữa theo chiều ngang */
-            transform: translateX(-50%); /* Căn chính xác vào giữa */
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             gap: 15px;
             z-index: 10;
@@ -136,11 +136,7 @@
 </head>
 <body>
     <div class="container" id="bill-to-capture">
-        <div class="bill-controls">
-    <button class="download-btn">Tải Bill</button>
-    <button class="copy-btn">Copy Bill</button>
-    <button class="share-btn">Gửi Bill</button>
-</div>
+
         <div class="header">
             <div class="left">
                 <div>Chủ Hụi: <span data-field="chu_hui_ten"></span></div>
@@ -240,6 +236,11 @@
                 <div class="signer" data-field="signer_ben_giao"></div>
             </div>
         </div>
+                <div class="bill-controls">
+    <button class="download-btn">Tải Bill</button>
+    <button class="copy-btn">Copy Bill</button>
+    <button class="share-btn">Gửi Bill</button>
+</div>
     </div>
     <script>
         let billData = {};
@@ -328,6 +329,7 @@
     </script>
 </body>
 </html>
+
 
 
 
