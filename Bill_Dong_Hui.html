@@ -9,8 +9,8 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
         .bill-page {
-            background-color: white; max-width: 800px; min-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ddd;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: 'Times New Roman', Times, serif; font-size: 10pt;
+            background-color: white; max-width: 1200px; min-width: 1200px; margin: 20px auto; padding: 20px; border: 1px solid #ddd;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: 'Times New Roman', Times, serif; font-size: 16pt;
         }
         /* THAY ĐỔI 4: Vị trí các nút */
         .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
@@ -28,11 +28,11 @@
         .qr-code { width: 100px; height: 100px; } 
         .summary-table th { background-color: #d9e1f2; }
         .summary-table .highlight { background-color: #fff2cc; } .details-table th { background-color: #d9e1f2; }
-        .details-table { margin-bottom: 10px; font-size: 9pt;} .footer-banner { padding: 5px; text-align: left; font-size: 12pt; color: white; margin-bottom: 5px;}
+        .details-table { margin-bottom: 10px; font-size: 9pt;} .footer-banner { padding: 5px; text-align: left; font-size: 14pt; color: white; margin-bottom: 5px;}
         .footer-container { display: flex; align-items: flex-start; gap: 10px;}
         .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; }
         .footer-right { width: 60%; }
-        .totals-table td { padding: 5px 7px; font-size: 14pt; }
+        .totals-table td { padding: 5px 7px; font-size: 16pt; }
     </style>
 </head>
 <body>
@@ -52,11 +52,11 @@
             </div>
             <table class="header-table no-border">
                 <tr><td class="font-bold" style="width: 33%;">Chủ hụi: <span data-field="chu_hui"></span></td><td class="font-bold" style="width: 33%;">SDT: <span data-field="sdt"></span></td><td class="font-bold" style="width: 34%;" data-field="bank_info"></td></tr>
-                <tr><td colspan="2" class="text-center"><h2 style="margin: 5px 0 0 0; font-size: 20pt;">BILL BÁO HỤI</h2><p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p></td><td class="text-right"><img data-field="qr_bill_url" class="qr-code" alt="QR"></td></tr>
+                <tr><td colspan="2" class="text-center"><h2 style="margin: 5px 0 0 0; font-size: 25pt;">BILL BÁO HỤI</h2><p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p></td><td class="text-right"><img data-field="qr_bill_url" class="qr-code" alt="QR"></td></tr>
             </table>
             <table class="summary-table text-center">
                 <thead><tr><th data-field="summary_title_hui_vien"></th><th data-field="summary_title_hui_chet"></th><th data-field="summary_title_hui_song"></th><th class="highlight">Âm/Dương *</th><th class="highlight">Lợi Nhuận</th></tr></thead>
-                <tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="highlight font-bold" data-field="am_duong"></td><td class="highlight font-bold" data-field="loi_nhuan"></td></tr></tbody>
+                <tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="font-bold" data-field="am_duong"></td><td class="font-bold" data-field="loi_nhuan"></td></tr></tbody>
             </table>
             <table class="details-table text-center">
                 <thead><tr><th>Ngày mở</th><th>Dây Hụi</th><th>Kỳ</th><th>Khui</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Thăm</th><th>Đúp</th></tr></thead>
