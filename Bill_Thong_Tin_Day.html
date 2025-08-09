@@ -1,69 +1,233 @@
-function generateBill(data) {
-    // Điền thông tin chung
-    for (const key in data) {
-        if (key !== 'danh_sach_chan') {
-            const element = document.querySelector(`[data-field="${key}"]`);
-            if (element) {
-                element.textContent = data[key];
-            }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Tin Dây Hụi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            font-size: 11pt;
+            color: #000;
         }
-    }
+        .container {
+            width: 21cm;
+            padding: 1cm;
+            margin: auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .title-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .title-section h1 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 22pt;
+            color: #0070c0; /* Màu xanh dương */
+            margin: 0;
+        }
+        .title-section p {
+            margin: 5px 0 0;
+            font-size: 12pt;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px 20px; /* row-gap, column-gap */
+            margin-bottom: 20px;
+        }
+        .info-item {
+            font-size: 11pt;
+        }
+        .info-item .label {
+            font-weight: bold;
+            display: inline-block;
+            width: 130px;
+        }
+        .info-item .value {
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #888;
+            padding: 6px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #d9e2f3;
+            font-weight: bold;
+        }
+        .status-cell.dead {
+            background-color: #ff0000;
+            color: white;
+            font-weight: bold;
+        }
+        .status-cell.alive {
+            background-color: #00b050;
+            color: white;
+            font-weight: bold;
+        }
+        .total-row td {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
+        .text-blue { color: #0070c0; }
+        .text-red { color: #ff0000; }
+        .font-bold { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="left">
+                Chủ Hụi: <span data-field="chu_hui_ten" class="font-bold"></span><br>
+                SĐT: <span data-field="chu_hui_sdt" class="font-bold"></span>
+            </div>
+        </div>
+        <div class="title-section">
+            <h1>THÔNG TIN DÂY HỤI</h1>
+            <p>Ngày: <span data-field="ngay_in_bill"></span></p>
+        </div>
+        <div class="info-grid">
+            <div class="info-item"><span class="label">Dây:</span><span data-field="day_ten" class="value"></span></div>
+            <div class="info-item"><span class="label">Kỳ Hạn:</span><span data-field="ky_han_text" class="value text-blue"></span></div>
+            <div class="info-item"><span class="label">Thu Thảo</span></div>
+            <div class="info-item"><span class="label">Số Kỳ:</span><span data-field="so_ky" class="value"></span></div>
+            <div class="info-item"><span class="label">Mãn Kỳ (dự kiến):</span><span data-field="man_ky_du_kien" class="value text-blue"></span></div>
+            <div class="info-item"><span data-field="thu_khi_hot" class="value text-red"></span></div>
+            <div class="info-item"><span class="label">Ngày Mở:</span><span data-field="ngay_mo" class="value text-blue"></span></div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>TÊN HỤI VIÊN</th>
+                    <th>S / C</th>
+                    <th>NGÀY</th>
+                    <th>KỲ</th>
+                    <th>THĂM</th>
+                    <th>TIỀN ĐÓNG</th>
+                    <th>TIỀN HỐT</th>
+                </tr>
+            </thead>
+            <tbody id="details-tbody">
+                </tbody>
+        </table>
+    </div>
 
-    // Xử lý bảng chi tiết
-    const tbody = document.getElementById('details-tbody');
-    tbody.innerHTML = '';
-    let lastPayoutDate = data.ngay_mo;
-    let tongTham = 0;
-    let tongTienHot = 0;
-
-    // Tìm ngày hốt cuối cùng đã diễn ra
-    if (data.danh_sach_chan) {
-        data.danh_sach_chan.forEach(chan => {
-            if (chan.status === 'C' && chan.ngay) {
-                lastPayoutDate = chan.ngay;
+    <script>
+        window.onload = function() {
+            try {
+                const encodedData = window.location.hash.substring(1);
+                if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
+                const jsonData = decodeURIComponent(encodedData);
+                const data = JSON.parse(jsonData);
+                generateBill(data);
+            } catch (error) {
+                document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
+                console.error("Lỗi:", error);
             }
-        });
-    
-        // Lặp qua danh sách để điền và tính toán
-        data.danh_sach_chan.forEach((chan, index) => { // <-- Thêm 'index' ở đây
-            const stt = index + 1; // <-- Tự động tạo STT
-            const row = document.createElement('tr');
-            let ngayHienThi = chan.ngay;
+        };
 
-            if (chan.status === 'S') {
-                ngayHienThi = addDays(lastPayoutDate, data.ky_han_so_ngay);
-                lastPayoutDate = ngayHienThi;
+        function formatCurrency(num) {
+            if (typeof num !== 'number' || num === null) return '';
+            return num.toLocaleString('vi-VN');
+        }
+
+        function addDays(dateString, days) {
+            const [day, month, year] = dateString.split('/');
+            const date = new Date(+year, +month - 1, +day);
+            date.setDate(date.getDate() + days);
+            const newDay = String(date.getDate()).padStart(2, '0');
+            const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+            const newYear = date.getFullYear();
+            return `${newDay}/${newMonth}/${newYear}`;
+        }
+
+        function generateBill(data) {
+            // Điền thông tin chung
+            for (const key in data) {
+                if (key !== 'danh_sach_chan') {
+                    const element = document.querySelector(`[data-field="${key}"]`);
+                    if (element) {
+                        element.textContent = data[key];
+                    }
+                }
+            }
+
+            // Xử lý bảng chi tiết
+            const tbody = document.getElementById('details-tbody');
+            tbody.innerHTML = '';
+            let lastPayoutDate = data.ngay_mo;
+            let tongTham = 0;
+            let tongTienHot = 0;
+
+            // Tìm ngày hốt cuối cùng đã diễn ra
+            if (data.danh_sach_chan) {
+                data.danh_sach_chan.forEach(chan => {
+                    if (chan.status === 'C' && chan.ngay) {
+                        lastPayoutDate = chan.ngay;
+                    }
+                });
+            
+                // Lặp qua danh sách để điền và tính toán
+                data.danh_sach_chan.forEach((chan, index) => {
+                    const stt = index + 1;
+                    const row = document.createElement('tr');
+                    let ngayHienThi = chan.ngay;
+
+                    if (chan.status === 'S') {
+                        ngayHienThi = addDays(lastPayoutDate, data.ky_han_so_ngay);
+                        lastPayoutDate = ngayHienThi;
+                    }
+                    
+                    const statusClass = chan.status === 'C' ? 'dead' : 'alive';
+                    const statusText = chan.status === 'C' ? 'X' : 'V';
+                    const ngayClass = chan.status === 'C' ? 'text-red' : '';
+                    
+                    row.innerHTML = `
+                        <td>${stt}</td>
+                        <td style="text-align: left;">${chan.ten_hui_vien}</td>
+                        <td class="status-cell ${statusClass}">${statusText}</td>
+                        <td class="${ngayClass} font-bold">${ngayHienThi || ''}</td>
+                        <td>${chan.ky || ''}</td>
+                        <td>${formatCurrency(chan.tham)}</td>
+                        <td>${formatCurrency(chan.tien_dong)}</td>
+                        <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
+                    `;
+                    tbody.appendChild(row);
+
+                    tongTham += chan.tham || 0;
+                    tongTienHot += chan.tien_hot || 0;
+                });
             }
             
-            const statusClass = chan.status === 'C' ? 'dead' : 'alive';
-            const statusText = chan.status === 'C' ? 'X' : 'V';
-            const ngayClass = chan.status === 'C' ? 'text-red' : '';
-            
-            row.innerHTML = `
-                <td>${stt}</td>  // <-- Sử dụng STT vừa tạo
-                <td style="text-align: left;">${chan.ten_hui_vien}</td>
-                <td class="status-cell ${statusClass}">${statusText}</td>
-                <td class="${ngayClass} font-bold">${ngayHienThi || ''}</td>
-                <td>${chan.ky || ''}</td>
-                <td>${formatCurrency(chan.tham)}</td>
-                <td>${formatCurrency(chan.tien_dong)}</td>
-                <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
+            // Thêm dòng tổng cộng
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td colspan="5" style="text-align: right; font-size: 14pt;">TỔNG:</td>
+                <td class="text-blue">${formatCurrency(tongTham)}</td>
+                <td></td>
+                <td class="text-red">${formatCurrency(tongTienHot)}</td>
             `;
-            tbody.appendChild(row);
-
-            tongTham += chan.tham || 0;
-            tongTienHot += chan.tien_hot || 0;
-        });
-    }
-    
-    // Thêm dòng tổng cộng
-    const totalRow = document.createElement('tr');
-    totalRow.className = 'total-row';
-    totalRow.innerHTML = `
-        <td colspan="5" style="text-align: right; font-size: 14pt;">TỔNG:</td>
-        <td class="text-blue">${formatCurrency(tongTham)}</td>
-        <td></td>
-        <td class="text-red">${formatCurrency(tongTienHot)}</td>
-    `;
-    tbody.appendChild(totalRow);
-}
+            tbody.appendChild(totalRow);
+        }
+    </script>
+</body>
+</html>
