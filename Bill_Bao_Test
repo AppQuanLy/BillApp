@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phần Mềm Tính Hụi</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        @page { size: A3 landscape; margin: 1.5cm; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px; }
+        .info-panel h1 { width: 100%; margin: 0 0 15px 0; }
+        .bill-page { background-color: white; max-width: 1200px; min-width: 1200px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: 'Times New Roman', Times, serif; font-size: 16pt; }
+        .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
+        .bill-controls button, .info-panel button { padding: 5px 10px; font-size: 12px; cursor: pointer; color: white; border: none; border-radius: 4px; transition: background-color 0.2s; }
+        .info-panel button { padding: 10px 20px; font-size: 14px; font-weight: bold; }
+        .download-btn { background-color: #0275d8; }
+        .copy-btn { background-color: #5bc0de; }
+        .share-btn { background-color: #5cb85c; }
+        .download-btn:hover { background-color: #025aa5; }
+        .copy-btn:hover { background-color: #31b0d5; }
+        .share-btn:hover { background-color: #449d44; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #000; }
+        th, td { border: 1px solid #666; padding: 4px 6px; vertical-align: middle; }
+        th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .no-border, .no-border td { border: none; }
+        .font-bold { font-weight: bold; }
+        .font-large { font-size: 14pt; }
+        .font-xlarge { font-size: 16pt; }
+        .text-red { color: #d90000; }
+        .text-green { color: #00b050; }
+        .header-table td { padding: 0px 5px; }
+        .qr-code { width: 110px; height: 110px; }
+        .summary-table th { background-color: #d9e1f2; }
+        .summary-table .highlight { background-color: #fff2cc; }
+        .details-table th { background-color: #d9e1f2; }
+        .details-table { margin-bottom: 10px; font-size: 12pt;}
+        .footer-banner { padding: 5px; text-align: left; font-size: 14pt; color: white; margin-bottom: 5px;}
+        .footer-container { display: flex; align-items: flex-start; gap: 10px;}
+        .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; }
+        .footer-right { width: 60%; }
+        .totals-table td { padding: 5px 7px; font-size: 16pt; }
+
+        @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .info-panel, .bill-controls { display: none !important; }
+            .bill-page { page-break-after: always; margin: 0; padding: 0; box-shadow: none; border: none; width: 100%; max-width: none; min-width: 0; }
+            body { background-color: #fff; padding: 0; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="info-panel" class="info-panel">
+    <h1 id="status-message">Đang tải và tạo bill...</h1>
+    <button id="download-zip-btn" style="display: none; background-color: #337ab7;">💾 Tải tất cả Bill (ZIP)</button>
+</div>
+
+<div id="bills-container"></div>
+
+<template id="bill-template">
+    <div class="bill-page">
+        <div class="bill-controls">
+            <button class="download-btn">Tải Bill</button>
+            <button class="copy-btn">Copy Bill</button>
+            <button class="share-btn">Gửi Bill</button>
+        </div>
+        <!-- PHẦN BILL GIỮ NGUYÊN CỦA BẠN -->
+    </div>
+</template>
+
+<script>
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+window.onload = function() {
+    const infoPanel = document.getElementById('info-panel');
+    const statusMessage = document.getElementById('status-message');
+    const downloadZipBtn = document.getElementById('download-zip-btn');
+    infoPanel.style.display = 'block';
+
+    try {
+        const encodedData = window.location.hash.substring(1);
+        if (!encodedData) {
+            statusMessage.textContent = 'Không tìm thấy dữ liệu bill trong đường link.';
+            return;
+        }
+        const jsonData = decodeURIComponent(encodedData);
+        generateBills(jsonData);
+
+        statusMessage.style.display = 'none';
+
+        if (isIOS()) {
+            downloadZipBtn.textContent = '📲 Xuất tất cả Bill sang Shortcuts';
+            downloadZipBtn.style.backgroundColor = '#28a745';
+            downloadZipBtn.style.display = 'inline-block';
+            downloadZipBtn.addEventListener('click', exportAllBillsToShortcuts);
+        } else {
+            downloadZipBtn.style.display = 'inline-block';
+            downloadZipBtn.addEventListener('click', downloadAllAsZip);
+        }
+
+    } catch (error) {
+        statusMessage.textContent = 'Lỗi! Dữ liệu bill trong link không hợp lệ hoặc đã bị hỏng.';
+        console.error("Lỗi giải mã hoặc xử lý dữ liệu:", error);
+    }
+};
+
+// Hàm xuất bill sang Shortcuts (iPhone)
+async function exportAllBillsToShortcuts() {
+    const bills = document.querySelectorAll('.bill-page');
+    if (bills.length === 0) {
+        alert('Không có bill nào để xuất.');
+        return;
+    }
+    const shortcutName = 'LưuBillHụi';
+    const shortcutBaseURL = `shortcuts://run-shortcut?name=${encodeURIComponent(shortcutName)}&input=text`;
+
+    for (const bill of bills) {
+        const controls = bill.querySelector('.bill-controls');
+        if (controls) controls.style.display = 'none';
+
+        try {
+            const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true });
+            const dataUrl = canvas.toDataURL("image/png");
+            const encodedImage = encodeURIComponent(dataUrl);
+
+            window.location.href = `${shortcutBaseURL}&text=${encodedImage}`;
+            await new Promise(r => setTimeout(r, 1200));
+        } catch (error) {
+            console.error(`Lỗi khi xuất bill:`, error);
+        } finally {
+            if (controls) controls.style.display = 'flex';
+        }
+    }
+}
+
+// Hàm tải ZIP (PC)
+async function downloadAllAsZip() {
+    const bills = document.querySelectorAll('.bill-page');
+    if (bills.length === 0) { alert('Không có bill nào để tải.'); return; }
+    const button = document.getElementById('download-zip-btn');
+    const originalText = button.innerHTML;
+    button.innerHTML = '🔄 Đang xử lý...';
+    button.disabled = true;
+
+    const zip = new JSZip();
+    for (const bill of bills) {
+        const controls = bill.querySelector('.bill-controls');
+        if (controls) controls.style.display = 'none';
+        try {
+            const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true });
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            const sdt = bill.dataset.sdt || '';
+            const hoivien = bill.dataset.hoivien || 'bill';
+            const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png';
+            zip.file(fileName, blob);
+        } catch (error) {
+            console.error(`Lỗi khi xử lý bill:`, error);
+        } finally {
+            if (controls) controls.style.display = 'flex';
+        }
+    }
+    zip.generateAsync({ type: "blob" }).then(function(content) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-');
+        link.download = `Tat_ca_bill_${today}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+    button.innerHTML = originalText;
+    button.disabled = false;
+}
+</script>
+</body>
+</html>
