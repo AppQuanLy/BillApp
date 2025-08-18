@@ -211,79 +211,79 @@
             return `${newDay}/${newMonth}/${newYear}`;
         }
 
-        function generateBill(data) {
-            for (const key in data) {
-                if (key !== 'danh_sach_chan') {
-                    const element = document.querySelector(`[data-field="${key}"]`);
-                    if (element) {
-                        element.textContent = data[key];
-                    }
-                }
+function generateBill(data) {
+    for (const key in data) {
+        if (key !== 'danh_sach_chan') {
+            const element = document.querySelector(`[data-field="${key}"]`);
+            if (element) {
+                element.textContent = data[key];
             }
-
-            const tbody = document.getElementById('details-tbody');
-            tbody.innerHTML = '';
-            let lastPayoutDate = data.ngay_mo;
-            let tongTham = 0;
-            let tongTienHot = 0;
-
-            if (data.danh_sach_chan) {
-                // --- PHẦN SẮP XẾP DỮ LIỆU ---
-                data.danh_sach_chan.sort((a, b) => {
-                    if (a.status === 'S' && b.status === 'C') return 1;
-                    if (a.status === 'C' && b.status === 'S') return -1;
-                    return (a.ky || Infinity) - (b.ky || Infinity);
-                });
-
-                data.danh_sach_chan.forEach(chan => {
-                    if (chan.status === 'C' && chan.ngay) {
-                        lastPayoutDate = chan.ngay;
-                    }
-                });
-            
-                data.danh_sach_chan.forEach((chan, index) => {
-                    const stt = index + 1;
-                    const row = document.createElement('tr');
-                    let ngayHienThi = chan.ngay;
-                    if (chan.status === 'S') {
-                        ngayHienThi = addPeriod(lastPayoutDate, data.ky_han_value, data.ky_han_unit);
-                        lastPayoutDate = ngayHienThi;
-                    }
-                    const statusClass = chan.status === 'C' ? 'dead' : 'alive';
-                    const statusText = chan.status === 'C' ? 'X' : 'V';
-                    const ngayClass = chan.status === 'C' ? 'text-red' : '';
-                    row.innerHTML = `
-                        <td>${stt}</td>
-                        <td style="text-align: left;">${chan.ten_hui_vien}</td>
-                        <td class="status-cell ${statusClass}">${statusText}</td>
-                        <td class="${ngayClass} font-bold">${ngayHienThi || ''}</td>
-                        <td>${chan.ky || ''}</td>
-                        <td>${formatCurrency(chan.tham)}</td>
-                        <td>${formatCurrency(chan.tien_dong)}</td>
-                        <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
-                    `;
-                    tbody.appendChild(row);
-                    tongTham += chan.tham || 0;
-                    tongTienHot += chan.tien_hot || 0;
-                });
-            }
-            
-            const totalRow = document.createElement('tr');
-            totalRow.className = 'total-row';
-            totalRow.innerHTML = `
-                <td colspan="5" style="text-align: center; font-size: 14pt;">TỔNG:</td>
-                <td class="text-blue">${formatCurrency(tongTham)}</td>
-                <td></td>
-                <td class="text-red">${formatCurrency(tongTienHot)}</td>
-            `;
-            tbody.appendChild(totalRow);
-
-            // Gán sự kiện cho các nút
-            const billElement = document.getElementById('bill-to-capture');
-            document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
-            document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
-            document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
         }
+    }
+
+    const tbody = document.getElementById('details-tbody');
+    tbody.innerHTML = '';
+    let lastPayoutDate = data.ngay_mo;
+    let tongTham = 0;
+    let tongTienHot = 0;
+    let tongTienDong = 0; // <<-- THAY ĐỔI 1: THÊM BIẾN MỚI
+
+    if (data.danh_sach_chan) {
+        data.danh_sach_chan.sort((a, b) => {
+            if (a.status === 'S' && b.status === 'C') return 1;
+            if (a.status === 'C' && b.status === 'S') return -1;
+            return (a.ky || Infinity) - (b.ky || Infinity);
+        });
+
+        data.danh_sach_chan.forEach(chan => {
+            if (chan.status === 'C' && chan.ngay) {
+                lastPayoutDate = chan.ngay;
+            }
+        });
+    
+        data.danh_sach_chan.forEach((chan, index) => {
+            const stt = index + 1;
+            const row = document.createElement('tr');
+            let ngayHienThi = chan.ngay;
+            if (chan.status === 'S') {
+                ngayHienThi = addPeriod(lastPayoutDate, data.ky_han_value, data.ky_han_unit);
+                lastPayoutDate = ngayHienThi;
+            }
+            const statusClass = chan.status === 'C' ? 'dead' : 'alive';
+            const statusText = chan.status === 'C' ? 'X' : 'V';
+            const ngayClass = chan.status === 'C' ? 'text-red' : '';
+            row.innerHTML = `
+                <td>${stt}</td>
+                <td style="text-align: left;">${chan.ten_hui_vien}</td>
+                <td class="status-cell ${statusClass}">${statusText}</td>
+                <td class="${ngayClass} font-bold">${ngayHienThi || ''}</td>
+                <td>${chan.ky || ''}</td>
+                <td>${formatCurrency(chan.tham)}</td>
+                <td>${formatCurrency(chan.tien_dong)}</td>
+                <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
+            `;
+            tbody.appendChild(row);
+            tongTham += chan.tham || 0;
+            tongTienHot += chan.tien_hot || 0;
+            tongTienDong += chan.tien_dong || 0; // <<-- THAY ĐỔI 2: CỘNG DỒN
+        });
+    }
+    
+    const totalRow = document.createElement('tr');
+    totalRow.className = 'total-row';
+    totalRow.innerHTML = `
+        <td colspan="5" style="text-align: center; font-size: 14pt;">TỔNG:</td>
+        <td class="text-blue">${formatCurrency(tongTham)}</td>
+        <td>${formatCurrency(tongTienDong)}</td> 
+        <td class="text-red">${formatCurrency(tongTienHot)}</td>
+    `; // <<-- THAY ĐỔI 3: HIỂN THỊ TỔNG
+    tbody.appendChild(totalRow);
+
+    const billElement = document.getElementById('bill-to-capture');
+    document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
+    document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+    document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+}
 
         async function captureBill(element, callback) {
             const controls = element.querySelector('.bill-controls');
@@ -337,3 +337,4 @@
     </script>
 </body>
 </html>
+
