@@ -195,23 +195,37 @@
             return num.toLocaleString('vi-VN');
         }
 
-        function addPeriod(dateString, value, unit) {
-            const [day, month, year] = dateString.split('/');
-            const date = new Date(+year, +month - 1, +day);
+    function addPeriod(dateString, value, unit) {
+        // Tách chuỗi ngày tháng năm theo định dạng 'dd/mm/yyyy'
+        const [day, month, year] = dateString.split('/');
+        // Tạo đối tượng Date (lưu ý tháng trong JavaScript bắt đầu từ 0)
+        const date = new Date(+year, +month - 1, +day);
+        const originalDay = date.getDate();
 
-            if ((unit || '').toLowerCase().includes('tháng')) {
-                date.setMonth(date.getMonth() + value);
-            } else {
-                date.setDate(date.getDate() + value);
-            }
+        if ((unit || '').toLowerCase().includes('tháng')) {
+        // Luôn đặt ngày về mùng 1 trước khi cộng tháng để tránh lỗi tràn ngày
+        date.setDate(1);
+        date.setMonth(date.getMonth() + value);
 
-            const newDay = String(date.getDate()).padStart(2, '0');
-            const newMonth = String(date.getMonth() + 1).padStart(2, '0');
-            const newYear = date.getFullYear();
-            return `${newDay}/${newMonth}/${newYear}`;
-        }
+        // Lấy ngày cuối cùng của tháng mới
+        const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+        
+        // Đặt lại ngày, chọn ngày nhỏ hơn giữa ngày gốc và ngày cuối tháng mới
+        date.setDate(Math.min(originalDay, lastDayOfNewMonth));
+
+    } else { // Giữ nguyên cách tính cho ngày và tuần
+        date.setDate(date.getDate() + value);
+    }
+
+    // Định dạng lại ngày tháng năm để trả về
+    const newDay = String(date.getDate()).padStart(2, '0');
+    const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+    const newYear = date.getFullYear();
+    return `${newDay}/${newMonth}/${newYear}`;
+}
 
 function generateBill(data) {
+    // Điền các thông tin chung (giữ nguyên)
     for (const key in data) {
         if (key !== 'danh_sach_chan') {
             const element = document.querySelector(`[data-field="${key}"]`);
@@ -223,35 +237,41 @@ function generateBill(data) {
 
     const tbody = document.getElementById('details-tbody');
     tbody.innerHTML = '';
-    let lastPayoutDate = data.ngay_mo;
-    let tongTham = 0;
-    let tongTienHot = 0;
-    let tongTienDong = 0; // <<-- THAY ĐỔI 1: THÊM BIẾN MỚI
+    let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
-    if (data.danh_sach_chan) {
+    if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
+        // Sắp xếp: hụi chết (C) lên trước, sắp theo kỳ hốt, sau đó đến hụi sống (S)
         data.danh_sach_chan.sort((a, b) => {
-            if (a.status === 'S' && b.status === 'C') return 1;
             if (a.status === 'C' && b.status === 'S') return -1;
+            if (a.status === 'S' && b.status === 'C') return 1;
             return (a.ky || Infinity) - (b.ky || Infinity);
         });
 
-        data.danh_sach_chan.forEach(chan => {
-            if (chan.status === 'C' && chan.ngay) {
-                lastPayoutDate = chan.ngay;
-            }
-        });
-    
+        // Tìm ngày hốt cuối cùng từ danh sách hụi chết, nếu không có thì lấy ngày mở
+        let lastPayoutDate = data.ngay_mo;
+        const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
+        if (deadMembers.length > 0) {
+            // Dùng reduce để tìm thành viên 'C' có kỳ (ky) lớn nhất và lấy ngày của họ
+            lastPayoutDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
+        }
+
+        // Vòng lặp để hiển thị và tính toán ngày
         data.danh_sach_chan.forEach((chan, index) => {
             const stt = index + 1;
             const row = document.createElement('tr');
             let ngayHienThi = chan.ngay;
+
+            // Chỉ tính toán ngày dự kiến cho hụi sống
             if (chan.status === 'S') {
                 ngayHienThi = addPeriod(lastPayoutDate, data.ky_han_value, data.ky_han_unit);
+                // Cập nhật ngày hốt cuối cùng để dùng cho lần tính tiếp theo
                 lastPayoutDate = ngayHienThi;
             }
+
             const statusClass = chan.status === 'C' ? 'dead' : 'alive';
             const statusText = chan.status === 'C' ? 'X' : 'V';
             const ngayClass = chan.status === 'C' ? 'text-red' : '';
+            
             row.innerHTML = `
                 <td>${stt}</td>
                 <td style="text-align: left;">${chan.ten_hui_vien}</td>
@@ -265,10 +285,11 @@ function generateBill(data) {
             tbody.appendChild(row);
             tongTham += chan.tham || 0;
             tongTienHot += chan.tien_hot || 0;
-            tongTienDong += chan.tien_dong || 0; // <<-- THAY ĐỔI 2: CỘNG DỒN
+            tongTienDong += chan.tien_dong || 0;
         });
     }
     
+    // Thêm dòng tổng (giữ nguyên)
     const totalRow = document.createElement('tr');
     totalRow.className = 'total-row';
     totalRow.innerHTML = `
@@ -276,9 +297,10 @@ function generateBill(data) {
         <td class="text-blue">${formatCurrency(tongTham)}</td>
         <td>${formatCurrency(tongTienDong)}</td> 
         <td class="text-red">${formatCurrency(tongTienHot)}</td>
-    `; // <<-- THAY ĐỔI 3: HIỂN THỊ TỔNG
+    `;
     tbody.appendChild(totalRow);
-
+    
+    // Gán sự kiện cho các nút (giữ nguyên)
     const billElement = document.getElementById('bill-to-capture');
     document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
     document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
@@ -337,4 +359,5 @@ function generateBill(data) {
     </script>
 </body>
 </html>
+
 
