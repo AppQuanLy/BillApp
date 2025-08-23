@@ -196,13 +196,25 @@
     }
 
     function addPeriod(dateString, value, unit) {
-        if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
-        const numericValue = parseInt(value) || 0;
-        if (numericValue === 0) return dateString;
+        console.log(`--- BẮT ĐẦU addPeriod ---`);
+        console.log(`DỮ LIỆU ĐẦU VÀO: dateString = "${dateString}", value = ${value}, unit = "${unit}"`);
 
+        if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) {
+            console.error("LỖI: Định dạng dateString không hợp lệ!");
+            return "";
+        }
+        
+        const numericValue = parseInt(value) || 0;
+        
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
-        if (isNaN(date.getTime())) return "";
+        
+        console.log("JavaScript đã tạo đối tượng Date:", date.toString());
+
+        if (isNaN(date.getTime())) {
+            console.error("LỖI: Không thể tạo đối tượng Date hợp lệ!");
+            return "";
+        }
 
         if ((unit || '').toLowerCase().includes('tháng')) {
             date.setMonth(date.getMonth() + numericValue);
@@ -210,14 +222,23 @@
             date.setDate(date.getDate() + numericValue);
         }
         
+        console.log("Date sau khi tính toán:", date.toString());
+
         const newDay = String(date.getDate()).padStart(2, '0');
         const newMonth = String(date.getMonth() + 1).padStart(2, '0');
         const newYear = date.getFullYear();
-        return `${newDay}/${newMonth}/${newYear}`;
+        const result = `${newDay}/${newMonth}/${newYear}`;
+
+        console.log(`KẾT QUẢ TRẢ VỀ: "${result}"`);
+        console.log(`--- KẾT THÚC addPeriod ---`);
+        
+        return result;
     }
 
+    /**
+     * PHIÊN BẢN LOGIC MỚI NHẤT - TÍNH TOÁN ĐỘC LẬP TỪNG DÒNG
+     */
     function generateBill(data) {
-        // --- Điền thông tin chung từ JSON ---
         for (const key in data) {
             if (key !== 'danh_sach_chan') {
                 const element = document.querySelector(`[data-field="${key}"]`);
@@ -236,30 +257,31 @@
                 return (a.ky || Infinity) - (b.ky || Infinity);
             });
 
-            // --- Logic tính ngày nối tiếp ---
-            let nextPayoutDate = data.ngay_mo;
+            // --- Logic tính ngày độc lập (Stateless) ---
+            // 1. Tìm ngày mốc (anchorDate)
+            let anchorDate = data.ngay_mo;
             const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
             if (deadMembers.length > 0) {
-                nextPayoutDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
+                anchorDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
             }
+            console.log("Ngày mốc để tính toán (Anchor Date):", anchorDate);
 
+            // 2. Vòng lặp hiển thị và tính toán
+            let liveMemberCounter = 0; 
             const kyHanValueInt = parseInt(data.ky_han_value) || 1;
 
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
                 const row = document.createElement('tr');
-                let ngayHienThi; // <<== THAY ĐỔI QUAN TRỌNG: Khai báo ở đây
+                let ngayHienThi = chan.ngay;
 
                 if (chan.status === 'S') {
-                    // Tính ngày nối tiếp
-                    nextPayoutDate = addPeriod(nextPayoutDate, kyHanValueInt, data.ky_han_unit);
-                    ngayHienThi = nextPayoutDate;
-                } else {
-                    // Nếu là hụi viên "Chết", lấy ngày có sẵn của họ
-                    ngayHienThi = chan.ngay;
+                    liveMemberCounter++; 
+                    const periodsToAdd = liveMemberCounter * kyHanValueInt;
+                    console.log(`Tính ngày cho STT ${stt} (hụi viên Sống thứ ${liveMemberCounter}): cộng ${periodsToAdd} kỳ vào ngày mốc.`);
+                    ngayHienThi = addPeriod(anchorDate, periodsToAdd, data.ky_han_unit);
                 }
                 
-                // --- Phần còn lại giữ nguyên ---
                 const statusClass = chan.status === 'C' ? 'dead' : 'alive';
                 const statusText = chan.status === 'C' ? 'X' : 'V';
                 const ngayClass = chan.status === 'C' ? 'text-red' : '';
@@ -350,3 +372,4 @@
 </script>
 </body>
 </html>
+
