@@ -199,32 +199,28 @@
      * HÀM TÍNH TOÁN NGÀY THÁNG ĐÃ SỬA LỖI
      * - Xử lý chính xác các trường hợp cộng tháng cho ngày cuối tháng (ví dụ: 31/1 -> 28/2, 31/8 -> 30/9).
      */
-     function addPeriod(dateString, value, unit) {
-        // Tách chuỗi theo định dạng MM/DD/YYYY từ AppSheet
-        const [month, day, year] = dateString.split('/'); 
-        // Tạo đối tượng Date (lưu ý tháng trong JS là 0-11, nên month-1)
-        const date = new Date(+year, +month - 1, +day);
-        const originalDay = date.getDate();
+function addPeriod(dateString, value, unit) {
+    // Luôn đọc ngày tháng theo định dạng DD/MM/YYYY mà AppSheet đang gửi
+    const [day, month, year] = dateString.split('/');
+    // Tạo đối tượng Date (lưu ý tháng trong JS là 0-11, nên phải month - 1)
+    const date = new Date(+year, +month - 1, +day);
 
-        if ((unit || '').toLowerCase().includes('tháng')) {
-            // Đặt ngày về mùng 1 trước khi cộng tháng để tránh lỗi tràn ngày
-            date.setDate(1);
-            date.setMonth(date.getMonth() + value);
-            // Lấy ngày cuối cùng của tháng mới
-            const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-            // Đặt lại ngày, chọn ngày nhỏ hơn giữa ngày gốc và ngày cuối tháng mới
-            date.setDate(Math.min(originalDay, lastDayOfNewMonth));
-        } else { // Giữ nguyên cách tính cho ngày và tuần
-            date.setDate(date.getDate() + value);
-        }
-
-        // Định dạng lại ngày tháng năm để trả về theo DD/MM/YYYY
-        const newDay = String(date.getDate()).padStart(2, '0');
-        const newMonth = String(date.getMonth() + 1).padStart(2, '0');
-        const newYear = date.getFullYear();
-        // Trả về đúng định dạng DD/MM/YYYY để hiển thị
-        return `${newDay}/${newMonth}/${newYear}`;
+    if ((unit || '').toLowerCase().includes('tháng')) {
+        // Áp dụng logic đơn giản cho kỳ hạn tháng theo yêu cầu của bạn
+        // JavaScript sẽ tự động "tràn" ngày nếu tháng tiếp theo không có ngày tương ứng
+        // Ví dụ: 31/08/2025 + 1 tháng => 01/10/2025
+        date.setMonth(date.getMonth() + value);
+    } else {
+        // Logic này đã chạy đúng cho Ngày và Tuần
+        date.setDate(date.getDate() + value);
     }
+
+    // Định dạng lại ngày tháng năm để trả về
+    const newDay = String(date.getDate()).padStart(2, '0');
+    const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+    const newYear = date.getFullYear();
+    return `${newDay}/${newMonth}/${newYear}`;
+}
 
     /**
      * HÀM LOGIC CHÍNH ĐÃ SỬA LỖI
@@ -372,6 +368,7 @@
 </script>
 </body>
 </html>
+
 
 
 
