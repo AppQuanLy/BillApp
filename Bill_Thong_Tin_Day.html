@@ -174,27 +174,31 @@
         </div>
     </div>
 
-    <script>
-        let billData = {};
+   <script>
+    let billData = {};
 
-        window.onload = function() {
-            try {
-                const encodedData = window.location.hash.substring(1);
-                if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
-                const jsonData = decodeURIComponent(encodedData);
-                billData = JSON.parse(jsonData);
-                generateBill(billData);
-            } catch (error) {
-                document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
-                console.error("Lỗi:", error);
-            }
-        };
-
-        function formatCurrency(num) {
-            if (typeof num !== 'number' || num === null) return '';
-            return num.toLocaleString('vi-VN');
+    window.onload = function() {
+        try {
+            const encodedData = window.location.hash.substring(1);
+            if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
+            const jsonData = decodeURIComponent(encodedData);
+            billData = JSON.parse(jsonData);
+            generateBill(billData);
+        } catch (error) {
+            document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
+            console.error("Lỗi:", error);
         }
+    };
 
+    function formatCurrency(num) {
+        if (typeof num !== 'number' || num === null) return '';
+        return num.toLocaleString('vi-VN');
+    }
+
+    /**
+     * HÀM TÍNH TOÁN NGÀY THÁNG ĐÃ SỬA LỖI
+     * - Xử lý chính xác các trường hợp cộng tháng cho ngày cuối tháng (ví dụ: 31/1 -> 28/2, 31/8 -> 30/9).
+     */
     function addPeriod(dateString, value, unit) {
         // Tách chuỗi ngày tháng năm theo định dạng 'dd/mm/yyyy'
         const [day, month, year] = dateString.split('/');
@@ -203,174 +207,174 @@
         const originalDay = date.getDate();
 
         if ((unit || '').toLowerCase().includes('tháng')) {
-        // Luôn đặt ngày về mùng 1 trước khi cộng tháng để tránh lỗi tràn ngày
-        date.setDate(1);
-        date.setMonth(date.getMonth() + value);
+            // Luôn đặt ngày về mùng 1 trước khi cộng tháng để tránh lỗi tràn ngày
+            date.setDate(1);
+            date.setMonth(date.getMonth() + value);
 
-        // Lấy ngày cuối cùng của tháng mới
-        const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-        
-        // Đặt lại ngày, chọn ngày nhỏ hơn giữa ngày gốc và ngày cuối tháng mới
-        date.setDate(Math.min(originalDay, lastDayOfNewMonth));
+            // Lấy ngày cuối cùng của tháng mới
+            const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+            
+            // Đặt lại ngày, chọn ngày nhỏ hơn giữa ngày gốc và ngày cuối tháng mới
+            date.setDate(Math.min(originalDay, lastDayOfNewMonth));
 
-    } else { // Giữ nguyên cách tính cho ngày và tuần
-        date.setDate(date.getDate() + value);
-    }
-
-    // Định dạng lại ngày tháng năm để trả về
-    const newDay = String(date.getDate()).padStart(2, '0');
-    const newMonth = String(date.getMonth() + 1).padStart(2, '0');
-    const newYear = date.getFullYear();
-    return `${newDay}/${newMonth}/${newYear}`;
-}
-
-function generateBill(data) {
-    // --- Phần điền thông tin chung (giữ nguyên) ---
-    for (const key in data) {
-        if (key !== 'danh_sach_chan') {
-            const element = document.querySelector(`[data-field="${key}"]`);
-            if (element) {
-                element.textContent = data[key];
-            }
-        }
-    }
-
-    const tbody = document.getElementById('details-tbody');
-    tbody.innerHTML = '';
-    let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
-
-    if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-        // --- Sắp xếp: hụi chết (C) lên trước (sắp theo kỳ), sau đó đến hụi sống (S) ---
-        data.danh_sach_chan.sort((a, b) => {
-            if (a.status === 'C' && b.status === 'S') return -1;
-            if (a.status === 'S' && b.status === 'C') return 1;
-            return (a.ky || Infinity) - (b.ky || Infinity);
-        });
-
-        // --- Logic tính toán ngày hoàn toàn mới ---
-        // 1. Xác định ngày làm mốc để bắt đầu tính toán
-        let calculationAnchorDate = data.ngay_mo; // Mặc định là ngày mở
-        const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
-        if (deadMembers.length > 0) {
-            // Nếu đã có người hốt, ngày mốc là ngày của người hốt cuối cùng (có kỳ lớn nhất)
-            calculationAnchorDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
+        } else { // Giữ nguyên cách tính cho ngày và tuần
+            date.setDate(date.getDate() + value);
         }
 
-        // 2. Cờ để xác định người đầu tiên trong dây mới
-        let isFirstLiveMemberInNewHui = (deadMembers.length === 0);
+        // Định dạng lại ngày tháng năm để trả về
+        const newDay = String(date.getDate()).padStart(2, '0');
+        const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+        const newYear = date.getFullYear();
+        return `${newDay}/${newMonth}/${newYear}`;
+    }
 
-        // --- Vòng lặp để hiển thị và tính ngày ---
-        data.danh_sach_chan.forEach((chan, index) => {
-            const stt = index + 1;
-            const row = document.createElement('tr');
-            let ngayHienThi = chan.ngay; // Ngày mặc định cho hụi chết
-
-            if (chan.status === 'S') { // Chỉ tính toán cho hụi sống
-                if (isFirstLiveMemberInNewHui) {
-                    // **GIẢI QUYẾT VẤN ĐỀ 1:** Nếu là người đầu tiên của dây mới, ngày của họ chính là ngày mốc
-                    ngayHienThi = calculationAnchorDate;
-                    isFirstLiveMemberInNewHui = false; // Tắt cờ này đi
-                } else {
-                    // Với những người tiếp theo, cộng thêm 1 kỳ vào ngày mốc
-                    ngayHienThi = addPeriod(calculationAnchorDate, data.ky_han_value, data.ky_han_unit);
+    /**
+     * HÀM LOGIC CHÍNH ĐÃ SỬA LỖI
+     * - Xử lý đúng trường hợp dây mới chưa có người hốt.
+     * - Sử dụng ngày mốc chính xác để tính toán cho các kỳ tiếp theo.
+     */
+    function generateBill(data) {
+        // --- Phần điền thông tin chung ---
+        for (const key in data) {
+            if (key !== 'danh_sach_chan') {
+                const element = document.querySelector(`[data-field="${key}"]`);
+                if (element) {
+                    element.textContent = data[key];
                 }
-                // Cập nhật ngày mốc cho lần tính của người sống tiếp theo
-                calculationAnchorDate = ngayHienThi;
             }
-            
-            // --- Phần hiển thị (giữ nguyên) ---
-            const statusClass = chan.status === 'C' ? 'dead' : 'alive';
-            const statusText = chan.status === 'C' ? 'X' : 'V';
-            const ngayClass = chan.status === 'C' ? 'text-red' : '';
-            
-            row.innerHTML = `
-                <td>${stt}</td>
-                <td style="text-align: left;">${chan.ten_hui_vien}</td>
-                <td class="status-cell ${statusClass}">${statusText}</td>
-                <td class="${ngayClass} font-bold">${ngayHienThi || ''}</td>
-                <td>${chan.ky || ''}</td>
-                <td>${formatCurrency(chan.tham)}</td>
-                <td>${formatCurrency(chan.tien_dong)}</td>
-                <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
-            `;
-            tbody.appendChild(row);
+        }
 
-            // Cộng tổng (giữ nguyên)
-            tongTham += chan.tham || 0;
-            tongTienHot += chan.tien_hot || 0;
-            tongTienDong += chan.tien_dong || 0;
+        const tbody = document.getElementById('details-tbody');
+        tbody.innerHTML = '';
+        let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
+
+        if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
+            // --- Sắp xếp: hụi chết (C) lên trước, sau đó đến hụi sống (S) ---
+            data.danh_sach_chan.sort((a, b) => {
+                if (a.status === 'C' && b.status === 'S') return -1;
+                if (a.status === 'S' && b.status === 'C') return 1;
+                return (a.ky || Infinity) - (b.ky || Infinity);
+            });
+
+            // --- Logic tính toán ngày đã sửa ---
+            // 1. Xác định ngày làm mốc để bắt đầu tính toán
+            let calculationAnchorDate = data.ngay_mo; // Mặc định là ngày mở
+            const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
+            if (deadMembers.length > 0) {
+                calculationAnchorDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
+            }
+
+            // 2. Cờ để xác định người đầu tiên trong dây mới
+            let isFirstLiveMemberInNewHui = (deadMembers.length === 0);
+
+            // --- Vòng lặp để hiển thị và tính ngày ---
+            data.danh_sach_chan.forEach((chan, index) => {
+                const stt = index + 1;
+                const row = document.createElement('tr');
+                let ngayHienThi = chan.ngay;
+
+                if (chan.status === 'S') {
+                    if (isFirstLiveMemberInNewHui) {
+                        ngayHienThi = calculationAnchorDate;
+                        isFirstLiveMemberInNewHui = false;
+                    } else {
+                        ngayHienThi = addPeriod(calculationAnchorDate, data.ky_han_value, data.ky_han_unit);
+                    }
+                    calculationAnchorDate = ngayHienThi;
+                }
+                
+                const statusClass = chan.status === 'C' ? 'dead' : 'alive';
+                const statusText = chan.status === 'C' ? 'X' : 'V';
+                const ngayClass = chan.status === 'C' ? 'text-red' : '';
+                
+                row.innerHTML = `
+                    <td>${stt}</td>
+                    <td style="text-align: left;">${chan.ten_hui_vien}</td>
+                    <td class="status-cell ${statusClass}">${statusText}</td>
+                    <td class="${ngayClass} font-bold">${ngayHienThi || ''}</td>
+                    <td>${chan.ky || ''}</td>
+                    <td>${formatCurrency(chan.tham)}</td>
+                    <td>${formatCurrency(chan.tien_dong)}</td>
+                    <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
+                `;
+                tbody.appendChild(row);
+
+                tongTham += chan.tham || 0;
+                tongTienHot += chan.tien_hot || 0;
+                tongTienDong += chan.tien_dong || 0;
+            });
+        }
+        
+        // --- Thêm dòng tổng và các nút bấm ---
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'total-row';
+        totalRow.innerHTML = `
+            <td colspan="5" style="text-align: center; font-size: 14pt;">TỔNG:</td>
+            <td class="text-blue">${formatCurrency(tongTham)}</td>
+            <td>${formatCurrency(tongTienDong)}</td> 
+            <td class="text-red">${formatCurrency(tongTienHot)}</td>
+        `;
+        tbody.appendChild(totalRow);
+        
+        const billElement = document.getElementById('bill-to-capture');
+        document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
+        document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+        document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+    }
+
+    async function captureBill(element, callback) {
+        const controls = element.querySelector('.bill-controls');
+        if (controls) controls.style.display = 'none';
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+            await callback(canvas);
+        } catch (error) {
+            console.error('Lỗi khi tạo ảnh:', error);
+            alert('Đã có lỗi xảy ra khi tạo ảnh.');
+        } finally {
+            if (controls) controls.style.display = 'flex';
+        }
+    }
+
+    function downloadBillAsImage(element) {
+        const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
+        captureBill(element, canvas => {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
         });
     }
-    
-    // --- Thêm dòng tổng và các nút bấm (giữ nguyên) ---
-    const totalRow = document.createElement('tr');
-    totalRow.className = 'total-row';
-    totalRow.innerHTML = `
-        <td colspan="5" style="text-align: center; font-size: 14pt;">TỔNG:</td>
-        <td class="text-blue">${formatCurrency(tongTham)}</td>
-        <td>${formatCurrency(tongTienDong)}</td> 
-        <td class="text-red">${formatCurrency(tongTienHot)}</td>
-    `;
-    tbody.appendChild(totalRow);
-    
-    const billElement = document.getElementById('bill-to-capture');
-    document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
-    document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
-    document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
-}
 
-        async function captureBill(element, callback) {
-            const controls = element.querySelector('.bill-controls');
-            if (controls) controls.style.display = 'none';
+    function copyBillAsImage(element) {
+        captureBill(element, canvas => {
+            canvas.toBlob(blob => {
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                .catch(err => alert('Lỗi khi copy.'));
+            });
+        });
+    }
+
+    async function shareBillAsImage(element) {
+        const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
+        const textshare = `Thông tin dây hụi ${billData.day_ten}.`;
+        if (!navigator.share) {
+            alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
+            return;
+        }
+        captureBill(element, async canvas => {
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            const file = new File([blob], filename, { type: 'image/png' });
             try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-                await callback(canvas);
-            } catch (error) {
-                console.error('Lỗi khi tạo ảnh:', error);
-                alert('Đã có lỗi xảy ra khi tạo ảnh.');
-            } finally {
-                if (controls) controls.style.display = 'flex';
-            }
-        }
-
-        function downloadBillAsImage(element) {
-            const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
-            captureBill(element, canvas => {
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            });
-        }
-
-        function copyBillAsImage(element) {
-            captureBill(element, canvas => {
-                canvas.toBlob(blob => {
-                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
-                    .catch(err => alert('Lỗi khi copy.'));
-                });
-            });
-        }
-
-        async function shareBillAsImage(element) {
-            const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
-            const textshare = `Thông tin dây hụi ${billData.day_ten}.`;
-            if (!navigator.share) {
-                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
-                return;
-            }
-            captureBill(element, async canvas => {
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                const file = new File([blob], filename, { type: 'image/png' });
-                try {
-                    await navigator.share({ title: `Thông Tin Dây Hụi`, text: textshare, files: [file] });
-                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
-            });
-        }
-    </script>
+                await navigator.share({ title: `Thông Tin Dây Hụi`, text: textshare, files: [file] });
+            } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
+        });
+    }
+</script>
 </body>
 </html>
+
 
 
 
