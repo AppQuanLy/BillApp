@@ -195,29 +195,14 @@
         return num.toLocaleString('vi-VN');
     }
 
-    /**
-     * PHIÊN BẢN GHI LỖI
-     */
     function addPeriod(dateString, value, unit) {
-        console.log(`--- BẮT ĐẦU addPeriod ---`);
-        console.log(`DỮ LIỆU ĐẦU VÀO: dateString = "${dateString}", value = ${value}, unit = "${unit}"`);
-
-        if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) {
-            console.error("LỖI: Định dạng dateString không hợp lệ!");
-            return "";
-        }
+        if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
+        const numericValue = parseInt(value) || 0;
+        if (numericValue === 0) return dateString;
 
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
-        
-        console.log("JavaScript đã tạo đối tượng Date:", date.toString());
-
-        if (isNaN(date.getTime())) {
-            console.error("LỖI: Không thể tạo đối tượng Date hợp lệ!");
-            return "";
-        }
-
-        const numericValue = parseInt(value) || 0;
+        if (isNaN(date.getTime())) return "";
 
         if ((unit || '').toLowerCase().includes('tháng')) {
             date.setMonth(date.getMonth() + numericValue);
@@ -225,21 +210,14 @@
             date.setDate(date.getDate() + numericValue);
         }
         
-        console.log("Date sau khi tính toán:", date.toString());
-
         const newDay = String(date.getDate()).padStart(2, '0');
         const newMonth = String(date.getMonth() + 1).padStart(2, '0');
         const newYear = date.getFullYear();
-        const result = `${newDay}/${newMonth}/${newYear}`;
-
-        console.log(`KẾT QUẢ TRẢ VỀ: "${result}"`);
-        console.log(`--- KẾT THÚC addPeriod ---`);
-        
-        return result;
+        return `${newDay}/${newMonth}/${newYear}`;
     }
 
-    // Các hàm còn lại giữ nguyên
     function generateBill(data) {
+        // --- Điền thông tin chung từ JSON ---
         for (const key in data) {
             if (key !== 'danh_sach_chan') {
                 const element = document.querySelector(`[data-field="${key}"]`);
@@ -258,6 +236,7 @@
                 return (a.ky || Infinity) - (b.ky || Infinity);
             });
 
+            // --- Logic tính ngày nối tiếp ---
             let nextPayoutDate = data.ngay_mo;
             const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
             if (deadMembers.length > 0) {
@@ -269,13 +248,18 @@
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
                 const row = document.createElement('tr');
-                let ngayHienThi = chan.ngay;
+                let ngayHienThi; // <<== THAY ĐỔI QUAN TRỌNG: Khai báo ở đây
 
                 if (chan.status === 'S') {
+                    // Tính ngày nối tiếp
                     nextPayoutDate = addPeriod(nextPayoutDate, kyHanValueInt, data.ky_han_unit);
                     ngayHienThi = nextPayoutDate;
+                } else {
+                    // Nếu là hụi viên "Chết", lấy ngày có sẵn của họ
+                    ngayHienThi = chan.ngay;
                 }
                 
+                // --- Phần còn lại giữ nguyên ---
                 const statusClass = chan.status === 'C' ? 'dead' : 'alive';
                 const statusText = chan.status === 'C' ? 'X' : 'V';
                 const ngayClass = chan.status === 'C' ? 'text-red' : '';
@@ -313,6 +297,7 @@
         document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
     }
 
+    // --- CÁC HÀM HỖ TRỢ KHÁC ---
     async function captureBill(element, callback) {
         const controls = element.querySelector('.bill-controls');
         if (controls) controls.style.display = 'none';
@@ -365,4 +350,3 @@
 </script>
 </body>
 </html>
-
