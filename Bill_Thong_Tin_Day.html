@@ -195,14 +195,29 @@
         return num.toLocaleString('vi-VN');
     }
 
+    /**
+     * PHIÊN BẢN GHI LỖI
+     */
     function addPeriod(dateString, value, unit) {
-        if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
-        const numericValue = parseInt(value) || 0;
-        if (numericValue === 0) return dateString;
+        console.log(`--- BẮT ĐẦU addPeriod ---`);
+        console.log(`DỮ LIỆU ĐẦU VÀO: dateString = "${dateString}", value = ${value}, unit = "${unit}"`);
+
+        if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) {
+            console.error("LỖI: Định dạng dateString không hợp lệ!");
+            return "";
+        }
 
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
-        if (isNaN(date.getTime())) return "";
+        
+        console.log("JavaScript đã tạo đối tượng Date:", date.toString());
+
+        if (isNaN(date.getTime())) {
+            console.error("LỖI: Không thể tạo đối tượng Date hợp lệ!");
+            return "";
+        }
+
+        const numericValue = parseInt(value) || 0;
 
         if ((unit || '').toLowerCase().includes('tháng')) {
             date.setMonth(date.getMonth() + numericValue);
@@ -210,18 +225,21 @@
             date.setDate(date.getDate() + numericValue);
         }
         
+        console.log("Date sau khi tính toán:", date.toString());
+
         const newDay = String(date.getDate()).padStart(2, '0');
         const newMonth = String(date.getMonth() + 1).padStart(2, '0');
         const newYear = date.getFullYear();
-        return `${newDay}/${newMonth}/${newYear}`;
+        const result = `${newDay}/${newMonth}/${newYear}`;
+
+        console.log(`KẾT QUẢ TRẢ VỀ: "${result}"`);
+        console.log(`--- KẾT THÚC addPeriod ---`);
+        
+        return result;
     }
 
-    /**
-     * PHIÊN BẢN LOGIC CUỐI CÙNG
-     */
+    // Các hàm còn lại giữ nguyên
     function generateBill(data) {
-        // --- Bước 1: Điền các thông tin chung từ JSON ---
-        // Phần này sẽ tự động điền "Mãn Kỳ" từ dữ liệu bạn gửi lên.
         for (const key in data) {
             if (key !== 'danh_sach_chan') {
                 const element = document.querySelector(`[data-field="${key}"]`);
@@ -234,15 +252,12 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            // Sắp xếp: hụi chết (C/X) lên trước, sau đó đến hụi sống (S/V)
             data.danh_sach_chan.sort((a, b) => {
                 if (a.status === 'C' && b.status === 'S') return -1;
                 if (a.status === 'S' && b.status === 'C') return 1;
                 return (a.ky || Infinity) - (b.ky || Infinity);
             });
 
-            // --- Bước 2: Logic tính ngày nối tiếp (đã sửa) ---
-            // 1. Tìm ngày mốc: là ngày của người hốt cuối cùng, hoặc ngày mở dây nếu chưa ai hốt.
             let nextPayoutDate = data.ngay_mo;
             const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
             if (deadMembers.length > 0) {
@@ -251,15 +266,12 @@
 
             const kyHanValueInt = parseInt(data.ky_han_value) || 1;
 
-            // --- Bước 3: Vòng lặp hiển thị ---
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
                 const row = document.createElement('tr');
                 let ngayHienThi = chan.ngay;
 
-                // Nếu là hụi viên "Sống", tính ngày theo logic nối tiếp
                 if (chan.status === 'S') {
-                    // Ngày của người này = ngày của người trước đó + 1 kỳ hạn
                     nextPayoutDate = addPeriod(nextPayoutDate, kyHanValueInt, data.ky_han_unit);
                     ngayHienThi = nextPayoutDate;
                 }
@@ -279,8 +291,6 @@
                     <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
                 `;
                 tbody.appendChild(row);
-
-                // Cộng tổng
                 tongTham += chan.tham || 0;
                 tongTienHot += chan.tien_hot || 0;
                 tongTienDong += chan.tien_dong || 0;
@@ -303,7 +313,6 @@
         document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
     }
 
-    // --- CÁC HÀM HỖ TRỢ KHÁC ---
     async function captureBill(element, callback) {
         const controls = element.querySelector('.bill-controls');
         if (controls) controls.style.display = 'none';
@@ -356,3 +365,4 @@
 </script>
 </body>
 </html>
+
