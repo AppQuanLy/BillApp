@@ -217,17 +217,17 @@
     }
 
     /**
-     * PHIÊN BẢN LOGIC MỚI - DỰA TRÊN GỢI Ý CỦA BẠN
+     * PHIÊN BẢN LOGIC CUỐI CÙNG
      */
     function generateBill(data) {
         // --- Bước 1: Điền các thông tin chung từ JSON ---
+        // Phần này sẽ tự động điền "Mãn Kỳ" từ dữ liệu bạn gửi lên.
         for (const key in data) {
             if (key !== 'danh_sach_chan') {
                 const element = document.querySelector(`[data-field="${key}"]`);
                 if (element) element.textContent = data[key];
             }
         }
-        // Lưu ý: Phần tính Mãn Kỳ đã được xóa bỏ để dùng giá trị bạn gửi lên.
         
         const tbody = document.getElementById('details-tbody');
         tbody.innerHTML = '';
@@ -241,16 +241,14 @@
                 return (a.ky || Infinity) - (b.ky || Infinity);
             });
 
-            // --- Bước 2: Logic tính ngày mới ---
+            // --- Bước 2: Logic tính ngày nối tiếp (đã sửa) ---
             // 1. Tìm ngày mốc: là ngày của người hốt cuối cùng, hoặc ngày mở dây nếu chưa ai hốt.
-            let anchorDate = data.ngay_mo;
+            let nextPayoutDate = data.ngay_mo;
             const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
             if (deadMembers.length > 0) {
-                anchorDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
+                nextPayoutDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
             }
 
-            // 2. Bắt đầu đếm cho các hụi viên "Sống"
-            let liveMemberCounter = 0; 
             const kyHanValueInt = parseInt(data.ky_han_value) || 1;
 
             // --- Bước 3: Vòng lặp hiển thị ---
@@ -259,11 +257,11 @@
                 const row = document.createElement('tr');
                 let ngayHienThi = chan.ngay;
 
-                // Nếu là hụi viên "Sống", tính ngày theo công thức mới
+                // Nếu là hụi viên "Sống", tính ngày theo logic nối tiếp
                 if (chan.status === 'S') {
-                    liveMemberCounter++; 
-                    // Công thức: Ngày = Ngày Mốc + (Số thứ tự của hụi viên sống * Số ngày kỳ hạn)
-                    ngayHienThi = addPeriod(anchorDate, liveMemberCounter * kyHanValueInt, data.ky_han_unit);
+                    // Ngày của người này = ngày của người trước đó + 1 kỳ hạn
+                    nextPayoutDate = addPeriod(nextPayoutDate, kyHanValueInt, data.ky_han_unit);
+                    ngayHienThi = nextPayoutDate;
                 }
                 
                 const statusClass = chan.status === 'C' ? 'dead' : 'alive';
@@ -299,7 +297,6 @@
         `;
         tbody.appendChild(totalRow);
         
-        // Gán sự kiện cho các nút
         const billElement = document.getElementById('bill-to-capture');
         document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
         document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
@@ -359,5 +356,3 @@
 </script>
 </body>
 </html>
-
-
