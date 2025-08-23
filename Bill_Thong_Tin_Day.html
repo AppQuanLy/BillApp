@@ -195,16 +195,28 @@
         return num.toLocaleString('vi-VN');
     }
 
+    /**
+     * PHIÊN BẢN CUỐI CÙNG - AN TOÀN TUYỆT ĐỐI
+     * - Tự động chuyển đổi `value` thành số nguyên để đảm bảo phép tính luôn đúng.
+     */
     function addPeriod(dateString, value, unit) {
+        // Kiểm tra đầu vào cơ bản
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
+        
+        // Chuyển đổi `value` thành một số nguyên. Nếu không thành công, mặc định là 1.
+        const numericValue = parseInt(value) || 1;
+
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
+
+        // Kiểm tra ngày hợp lệ sau khi tạo
         if (isNaN(date.getTime())) return "";
 
         if ((unit || '').toLowerCase().includes('tháng')) {
-            date.setMonth(date.getMonth() + value);
+            date.setMonth(date.getMonth() + numericValue);
         } else {
-            date.setDate(date.getDate() + value);
+            // Luôn cộng ngày bằng giá trị đã được làm sạch
+            date.setDate(date.getDate() + numericValue);
         }
         
         const newDay = String(date.getDate()).padStart(2, '0');
@@ -220,11 +232,27 @@
                 if (element) element.textContent = data[key];
             }
         }
+        
+        // TÍNH TOÁN "MÃN KỲ" AN TOÀN
         const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
-        if (manKyDuKienEl && data.ngay_mo && data.so_ky) {
-            const endDate = addPeriod(data.ngay_mo, (data.so_ky - 1) * data.ky_han_value, data.ky_han_unit);
+        if (manKyDuKienEl && data.ngay_mo && data.so_ky && data.ky_han_value) {
+            // Dùng parseInt để đảm bảo các giá trị là số trước khi nhân
+            const soKyInt = parseInt(data.so_ky) || 0;
+            const kyHanValueInt = parseInt(data.ky_han_value) || 1;
+            const totalPeriodsToAdd = (soKyInt > 0 ? soKyInt - 1 : 0);
+            
+            // Với kỳ hạn khác Tháng, tổng số ngày cộng dồn sẽ lớn, ta cần tính toán lại
+            let endDate;
+            if ((data.ky_han_unit || '').toLowerCase().includes('tháng')) {
+                 endDate = addPeriod(data.ngay_mo, totalPeriodsToAdd * kyHanValueInt, data.ky_han_unit);
+            } else {
+                 // Với Ngày/Tuần, ta tìm ngày của người cuối cùng để tính mãn kỳ
+                 const lastMemberDate = addPeriod(data.ngay_mo, totalPeriodsToAdd * kyHanValueInt, data.ky_han_unit);
+                 endDate = lastMemberDate;
+            }
             manKyDuKienEl.textContent = endDate;
         }
+
 
         const tbody = document.getElementById('details-tbody');
         tbody.innerHTML = '';
@@ -298,6 +326,7 @@
         document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
     }
 
+    // --- CÁC HÀM HỖ TRỢ KHÁC GIỮ NGUYÊN ---
     async function captureBill(element, callback) {
         const controls = element.querySelector('.bill-controls');
         if (controls) controls.style.display = 'none';
@@ -350,11 +379,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
