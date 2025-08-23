@@ -174,7 +174,7 @@
         </div>
     </div>
 
-   <script>
+<script>
     let billData = {};
 
     window.onload = function() {
@@ -196,72 +196,87 @@
     }
 
     /**
-     * HÀM TÍNH TOÁN NGÀY THÁNG ĐÃ SỬA LỖI
-     * - Xử lý chính xác các trường hợp cộng tháng cho ngày cuối tháng (ví dụ: 31/1 -> 28/2, 31/8 -> 30/9).
+     * PHIÊN BẢN GHI LỖI CỦA HÀM addPeriod
      */
-function addPeriod(dateString, value, unit) {
-    // Luôn đọc ngày tháng theo định dạng DD/MM/YYYY mà AppSheet đang gửi
-    const [day, month, year] = dateString.split('/');
-    // Tạo đối tượng Date (lưu ý tháng trong JS là 0-11, nên phải month - 1)
-    const date = new Date(+year, +month - 1, +day);
+    function addPeriod(dateString, value, unit) {
+        // --- Bắt đầu ghi nhật ký ---
+        console.log(`--- BẮT ĐẦU addPeriod ---`);
+        console.log(`DỮ LIỆU ĐẦU VÀO: dateString = "${dateString}", value = ${value}, unit = "${unit}"`);
 
-    if ((unit || '').toLowerCase().includes('tháng')) {
-        // Áp dụng logic đơn giản cho kỳ hạn tháng theo yêu cầu của bạn
-        // JavaScript sẽ tự động "tràn" ngày nếu tháng tiếp theo không có ngày tương ứng
-        // Ví dụ: 31/08/2025 + 1 tháng => 01/10/2025
-        date.setMonth(date.getMonth() + value);
-    } else {
-        // Logic này đã chạy đúng cho Ngày và Tuần
-        date.setDate(date.getDate() + value);
+        // Kiểm tra đầu vào có hợp lệ không
+        if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) {
+            console.error("LỖI: Định dạng dateString không hợp lệ!");
+            return ""; // Trả về rỗng để tránh gây lỗi dây chuyền
+        }
+
+        const [day, month, year] = dateString.split('/');
+        const date = new Date(+year, +month - 1, +day);
+        
+        // Ghi lại đối tượng Date vừa tạo
+        console.log("JavaScript đã tạo đối tượng Date:", date.toString());
+
+        // Kiểm tra xem Date có hợp lệ không
+        if (isNaN(date.getTime())) {
+            console.error("LỖI: Không thể tạo đối tượng Date hợp lệ từ chuỗi đầu vào!");
+            return "";
+        }
+
+        if ((unit || '').toLowerCase().includes('tháng')) {
+            date.setMonth(date.getMonth() + value);
+        } else {
+            date.setDate(date.getDate() + value);
+        }
+        
+        // Ghi lại đối tượng Date sau khi tính toán
+        console.log("Date sau khi tính toán:", date.toString());
+
+        const newDay = String(date.getDate()).padStart(2, '0');
+        const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+        const newYear = date.getFullYear();
+        const result = `${newDay}/${newMonth}/${newYear}`;
+
+        // Ghi lại kết quả cuối cùng
+        console.log(`KẾT QUẢ TRẢ VỀ: "${result}"`);
+        console.log(`--- KẾT THÚC addPeriod ---`);
+        // --- Kết thúc ghi nhật ký ---
+        
+        return result;
     }
 
-    // Định dạng lại ngày tháng năm để trả về
-    const newDay = String(date.getDate()).padStart(2, '0');
-    const newMonth = String(date.getMonth() + 1).padStart(2, '0');
-    const newYear = date.getFullYear();
-    return `${newDay}/${newMonth}/${newYear}`;
-}
-
-    /**
-     * HÀM LOGIC CHÍNH ĐÃ SỬA LỖI
-     * - Xử lý đúng trường hợp dây mới chưa có người hốt.
-     * - Sử dụng ngày mốc chính xác để tính toán cho các kỳ tiếp theo.
-     */
+    // Hàm generateBill và các hàm khác giữ nguyên như phiên bản trước
     function generateBill(data) {
-        // --- Phần điền thông tin chung ---
         for (const key in data) {
             if (key !== 'danh_sach_chan') {
                 const element = document.querySelector(`[data-field="${key}"]`);
-                if (element) {
-                    element.textContent = data[key];
-                }
+                if (element) element.textContent = data[key];
             }
         }
+        const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
+        if (manKyDuKienEl && data.ngay_mo && data.so_ky) {
+            const endDate = addPeriod(data.ngay_mo, (data.so_ky - 1) * data.ky_han_value, data.ky_han_unit);
+            manKyDuKienEl.textContent = endDate;
+        }
+
 
         const tbody = document.getElementById('details-tbody');
         tbody.innerHTML = '';
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            // --- Sắp xếp: hụi chết (C) lên trước, sau đó đến hụi sống (S) ---
             data.danh_sach_chan.sort((a, b) => {
                 if (a.status === 'C' && b.status === 'S') return -1;
                 if (a.status === 'S' && b.status === 'C') return 1;
                 return (a.ky || Infinity) - (b.ky || Infinity);
             });
 
-            // --- Logic tính toán ngày đã sửa ---
-            // 1. Xác định ngày làm mốc để bắt đầu tính toán
-            let calculationAnchorDate = data.ngay_mo; // Mặc định là ngày mở
+            let calculationAnchorDate = data.ngay_mo;
             const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
             if (deadMembers.length > 0) {
                 calculationAnchorDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
             }
 
-            // 2. Cờ để xác định người đầu tiên trong dây mới
             let isFirstLiveMemberInNewHui = (deadMembers.length === 0);
 
-            // --- Vòng lặp để hiển thị và tính ngày ---
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
                 const row = document.createElement('tr');
@@ -299,7 +314,6 @@ function addPeriod(dateString, value, unit) {
             });
         }
         
-        // --- Thêm dòng tổng và các nút bấm ---
         const totalRow = document.createElement('tr');
         totalRow.className = 'total-row';
         totalRow.innerHTML = `
@@ -341,12 +355,10 @@ function addPeriod(dateString, value, unit) {
     }
 
     function copyBillAsImage(element) {
-        captureBill(element, canvas => {
-            canvas.toBlob(blob => {
-                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-                .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
-                .catch(err => alert('Lỗi khi copy.'));
-            });
+        canvas.toBlob(blob => {
+            navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+            .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+            .catch(err => alert('Lỗi khi copy.'));
         });
     }
 
@@ -368,6 +380,7 @@ function addPeriod(dateString, value, unit) {
 </script>
 </body>
 </html>
+
 
 
 
