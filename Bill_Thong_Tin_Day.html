@@ -195,31 +195,11 @@
         return num.toLocaleString('vi-VN');
     }
 
-    /**
-     * PHIÊN BẢN GHI LỖI CỦA HÀM addPeriod
-     */
     function addPeriod(dateString, value, unit) {
-        // --- Bắt đầu ghi nhật ký ---
-        console.log(`--- BẮT ĐẦU addPeriod ---`);
-        console.log(`DỮ LIỆU ĐẦU VÀO: dateString = "${dateString}", value = ${value}, unit = "${unit}"`);
-
-        // Kiểm tra đầu vào có hợp lệ không
-        if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) {
-            console.error("LỖI: Định dạng dateString không hợp lệ!");
-            return ""; // Trả về rỗng để tránh gây lỗi dây chuyền
-        }
-
+        if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
-        
-        // Ghi lại đối tượng Date vừa tạo
-        console.log("JavaScript đã tạo đối tượng Date:", date.toString());
-
-        // Kiểm tra xem Date có hợp lệ không
-        if (isNaN(date.getTime())) {
-            console.error("LỖI: Không thể tạo đối tượng Date hợp lệ từ chuỗi đầu vào!");
-            return "";
-        }
+        if (isNaN(date.getTime())) return "";
 
         if ((unit || '').toLowerCase().includes('tháng')) {
             date.setMonth(date.getMonth() + value);
@@ -227,23 +207,12 @@
             date.setDate(date.getDate() + value);
         }
         
-        // Ghi lại đối tượng Date sau khi tính toán
-        console.log("Date sau khi tính toán:", date.toString());
-
         const newDay = String(date.getDate()).padStart(2, '0');
         const newMonth = String(date.getMonth() + 1).padStart(2, '0');
         const newYear = date.getFullYear();
-        const result = `${newDay}/${newMonth}/${newYear}`;
-
-        // Ghi lại kết quả cuối cùng
-        console.log(`KẾT QUẢ TRẢ VỀ: "${result}"`);
-        console.log(`--- KẾT THÚC addPeriod ---`);
-        // --- Kết thúc ghi nhật ký ---
-        
-        return result;
+        return `${newDay}/${newMonth}/${newYear}`;
     }
 
-    // Hàm generateBill và các hàm khác giữ nguyên như phiên bản trước
     function generateBill(data) {
         for (const key in data) {
             if (key !== 'danh_sach_chan') {
@@ -256,7 +225,6 @@
             const endDate = addPeriod(data.ngay_mo, (data.so_ky - 1) * data.ky_han_value, data.ky_han_unit);
             manKyDuKienEl.textContent = endDate;
         }
-
 
         const tbody = document.getElementById('details-tbody');
         tbody.innerHTML = '';
@@ -355,10 +323,12 @@
     }
 
     function copyBillAsImage(element) {
-        canvas.toBlob(blob => {
-            navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-            .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
-            .catch(err => alert('Lỗi khi copy.'));
+        captureBill(element, canvas => {
+            canvas.toBlob(blob => {
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                .catch(err => alert('Lỗi khi copy.'));
+            });
         });
     }
 
@@ -380,6 +350,7 @@
 </script>
 </body>
 </html>
+
 
 
 
