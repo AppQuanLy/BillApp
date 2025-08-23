@@ -239,16 +239,15 @@
                 return (a.ky || Infinity) - (b.ky || Infinity);
             });
 
-            // --- Logic tìm ngày mốc đã được sửa ---
+            // --- Logic tính ngày đã hoàn thiện ---
             let anchorDate = data.ngay_mo;
             const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
             if (deadMembers.length > 0) {
-                // Sửa lỗi: Sắp xếp lại danh sách hụi chết theo kỳ hốt để lấy ra người cuối cùng
-                deadMembers.sort((a, b) => (a.ky || 0) - (b.ky || 0));
-                anchorDate = deadMembers[deadMembers.length - 1].ngay;
+                anchorDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
             }
-
-            // --- Phần còn lại giữ nguyên logic tính độc lập ---
+            
+            // **THAY ĐỔI QUAN TRỌNG: Kiểm tra xem đây có phải dây mới không**
+            const isNewHui = (deadMembers.length === 0);
             let liveMemberCounter = 0; 
             const kyHanValueInt = parseInt(data.ky_han_value) || 1;
 
@@ -258,8 +257,18 @@
                 let ngayHienThi = chan.ngay;
 
                 if (chan.status === 'S') {
-                    liveMemberCounter++; 
-                    ngayHienThi = addPeriod(anchorDate, liveMemberCounter * kyHanValueInt, data.ky_han_unit);
+                    liveMemberCounter++;
+                    let periodsToAdd;
+                    
+                    if (isNewHui) {
+                        // Nếu là dây mới, người đầu tiên +0 kỳ, người thứ hai +1 kỳ,...
+                        periodsToAdd = (liveMemberCounter - 1) * kyHanValueInt;
+                    } else {
+                        // Nếu là dây cũ, người đầu tiên +1 kỳ, người thứ hai +2 kỳ,...
+                        periodsToAdd = liveMemberCounter * kyHanValueInt;
+                    }
+                    
+                    ngayHienThi = addPeriod(anchorDate, periodsToAdd, data.ky_han_unit);
                 }
                 
                 const statusClass = chan.status === 'C' ? 'dead' : 'alive';
@@ -352,3 +361,4 @@
 </script>
 </body>
 </html>
+
