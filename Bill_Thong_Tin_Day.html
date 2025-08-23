@@ -197,8 +197,8 @@
 
     function addPeriod(dateString, value, unit) {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
-        const numericValue = parseInt(value) || 0; // Chuyển value thành số, nếu lỗi thì là 0
-        if (numericValue === 0 && value !== 0) return dateString; // Trả về ngày gốc nếu value không hợp lệ
+        const numericValue = parseInt(value) || 0;
+        if (numericValue === 0) return dateString;
 
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
@@ -217,61 +217,52 @@
     }
 
     /**
-     * PHIÊN BẢN LOGIC MỚI - TÍNH TOÁN ĐỘC LẬP TỪNG DÒNG
+     * PHIÊN BẢN LOGIC MỚI - DỰA TRÊN GỢI Ý CỦA BẠN
      */
     function generateBill(data) {
-        // Điền thông tin chung
+        // --- Bước 1: Điền các thông tin chung từ JSON ---
         for (const key in data) {
             if (key !== 'danh_sach_chan') {
                 const element = document.querySelector(`[data-field="${key}"]`);
                 if (element) element.textContent = data[key];
             }
         }
+        // Lưu ý: Phần tính Mãn Kỳ đã được xóa bỏ để dùng giá trị bạn gửi lên.
         
         const tbody = document.getElementById('details-tbody');
         tbody.innerHTML = '';
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            // Sắp xếp: hụi chết (C) lên trước, sau đó đến hụi sống (S)
+            // Sắp xếp: hụi chết (C/X) lên trước, sau đó đến hụi sống (S/V)
             data.danh_sach_chan.sort((a, b) => {
                 if (a.status === 'C' && b.status === 'S') return -1;
                 if (a.status === 'S' && b.status === 'C') return 1;
                 return (a.ky || Infinity) - (b.ky || Infinity);
             });
 
-            // Xác định ngày mốc và số lượng hụi viên đã hốt
+            // --- Bước 2: Logic tính ngày mới ---
+            // 1. Tìm ngày mốc: là ngày của người hốt cuối cùng, hoặc ngày mở dây nếu chưa ai hốt.
             let anchorDate = data.ngay_mo;
             const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
             if (deadMembers.length > 0) {
                 anchorDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
             }
 
-            // Tính Mãn Kỳ dựa trên ngày mốc và số kỳ còn lại
-            const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
-            if (manKyDuKienEl) {
-                const liveMemberCount = (parseInt(data.so_ky) || 0) - deadMembers.length;
-                if (liveMemberCount > 0) {
-                    const kyHanValueInt = parseInt(data.ky_han_value) || 1;
-                    const endDate = addPeriod(anchorDate, liveMemberCount * kyHanValueInt, data.ky_han_unit);
-                    manKyDuKienEl.textContent = endDate;
-                } else {
-                     manKyDuKienEl.textContent = anchorDate; // Nếu đã hốt hết, mãn kỳ là ngày hốt cuối
-                }
-            }
+            // 2. Bắt đầu đếm cho các hụi viên "Sống"
+            let liveMemberCounter = 0; 
+            const kyHanValueInt = parseInt(data.ky_han_value) || 1;
 
-
-            let liveMemberCounter = 0; // Biến đếm số thứ tự của hụi viên "Sống"
-
+            // --- Bước 3: Vòng lặp hiển thị ---
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
                 const row = document.createElement('tr');
                 let ngayHienThi = chan.ngay;
 
+                // Nếu là hụi viên "Sống", tính ngày theo công thức mới
                 if (chan.status === 'S') {
-                    liveMemberCounter++; // Tăng biến đếm
-                    // Tính ngày của dòng này dựa trên ngày mốc và vị trí của nó trong danh sách "Sống"
-                    const kyHanValueInt = parseInt(data.ky_han_value) || 1;
+                    liveMemberCounter++; 
+                    // Công thức: Ngày = Ngày Mốc + (Số thứ tự của hụi viên sống * Số ngày kỳ hạn)
                     ngayHienThi = addPeriod(anchorDate, liveMemberCounter * kyHanValueInt, data.ky_han_unit);
                 }
                 
@@ -291,6 +282,7 @@
                 `;
                 tbody.appendChild(row);
 
+                // Cộng tổng
                 tongTham += chan.tham || 0;
                 tongTienHot += chan.tien_hot || 0;
                 tongTienDong += chan.tien_dong || 0;
@@ -307,13 +299,14 @@
         `;
         tbody.appendChild(totalRow);
         
+        // Gán sự kiện cho các nút
         const billElement = document.getElementById('bill-to-capture');
         document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
         document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
         document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
     }
 
-    // --- CÁC HÀM HỖ TRỢ KHÁC GIỮ NGUYÊN ---
+    // --- CÁC HÀM HỖ TRỢ KHÁC ---
     async function captureBill(element, callback) {
         const controls = element.querySelector('.bill-controls');
         if (controls) controls.style.display = 'none';
@@ -366,4 +359,5 @@
 </script>
 </body>
 </html>
+
 
