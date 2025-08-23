@@ -239,14 +239,20 @@
                 return (a.ky || Infinity) - (b.ky || Infinity);
             });
 
-            // --- Logic tính ngày đã hoàn thiện ---
+            // --- Logic tìm ngày mốc đã được sửa lại hoàn toàn ---
             let anchorDate = data.ngay_mo;
+            let highestKy = 0;
             const deadMembers = data.danh_sach_chan.filter(chan => chan.status === 'C' && chan.ngay);
-            if (deadMembers.length > 0) {
-                anchorDate = deadMembers.reduce((latest, current) => (current.ky > latest.ky ? current : latest)).ngay;
-            }
             
-            // **THAY ĐỔI QUAN TRỌNG: Kiểm tra xem đây có phải dây mới không**
+            // Dùng vòng lặp đơn giản để đảm bảo tìm đúng người có kỳ hốt (ky) lớn nhất
+            deadMembers.forEach(member => {
+                const currentKy = parseInt(member.ky) || 0;
+                if (currentKy > highestKy) {
+                    highestKy = currentKy;
+                    anchorDate = member.ngay;
+                }
+            });
+
             const isNewHui = (deadMembers.length === 0);
             let liveMemberCounter = 0; 
             const kyHanValueInt = parseInt(data.ky_han_value) || 1;
@@ -361,4 +367,3 @@
 </script>
 </body>
 </html>
-
