@@ -37,7 +37,7 @@
             min-height: 100vh; 
             padding: 1rem; 
             text-align: center; 
-            background-color: rgba(255, 255, 255, 0.8); /* Lớp phủ trắng mờ để chữ dễ đọc */
+            
             margin: 0 auto;
             max-width: 100%;
             border-radius: 8px;
@@ -52,14 +52,14 @@
 
         .wheel-container { 
             position: relative; 
-            width: 300px; /* Kích thước mặc định nhỏ hơn cho di động */
-            height: 300px; 
+            width: 400px; /* Kích thước mặc định nhỏ hơn cho di động */
+            height: 400px; 
             margin-bottom: 1rem;
         }
         @media (min-width: 768px) {
             .wheel-container {
-                width: 450px; /* Kích thước lớn hơn cho máy tính */
-                height: 450px; 
+                width: 550px; /* Kích thước lớn hơn cho máy tính */
+                height: 550px; 
                 margin-bottom: 2rem;
             }
         }
@@ -150,7 +150,7 @@
     
     <div class="main-container">
         <h1 class="text-4xl font-bold text-gray-800 mb-2">Vòng Quay Hốt Hụi</h1>
-        <p class="text-gray-500 mb-8">Vòng Quay từ Phần Mềm Tính Hụi!</p>
+        <p class="text-gray-500 mb-8">Bấm nút Quay để bắt đầu!</p>
         
         <div class="wheel-container">
             <canvas id="wheelCanvas">Trình duyệt của bạn không hỗ trợ Canvas.</canvas>
