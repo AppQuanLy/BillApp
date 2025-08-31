@@ -3,205 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vòng Quay Chọn Người Hốt Hụi</title>
+    <title>Vòng Quay Hốt Hụi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f7f6; padding: 20px; }
-        #wheel-container { margin: 20px auto; position: relative; }
-        #wheel { border: 2px solid #000; }
-        #arrow { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 40px; color: red; }
-        #spin-button { padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #spin-button:disabled { background-color: #ccc; cursor: not-allowed; }
-        #result { margin-top: 20px; font-size: 20px; font-weight: bold; color: green; }
-        #status-message { margin-top: 10px; color: red; }
-        #edit-section { margin-top: 20px; display: none; }
-        #edit-section.show { display: block; }
-        #edit-button { padding: 10px 20px; font-size: 16px; background-color: #ffc107; color: black; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 10px; }
-        .weight-input { width: 50px; text-align: center; }
-        #save-weights { padding: 8px 16px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap'); /* Đảm bảo font Inter được tải */
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f0f2f5; 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Giữ hình nền không cuộn theo */
+            transition: background-image 0.3s ease-in-out; /* Hiệu ứng chuyển hình nền mượt mà */
+        }
+        
+        /* Hình nền mặc định cho di động (hoặc màn hình nhỏ) */
+        body {
+            background-image: url('https://github.com/AppQuanLy/BillApp/blob/main/Images_Hui/BG_PHONE.png?raw=true'); 
+        }
+
+        /* Hình nền cho máy tính (màn hình lớn hơn 768px) */
+        @media (min-width: 768px) {
+            body {
+                background-image: url('https://github.com/AppQuanLy/BillApp/blob/main/Images_Hui/BG_PC.png?raw=true');
+            }
+        }
+
+        .main-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            padding: 1rem; 
+            text-align: center; 
+            background-color: rgba(255, 255, 255, 0.8); /* Lớp phủ trắng mờ để chữ dễ đọc */
+            margin: 0 auto;
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        /* Đảm bảo khung nội dung không quá rộng trên desktop */
+        @media (min-width: 768px) {
+            .main-container {
+                max-width: 800px;
+                padding: 2rem;
+            }
+        }
+
+        .wheel-container { 
+            position: relative; 
+            width: 300px; /* Kích thước mặc định nhỏ hơn cho di động */
+            height: 300px; 
+            margin-bottom: 1rem;
+        }
+        @media (min-width: 768px) {
+            .wheel-container {
+                width: 450px; /* Kích thước lớn hơn cho máy tính */
+                height: 450px; 
+                margin-bottom: 2rem;
+            }
+        }
+
+        canvas { 
+            display: block; 
+            border-radius: 50%; 
+            border: 8px solid #ffffff; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+            transition: transform 6s cubic-bezier(0.2, 0.9, 0.4, 1.0); 
+            width: 100%; /* Đảm bảo canvas lấp đầy container */
+            height: 100%; /* Đảm bảo canvas lấp đầy container */
+        }
+        .pointer { 
+            position: absolute; 
+            top: -10px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 0; 
+            height: 0; 
+            border-left: 15px solid transparent; /* Nhỏ hơn cho di động */
+            border-right: 15px solid transparent; /* Nhỏ hơn cho di động */
+            border-top: 25px solid #ef4444; /* Nhỏ hơn cho di động */
+            z-index: 10; 
+        }
+        @media (min-width: 768px) {
+            .pointer {
+                border-left: 20px solid transparent; 
+                border-right: 20px solid transparent; 
+                border-top: 30px solid #ef4444; 
+            }
+        }
+
+        .spin-button { 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            font-size: 1.25rem; /* Kích thước font mặc định */
+            padding: 0.75rem 2.5rem; /* Padding mặc định */
+        }
+        @media (min-width: 768px) {
+            .spin-button {
+                transform: scale(1.05); 
+                box-shadow: 0 6px 12px rgba(0,0,0,0.15); 
+                font-size: 1.5rem; /* Lớn hơn cho máy tính */
+                padding: 1rem 3rem; /* Padding lớn hơn cho máy tính */
+            }
+        }
+        .spin-button:hover { transform: scale(1.05); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        .spin-button:active { transform: scale(0.95); }
+        .spin-button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background-color: rgba(0, 0, 0, 0.6); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 50; 
+        }
+        .modal-content { 
+            animation: fadeIn 0.3s ease-out; 
+            width: 90%; /* Rộng hơn cho di động */
+            max-width: 380px; /* Giới hạn chiều rộng trên di động */
+        }
+        @media (min-width: 768px) {
+            .modal-content {
+                max-width: 500px; /* Rộng hơn cho máy tính */
+            }
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        /* Nút cài đặt */
+        #settingsButton {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        #settingsButton:hover {
+            background-color: rgba(240, 240, 240, 0.9);
+        }
     </style>
 </head>
-<body>
-    <h1>Vòng Quay Chọn Người Hốt Hụi</h1>
-    <div id="wheel-container">
-        <canvas id="wheel" width="400" height="400"></canvas>
-        <div id="arrow">▼</div>
-    </div>
-    <button id="spin-button">Quay</button>
-    <div id="result"></div>
-    <div id="status-message"></div>
+<body class="bg-gray-100">
 
-    <button id="edit-button">Chỉnh sửa tỷ lệ</button>
-    <div id="edit-section">
-        <h3>Chỉnh trọng số (tỷ lệ trúng)</h3>
-        <table id="weights-table" style="margin: 0 auto; border-collapse: collapse;">
-            <!-- Rows sẽ được thêm động -->
-        </table>
-        <button id="save-weights">Lưu thay đổi</button>
+    <button id="settingsButton" class="fixed top-4 right-4 bg-white p-3 rounded-full shadow-lg z-20 hover:bg-gray-200 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+    </button>
+    
+    <div class="main-container">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Vòng Quay Hốt Hụi</h1>
+        <p class="text-gray-500 mb-8">Vòng Quay từ Phần Mềm Tính Hụi!</p>
+        
+        <div class="wheel-container">
+            <canvas id="wheelCanvas">Trình duyệt của bạn không hỗ trợ Canvas.</canvas>
+            <div class="pointer"></div>
+        </div>
+        
+        <div class="mt-8">
+            <button id="spinButton" class="spin-button bg-gradient-to-r from-red-500 to-red-600 text-white font-bold py-4 px-12 rounded-full shadow-lg text-xl">QUAY!</button>
+        </div>
+        
+        <div id="resultBox" class="hidden mt-8 w-full max-w-md p-4 text-center text-xl font-semibold rounded-lg shadow-md transition-all duration-300"></div>
+    </div>
+    
+    <div id="settingsModal" class="modal-overlay hidden">
+        <div class="modal-content bg-white p-6 rounded-2xl shadow-xl w-full max-w-lg m-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Chỉnh Sửa Tỉ Lệ Quay</h2>
+            <div id="prize-list" class="space-y-3 max-h-80 overflow-y-auto pr-2"></div>
+            <div class="mt-6 flex justify-between">
+                <button id="addPrizeButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Thêm Người</button>
+                <button id="saveSettingsButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">Lưu & Đóng</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        let participants = []; // Danh sách người tham gia: [{name: 'A', weight: 1}, ...]
-        const canvas = document.getElementById('wheel');
+        // --- CÁC BIẾN TOÀN CỤC ---
+        const canvas = document.getElementById('wheelCanvas');
         const ctx = canvas.getContext('2d');
-        const spinButton = document.getElementById('spin-button');
-        const resultDiv = document.getElementById('result');
-        const statusMessage = document.getElementById('status-message');
-        const editButton = document.getElementById('edit-button');
-        const editSection = document.getElementById('edit-section');
-        const weightsTable = document.getElementById('weights-table');
-        const saveWeights = document.getElementById('save-weights');
-        const wheelSize = 400;
-        const center = wheelSize / 2;
-        let currentAngle = 0;
-        let spinning = false;
+        const spinButton = document.getElementById('spinButton');
+        const resultBox = document.getElementById('resultBox');
+        const settingsButton = document.getElementById('settingsButton');
+        const settingsModal = document.getElementById('settingsModal');
+        const addPrizeButton = document.getElementById('addPrizeButton');
+        const saveSettingsButton = document.getElementById('saveSettingsButton');
+        const prizeListContainer = document.getElementById('prize-list');
 
-        // Màu sắc ngẫu nhiên cho các phần
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
+        const colorPalette = ['#ee1c24', '#3cb878', '#f6989d', '#00aef0', '#f26522', '#e70697', '#fff200', '#8a2be2', '#ff4500', '#20b2aa'];
+        let prizes = [];
+        let isSpinning = false;
+        let currentRotation = 0;
+        let centerX, centerY, radius; // Sẽ được tính toán động
+
+        // --- CÁC HÀM XỬ LÝ KÍCH THƯỚC VÀ VẼ ---
+
+        function resizeCanvas() {
+            const container = document.querySelector('.wheel-container');
+            const size = Math.min(container.offsetWidth, container.offsetHeight);
+            canvas.width = size;
+            canvas.height = size;
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            radius = centerX - 10; // Giảm 10px để có viền
+            drawWheel(); // Vẽ lại vòng quay khi thay đổi kích thước
         }
 
-        // Vẽ vòng quay với các phần BẰNG NHAU (không phụ thuộc weight)
         function drawWheel() {
-            if (participants.length === 0) return;
-            ctx.clearRect(0, 0, wheelSize, wheelSize);
-            const sliceAngle = 2 * Math.PI / participants.length; // Các phần bằng nhau
-            let startAngle = currentAngle;
-            participants.forEach((p, index) => {
-                ctx.beginPath();
-                ctx.arc(center, center, center, startAngle, startAngle + sliceAngle);
-                ctx.lineTo(center, center);
-                ctx.fillStyle = p.color || (p.color = getRandomColor());
-                ctx.fill();
-                ctx.stroke();
-
-                // Vẽ chữ
-                ctx.save();
-                ctx.translate(center, center);
-                ctx.rotate(startAngle + sliceAngle / 2);
-                ctx.textAlign = 'right';
-                ctx.fillStyle = '#000';
-                ctx.font = 'bold 14px Arial';
-                ctx.fillText(p.name, center - 10, 5);
-                ctx.restore();
-
-                startAngle += sliceAngle;
-            });
-        }
-
-        // Chọn ngẫu nhiên với trọng số (weight chỉ ảnh hưởng xác suất, không ảnh hưởng hiển thị)
-        function weightedRandom() {
-            const totalWeight = participants.reduce((sum, p) => sum + p.weight, 0);
-            let random = Math.random() * totalWeight;
-            for (let i = 0; i < participants.length; i++) {
-                random -= participants[i].weight;
-                if (random < 0) return i;
-            }
-            return participants.length - 1;
-        }
-
-        // Animation quay
-        function spinWheel() {
-            if (spinning) return;
-            if (participants.length < 2) {
-                statusMessage.textContent = 'Cần ít nhất 2 người tham gia để quay.';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (prizes.length === 0) {
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#6b7280';
+                ctx.font = `bold ${Math.max(16, radius / 8)}px Inter`; // Font size động
+                ctx.fillText('Không có người chơi.', centerX, centerY);
                 return;
             }
-            spinning = true;
+            const anglePerPrize = (2 * Math.PI) / prizes.length;
+            let startAngle = 0;
+            prizes.forEach(prize => {
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, startAngle + anglePerPrize);
+                ctx.closePath();
+                ctx.fillStyle = prize.color;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + anglePerPrize / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = prize.textColor || '#fff';
+                ctx.font = `bold ${Math.max(14, radius / 12)}px Inter`; // Font size động
+                const text = prize.text.length > (radius / 20) ? prize.text.substring(0, Math.floor(radius / 20) - 1) + '...' : prize.text; // Giới hạn độ dài chữ động
+                ctx.fillText(text, radius - 15, 10);
+                ctx.restore();
+                startAngle += anglePerPrize;
+            });
+        }
+        
+        // --- CÁC HÀM XỬ LÝ CHÍNH KHÁC ---
+
+        function initializeWheelFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const namesParam = params.get('names');
+            let initialNames = ['Người 1', 'Người 2', 'Người 3', 'Người 4', 'Người 5'];
+            
+            if (namesParam) {
+                const decodedNames = decodeURIComponent(namesParam);
+                initialNames = decodedNames.split(',').map(name => name.trim()).filter(name => name);
+            }
+
+            if (initialNames.length === 0) {
+                 initialNames = ['Người 1', 'Người 2', 'Người 3', 'Người 4', 'Người 5'];
+            }
+            
+            prizes = initialNames.map((name, index) => ({
+                text: name,
+                probability: 0, 
+                color: colorPalette[index % colorPalette.length],
+                textColor: (index % colorPalette.length === 6) ? '#000000' : '#ffffff'
+            }));
+
+            resizeCanvas(); // Kích thước và vẽ lần đầu
+        }
+
+        function getWinningPrizeIndex() {
+            const totalProbability = prizes.reduce((sum, prize) => sum + prize.probability, 0);
+            if (totalProbability <= 0) {
+                return Math.floor(Math.random() * prizes.length);
+            }
+            const randomNum = Math.random() * totalProbability;
+            let cumulativeProbability = 0;
+            for (let i = 0; i < prizes.length; i++) {
+                cumulativeProbability += prizes[i].probability;
+                if (randomNum <= cumulativeProbability) return i;
+            }
+            return prizes.length - 1; 
+        }
+
+        function calculateFinalStopAngle(winningIndex) {
+            const numPrizes = prizes.length;
+            const anglePerPrizeDeg = 360 / numPrizes;
+            const pointerPositionDeg = 270;
+            const winningSegmentStartAngle = winningIndex * anglePerPrizeDeg;
+            const landingDeg = winningSegmentStartAngle + (anglePerPrizeDeg / 2);
+            let rotationRequired = pointerPositionDeg - landingDeg;
+            while (rotationRequired < 0) {
+                rotationRequired += 360;
+            }
+            const extraSpins = 6;
+            const currentLap = Math.floor(currentRotation / 360);
+            return (currentLap + extraSpins) * 360 + rotationRequired;
+        }
+
+        function startSpin() {
+            if (isSpinning || prizes.length === 0) return;
+            isSpinning = true;
             spinButton.disabled = true;
-            resultDiv.textContent = '';
-            const winnerIndex = weightedRandom();
-            const sliceAngle = 360 / participants.length; // Các phần bằng nhau
-            const cumulativeAngle = winnerIndex * sliceAngle;
-            const randomInSlice = Math.random() * sliceAngle + cumulativeAngle;
-            const targetAngle = 360 - randomInSlice + 360 * 5; // Quay 5 vòng + dừng ở giữa phần winner
-
-            let startTime = null;
-            const duration = 5000; // 5 giây
-
-            function animate(time) {
-                if (!startTime) startTime = time;
-                const progress = (time - startTime) / duration;
-                const easeOut = 1 - Math.pow(1 - progress, 3); // Ease out cubic
-                currentAngle = (targetAngle * easeOut) % 360;
-                drawWheel();
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    spinning = false;
-                    spinButton.disabled = false;
-                    resultDiv.textContent = `Người trúng: ${participants[winnerIndex].name}`;
-                }
+            spinButton.innerText = 'ĐANG QUAY...';
+            resultBox.classList.add('hidden');
+            resultBox.classList.remove('bg-green-100', 'text-green-800');
+            const winningPrizeIndex = getWinningPrizeIndex();
+            if (winningPrizeIndex === -1) { 
+                 isSpinning = false;
+                 spinButton.disabled = false;
+                 return;
             }
-            requestAnimationFrame(animate);
+            const finalAngle = calculateFinalStopAngle(winningPrizeIndex);
+            canvas.style.transform = `rotate(${finalAngle}deg)`;
+            currentRotation = finalAngle;
+            setTimeout(() => {
+                isSpinning = false;
+                spinButton.disabled = false;
+                spinButton.innerText = 'QUAY!';
+                const winningPrize = prizes[winningPrizeIndex];
+                resultBox.classList.remove('hidden');
+                resultBox.classList.add('bg-green-100', 'text-green-800');
+                resultBox.innerText = `Người hốt hụi là: ${winningPrize.text}!`;
+            }, 6000);
         }
 
-        // Hiển thị form chỉnh sửa weight
-        function showEditWeights() {
-            weightsTable.innerHTML = '';
-            const header = document.createElement('tr');
-            header.innerHTML = '<th>Tên</th><th>Trọng số (weight)</th>';
-            weightsTable.appendChild(header);
-            participants.forEach((p, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${p.name}</td><td><input type="number" class="weight-input" data-index="${index}" value="${p.weight}" min="0.1" step="0.1"></td>`;
-                weightsTable.appendChild(row);
+        // --- CÁC HÀM CHO BẢNG CÀI ĐẶT (MODAL) ---
+
+        function renderSettings() {
+            prizeListContainer.innerHTML = '';
+            prizes.forEach((prize, index) => {
+                const prizeRow = createPrizeInputRow(prize.text, prize.probability, index);
+                prizeListContainer.appendChild(prizeRow);
             });
-            editSection.classList.add('show');
+        }
+        
+        function createPrizeInputRow(text, probability, index) {
+            const div = document.createElement('div');
+            div.className = 'flex items-center space-x-2';
+            div.dataset.index = index;
+            div.innerHTML = `<input type="text" value="${text}" placeholder="Tên người chơi" class="flex-1 p-2 border border-gray-300 rounded-lg"><input type="number" value="${probability}" min="0" placeholder="%" class="w-20 p-2 border border-gray-300 rounded-lg text-center"><span class="font-semibold text-gray-500">%</span><button class="remove-prize-btn bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg></button>`;
+            div.querySelector('.remove-prize-btn').addEventListener('click', () => div.remove());
+            return div;
         }
 
-        // Lưu weight mới (không vẽ lại wheel vì hiển thị không thay đổi)
-        function saveEditWeights() {
-            const inputs = document.querySelectorAll('.weight-input');
-            inputs.forEach(input => {
-                const index = input.dataset.index;
-                const newWeight = parseFloat(input.value);
-                if (newWeight > 0) {
-                    participants[index].weight = newWeight;
+        function addPrize() {
+            const newPrizeRow = createPrizeInputRow('Tên mới', 0, prizes.length);
+            prizeListContainer.appendChild(newPrizeRow);
+        }
+
+        function saveSettings() {
+            const newPrizes = [];
+            const prizeRows = prizeListContainer.querySelectorAll('.flex.items-center');
+            prizeRows.forEach((row, index) => {
+                const textInput = row.querySelector('input[type="text"]');
+                const probInput = row.querySelector('input[type="number"]');
+                const text = textInput.value.trim();
+                const probability = parseInt(probInput.value, 10) || 0; 
+                if (text) {
+                    newPrizes.push({ 
+                        text: text, 
+                        probability: probability, 
+                        color: colorPalette[index % colorPalette.length], 
+                        textColor: (index % colorPalette.length === 6) ? '#000000' : '#ffffff' 
+                    });
                 }
             });
-            editSection.classList.remove('show');
-            statusMessage.textContent = 'Tỷ lệ đã được cập nhật (hiển thị vòng quay không thay đổi).';
+            prizes = newPrizes;
+            settingsModal.classList.add('hidden');
+            drawWheel();
         }
+        
+        // --- GÁN SỰ KIỆN ---
+        spinButton.addEventListener('click', startSpin);
+        settingsButton.addEventListener('click', () => { renderSettings(); settingsModal.classList.remove('hidden'); });
+        addPrizeButton.addEventListener('click', addPrize);
+        saveSettingsButton.addEventListener('click', saveSettings);
+        settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) { settingsModal.classList.add('hidden'); } });
+        
+        // --- KHỞI TẠO KHI TẢI TRANG ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeWheelFromURL();
+            window.addEventListener('resize', resizeCanvas); // Lắng nghe sự kiện thay đổi kích thước cửa sổ
+        });
 
-        // Load dữ liệu từ URL
-        window.onload = function() {
-            try {
-                const encodedData = window.location.hash.substring(1);
-                if (encodedData) {
-                    const jsonData = decodeURIComponent(encodedData);
-                    participants = JSON.parse(jsonData);
-                    if (!Array.isArray(participants) || participants.length === 0) {
-                        throw new Error('Dữ liệu không hợp lệ');
-                    }
-                    // Kiểm tra và chuẩn hóa dữ liệu
-                    participants = participants.map(p => ({
-                        name: p.name || 'Unknown',
-                        weight: parseFloat(p.weight) > 0 ? parseFloat(p.weight) : 1
-                    }));
-                    drawWheel();
-                    statusMessage.textContent = 'Dữ liệu đã tải thành công.';
-                } else {
-                    statusMessage.textContent = 'Không có dữ liệu. Sử dụng dữ liệu mẫu.';
-                    // Dữ liệu mẫu nếu không có
-                    participants = [
-                        {name: 'Người 1', weight: 1},
-                        {name: 'Người 2', weight: 2},
-                        {name: 'Người 3', weight: 1.5}
-                    ];
-                    drawWheel();
-                }
-            } catch (error) {
-                statusMessage.textContent = 'Lỗi tải dữ liệu: ' + error.message;
-            }
-            spinButton.addEventListener('click', spinWheel);
-            editButton.addEventListener('click', showEditWeights);
-            saveWeights.addEventListener('click', saveEditWeights);
-        };
     </script>
 </body>
 </html>
