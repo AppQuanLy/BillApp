@@ -28,7 +28,7 @@
     
     <div class="main-container">
         <h1 class="text-4xl font-bold text-gray-800 mb-2">Vòng Quay Hốt Hụi</h1>
-        <p class="text-gray-500 mb-8">Chỉnh sửa tỉ lệ trong Cài đặt, sau đó bấm Quay!</p>
+        <p class="text-gray-500 mb-8">Vòng Quay từ Phần Mềm Tính Hụi!</p>
         
         <div class="wheel-container">
             <canvas id="wheelCanvas" width="450" height="450">Trình duyệt của bạn không hỗ trợ Canvas.</canvas>
@@ -188,7 +188,7 @@
                 const winningPrize = prizes[winningPrizeIndex];
                 resultBox.classList.remove('hidden');
                 resultBox.classList.add('bg-green-100', 'text-green-800');
-                resultBox.innerText = `Chúc mừng người hốt hụi là: ${winningPrize.text}!`;
+                resultBox.innerText = `Người hốt hụi là: ${winningPrize.text}!`;
             }, 6000);
         }
 
