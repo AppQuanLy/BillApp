@@ -201,11 +201,9 @@ function generateBill(data) {
 
     // 2. Xác định màu sắc (xanh cho dương, đỏ cho âm)
     let balanceClass = '';
-    if (balance > 0) {
-        balanceClass = 'text-green text-bold';
-    } else if (balance < 0) {
-        balanceClass = 'text-red text-bold';
-    }
+    if (balance > 0)  balanceClass = 'text-green';
+    if (balance < 0)  balanceClass = 'text-red';
+    
 
     // 3. Tạo hàng mới cho bảng
     const balanceRow = document.createElement('tr');
