@@ -210,7 +210,7 @@ function generateBill(data) {
     balanceRow.className = 'total-row'; // Dùng lại style của hàng tổng
     balanceRow.innerHTML = `
         <td colspan="6" >Cân Bằng Hụi (Âm/Dương)</td>
-        <td colspan="2" class="text-right ${balanceClass}">${formatCurrency(balance)}</td>
+        <td colspan="2" class="${balanceClass}">${formatCurrency(balance)}</td>
     `;
 
     // 4. Thêm hàng mới vào cuối bảng
