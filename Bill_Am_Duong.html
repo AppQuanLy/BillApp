@@ -28,14 +28,14 @@
         .header { margin-bottom: 20px; }
         .header .line { display: flex; justify-content: space-between; }
         .header .line .left { font-weight: bold; }
-        .header .title { text-align: center; font-size: 16pt; font-weight: bold; margin-top: 10px; }
+        .header .title { text-align: center; font-size: 20pt; font-weight: bold; margin-top: 10px; }
         .header .date { text-align: center; font-size: 11pt; }
-        .customer-name { font-size: 12pt; font-weight: bold; margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+        .customer-name { font-size: 15pt; font-weight: bold; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13pt;FONT-WEIGHT: bold; }
         th, td { border: 1px solid #888; padding: 5px; text-align: center; vertical-align: middle; }
         th { background-color: #d9e2f3; font-weight: bold; }
         td { background-color: #f2f2f2; }
-        tr.total-row { font-weight: bold; font-size: 11pt; background-color: #fce4d6; }
+        tr.total-row { font-weight: bold; font-size: 16pt; background-color: #fce4d6; }
         .text-red { color: #ff0000; }
         .text-green { color: #00b050; }
         .text-bold { font-weight: bold; }
@@ -188,12 +188,33 @@ function generateBill(data) {
     const totalRow = document.createElement('tr');
     totalRow.className = 'total-row';
     totalRow.innerHTML = `
-        <td colspan="5" class="text-right">TỔNG CỘNG</td>
+        <td colspan="5" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
         <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
         <td class="text-right">${formatCurrency(tongHuiSong)}</td>
         <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
     `;
     tbody.appendChild(totalRow);
+        // 1. Tính toán số tiền cân bằng
+    const balance = tongHuiSong - tongHuiChet;
+
+    // 2. Xác định màu sắc (xanh cho dương, đỏ cho âm)
+    let balanceClass = '';
+    if (balance > 0) {
+        balanceClass = 'text-green text-bold';
+    } else if (balance < 0) {
+        balanceClass = 'text-red text-bold';
+    }
+
+    // 3. Tạo hàng mới cho bảng
+    const balanceRow = document.createElement('tr');
+    balanceRow.className = 'total-row'; // Dùng lại style của hàng tổng
+    balanceRow.innerHTML = `
+        <td colspan="7" class="text-right">Cân Bằng Hụi (Âm/Dương)</td>
+        <td class="text-right ${balanceClass}">${formatCurrency(balance)}</td>
+    `;
+
+    // 4. Thêm hàng mới vào cuối bảng
+    tbody.appendChild(balanceRow);
 
     // Gán sự kiện cho các nút
     const billElement = document.getElementById('bill-to-capture');
