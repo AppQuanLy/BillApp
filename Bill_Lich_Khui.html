@@ -11,7 +11,8 @@
             background-color: #f8f9fa;
             margin: 0;
             padding: 20px;
-            font-size: 14pt;
+            font-size: 15pt;
+            font-weight: bold;
         }
         .container {
             width: 28cm;
@@ -226,10 +227,10 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${index + 1}</td>
-                        <td class="text-left" style="font-weight: bold; color: #0056b3">${item.ten_hui}</td>
+                        <td class="text-left" >${item.ten_hui}</td>
                         <td>${item.ngay_khui}</td>
                         <td>${item.gio_dau}</td>
-                        <td style="font-weight: bold;">${item.ky_han_text}</td>
+                        <td>${item.ky_han_text}</td>
                         <td>${item.ky}</td>
                         <td class="text-right">${formatCurrency(item.tien_hui)}</td>
                     `;
