@@ -135,13 +135,11 @@
         }
 
 function generateBill(data) {
-    // Điền thông tin chung
     document.querySelector('[data-field="chu_hui_ten"]').textContent = data.chu_hui_ten || '';
     document.querySelector('[data-field="chu_hui_sdt"]').textContent = data.chu_hui_sdt || '';
     document.querySelector('[data-field="ngay_in_bill"]').textContent = data.ngay_in_bill || '';
     document.querySelector('[data-field="hui_vien_ten"]').textContent = data.hui_vien_ten || '';
 
-    // Xử lý bảng chi tiết
     const tbody = document.getElementById('details-tbody');
     tbody.innerHTML = '';
     let tongHuiChet = 0;
@@ -160,7 +158,7 @@ function generateBill(data) {
                 loiLoClass = 'text-red';
             }
 
-            // THAY ĐỔI 2: THÊM DỮ LIỆU CỘT MỚI
+            // THÊM DỮ LIỆU CỘT MỚI VÀO DÒNG
             row.innerHTML = `
                 <td>${stt}</td>
                 <td class="day-hui-col">${item.day_hui || ''}</td>
@@ -180,14 +178,9 @@ function generateBill(data) {
         });
     }
     
-    // Thêm dòng tổng cộng
-    let tongLoiLoClass = '';
-    if(tongLoiLo > 0) tongLoiLoClass = 'text-green';
-    if(tongLoiLo < 0) tongLoiLoClass = 'text-red';
-
     const totalRow = document.createElement('tr');
     totalRow.className = 'total-row';
-    // THAY ĐỔI 3: TĂNG COLSPAN LÊN 1
+    // TĂNG COLSPAN LÊN 1 ĐƠN VỊ
     totalRow.innerHTML = `
         <td colspan="6" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
         <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
@@ -195,8 +188,7 @@ function generateBill(data) {
         <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
     `;
     tbody.appendChild(totalRow);
-
-    // Thêm dòng Cân Bằng Hụi
+    
     const balance = tongHuiSong - tongHuiChet;
     let balanceClass = '';
     if (balance > 0) {
@@ -207,14 +199,13 @@ function generateBill(data) {
 
     const balanceRow = document.createElement('tr');
     balanceRow.className = 'total-row';
-    // THAY ĐỔI 4: TĂNG COLSPAN LÊN 1
+    // TĂNG COLSPAN LÊN 1 ĐƠN VỊ
     balanceRow.innerHTML = `
         <td colspan="7" >Cân Bằng Hụi (Âm/Dương)</td>
         <td colspan="2" class="text-right ${balanceClass}">${formatCurrency(balance)}</td>
     `;
     tbody.appendChild(balanceRow);
 
-    // Gán sự kiện cho các nút
     const billElement = document.getElementById('bill-to-capture');
     document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
     document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
