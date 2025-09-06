@@ -22,8 +22,8 @@
             background: white;
             padding: 25px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            position: relative;
-            padding-bottom: 80px;
+            position: relative; /* Thêm để định vị nút */
+            padding-bottom: 80px; /* Thêm khoảng trống cho nút */
         }
         .header { margin-bottom: 20px; }
         .header .line { display: flex; justify-content: space-between; }
@@ -42,6 +42,8 @@
         .text-right { text-align: right; }
         .day-hui-col { width: 25%; text-align: left; }
         .khui-col { width: 10%; }
+
+        /* --- CSS CHO CÁC NÚT BẤM --- */
         .bill-controls {
             position: absolute;
             bottom: 25px;
@@ -91,7 +93,7 @@
                 <tr>
                     <th>STT</th>
                     <th class="day-hui-col">Dây Hụi</th>
-                    <th>Ngày Khui</th>
+                    <th>Ngày Khui</th>
                     <th>Số Tiền</th>
                     <th class="khui-col">Khui</th>
                     <th>Kỳ</th>
@@ -112,14 +114,14 @@
     </div>
 
     <script>
-        let billData = {};
+        let billData = {}; // Biến toàn cục để lưu dữ liệu bill
 
         window.onload = function() {
             try {
                 const encodedData = window.location.hash.substring(1);
                 if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
                 const jsonData = decodeURIComponent(encodedData);
-                billData = JSON.parse(jsonData);
+                billData = JSON.parse(jsonData); // Gán dữ liệu vào biến toàn cục
                 generateBill(billData);
             } catch (error) {
                 document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
@@ -133,11 +135,13 @@
         }
 
 function generateBill(data) {
+    // Điền thông tin chung
     document.querySelector('[data-field="chu_hui_ten"]').textContent = data.chu_hui_ten || '';
     document.querySelector('[data-field="chu_hui_sdt"]').textContent = data.chu_hui_sdt || '';
     document.querySelector('[data-field="ngay_in_bill"]').textContent = data.ngay_in_bill || '';
     document.querySelector('[data-field="hui_vien_ten"]').textContent = data.hui_vien_ten || '';
 
+    // Xử lý bảng chi tiết
     const tbody = document.getElementById('details-tbody');
     tbody.innerHTML = '';
     let tongHuiChet = 0;
@@ -145,8 +149,9 @@ function generateBill(data) {
     let tongLoiLo = 0;
 
     if (data.details && Array.isArray(data.details)) {
+        // THAY ĐỔI: Thêm "(item, index)" để lấy số thứ tự
         data.details.forEach((item, index) => {
-            const stt = index + 1;
+            const stt = index + 1; // Tự động tạo STT bắt đầu từ 1
             const row = document.createElement('tr');
             
             let loiLoClass = '';
@@ -156,31 +161,31 @@ function generateBill(data) {
                 loiLoClass = 'text-red';
             }
 
+            // THAY ĐỔI: Dùng biến "stt" thay cho "item.stt"
             row.innerHTML = `
                 <td>${stt}</td>
-                <td class="day-hui-col">${item.day_hui || ''}</td>
-                <td>${item.ngay_khui || ''}</td>
+                <td class="day-hui-col">${item.day_hui}</td>
+                <td>${item.ngay_khui}</td>
                 <td class="text-right">${formatCurrency(item.so_tien)}</td>
-                <td class="khui-col">${item.khui || ''}</td>
-                <td>${item.ky || ''}</td>
+                <td class="khui-col">${item.khui}</td>
+                <td>${item.ky}</td>
                 <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
                 <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
                 <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
             `;
             tbody.appendChild(row);
 
+            // Tính tổng
             tongHuiChet += item.hui_chet || 0;
             tongHuiSong += item.hui_song || 0;
             tongLoiLo += item.loi_lo || 0;
         });
     }
     
+    // Thêm dòng tổng cộng
     let tongLoiLoClass = '';
-    if (tongLoiLo > 0) {
-        tongLoiLoClass = 'text-green';
-    } else if (tongLoiLo < 0) {
-        tongLoiLoClass = 'text-red';
-    }
+    if(tongLoiLo > 0) tongLoiLoClass = 'text-green';
+    if(tongLoiLo < 0) tongLoiLoClass = 'text-red';
 
     const totalRow = document.createElement('tr');
     totalRow.className = 'total-row';
@@ -191,8 +196,10 @@ function generateBill(data) {
         <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
     `;
     tbody.appendChild(totalRow);
-    
+        // 1. Tính toán số tiền cân bằng
     const balance = tongHuiSong - tongHuiChet;
+
+    // 2. Xác định màu sắc (xanh cho dương, đỏ cho âm)
     let balanceClass = '';
     if (balance > 0) {
         balanceClass = 'text-green text-bold';
@@ -200,14 +207,18 @@ function generateBill(data) {
         balanceClass = 'text-red text-bold';
     }
 
+    // 3. Tạo hàng mới cho bảng
     const balanceRow = document.createElement('tr');
-    balanceRow.className = 'total-row';
+    balanceRow.className = 'total-row'; // Dùng lại style của hàng tổng
     balanceRow.innerHTML = `
-        <td colspan="7" >Cân Bằng Hụi (Âm/Dương)</td>
+        <td colspan="6" >Cân Bằng Hụi (Âm/Dương)</td>
         <td colspan="2" class="text-right ${balanceClass}">${formatCurrency(balance)}</td>
     `;
+
+    // 4. Thêm hàng mới vào cuối bảng
     tbody.appendChild(balanceRow);
 
+    // Gán sự kiện cho các nút
     const billElement = document.getElementById('bill-to-capture');
     document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
     document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
