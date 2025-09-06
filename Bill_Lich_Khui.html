@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lịch Khui Hụi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,6 +20,9 @@
             background: white;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
+            /* THAY ĐỔI 1: THÊM THUỘC TÍNH ĐỂ ĐỊNH VỊ NÚT */
+            position: relative;
+            padding-bottom: 80px;
         }
         .header {
             display: flex;
@@ -72,6 +76,39 @@
         .col-day-hui {
             width: 35%;
         }
+
+        /* THAY ĐỔI 2: THÊM CSS CHO CÁC NÚT BẤM */
+        .bill-controls {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+        .bill-controls button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .bill-controls button:hover {
+            transform: translateY(-2px);
+        }
+        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
+        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
+        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
+
+        @media print {
+            .bill-controls { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -98,28 +135,34 @@
             <tbody id="details-tbody">
                 </tbody>
         </table>
+        
+        <div class="bill-controls">
+            <button class="download-btn">Tải Bill</button>
+            <button class="copy-btn">Copy Bill</button>
+            <button class="share-btn">Gửi Bill</button>
+        </div>
     </div>
 
     <script>
+        let billData = {}; // Biến toàn cục để lưu dữ liệu
+
         // --- CÁC HÀM TIỆN ÍCH ---
-        function parseDate(dateString) { // Chấp nhận cả DD/MM/YYYY và YYYY-MM-DD
-            if (dateString.includes('-')) { // YYYY-MM-DD
+        function parseDate(dateString) {
+            if (dateString.includes('-')) {
                 const parts = dateString.split('-');
                 return new Date(parts[0], parts[1] - 1, parts[2]);
             }
-            // DD/MM/YYYY
             const parts = dateString.split('/');
             return new Date(parts[2], parts[1] - 1, parts[0]);
         }
 
         function addPeriod(startDate, value, unit) {
-            const date = new Date(startDate.getTime()); // Tạo bản sao để không thay đổi ngày gốc
+            const date = new Date(startDate.getTime());
             const numericValue = parseInt(value) || 0;
             if (numericValue === 0) return date;
-
             if ((unit || '').toLowerCase().includes('tháng')) {
                 date.setMonth(date.getMonth() + numericValue);
-            } else { // Xử lý cho Ngày, Tuần, và các kỳ hạn theo ngày
+            } else {
                 date.setDate(date.getDate() + numericValue);
             }
             return date;
@@ -138,6 +181,7 @@
 
         // --- HÀM XỬ LÝ CHÍNH ---
         function generateBill(data) {
+            billData = data; // Lưu dữ liệu vào biến toàn cục
             document.getElementById('chu-hui-ten').textContent = data.chu_hui_ten || '';
             document.getElementById('chu-hui-sdt').textContent = data.chu_hui_sdt || '';
             document.getElementById('ngay-in-bill').textContent = data.ngay_in_bill || '';
@@ -165,16 +209,14 @@
                                 ky: `${ky}/${maxKy}`,
                                 tien_hui: hui.tien_hui
                             });
-                            break; // Đã tìm thấy kỳ khui cho hôm nay, chuyển sang dây hụi tiếp theo
+                            break;
                         }
                     }
                 });
             }
 
-            // Sắp xếp kết quả theo giờ đấu
             todaysHuis.sort((a, b) => (a.gio_dau || '').localeCompare(b.gio_dau || ''));
 
-            // Hiển thị kết quả lên bảng
             if(todaysHuis.length === 0){
                  tbody.innerHTML = `<tr><td colspan="6">Không có lịch khui hụi trong ngày.</td></tr>`;
             } else {
@@ -191,6 +233,12 @@
                     tbody.appendChild(row);
                 });
             }
+
+            // THAY ĐỔI 4: GÁN SỰ KIỆN CHO CÁC NÚT BẤM
+            const billElement = document.getElementById('bill-container');
+            document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
+            document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+            document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
         }
 
         // --- TẢI DỮ LIỆU KHI MỞ TRANG ---
@@ -198,7 +246,6 @@
             try {
                 const encodedData = window.location.hash.substring(1);
                 if (!encodedData) {
-                     // Dùng dữ liệu mẫu nếu không có dữ liệu truyền vào
                     const sampleData = { "chu_hui_ten": "Lê Minh", "chu_hui_sdt": "0938338272", "ngay_in_bill": "07/09/2025", "danh_sach_day_hui": [ { "ten_hui": "Dây Y2 Tuần 3tr 15p", "ngay_khui": "2025-08-25", "gio_dau": "13:00", "ky_han_text": "Tuần", "ky_han_value": 7, "so_ky_toi_da": 15, "tien_hui": 3000000 }, { "ten_hui": "DÂY NGÀY 1TR ĐẤU 50p", "ngay_khui": "2025-09-01", "gio_dau": "14:30", "ky_han_text": "Ngày", "ky_han_value": 1, "so_ky_toi_da": 50, "tien_hui": 1000000 }, { "ten_hui": "Dây Tháng 5tr", "ngay_khui": "2025-09-07", "gio_dau": "15:00", "ky_han_text": "Tháng", "ky_han_value": 1, "so_ky_toi_da": 12, "tien_hui": 5000000 } ] };
                     generateBill(sampleData);
                     return;
@@ -211,6 +258,57 @@
                 console.error("Lỗi:", error);
             }
         };
+
+        // THAY ĐỔI 5: THÊM CÁC HÀM CHỨC NĂNG CHO NÚT BẤM
+        async function captureBill(element, callback) {
+            const controls = element.querySelector('.bill-controls');
+            if (controls) controls.style.display = 'none';
+            try {
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                await callback(canvas);
+            } catch (error) {
+                console.error('Lỗi khi tạo ảnh:', error);
+                alert('Đã có lỗi xảy ra khi tạo ảnh.');
+            } finally {
+                if (controls) controls.style.display = 'flex';
+            }
+        }
+
+        function downloadBillAsImage(element) {
+            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+            captureBill(element, canvas => {
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+
+        function copyBillAsImage(element) {
+            captureBill(element, canvas => {
+                canvas.toBlob(blob => {
+                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                    .catch(err => alert('Lỗi khi copy.'));
+                });
+            });
+        }
+
+        async function shareBillAsImage(element) {
+            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+            const textshare = `Lịch khui hụi ngày ${billData.ngay_in_bill}.`;
+            if (!navigator.share) {
+                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
+                return;
+            }
+            captureBill(element, async canvas => {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const file = new File([blob], filename, { type: 'image/png' });
+                try {
+                    await navigator.share({ title: `Lịch Khui Hụi`, text: textshare, files: [file] });
+                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
+            });
+        }
     </script>
 </body>
 </html>
