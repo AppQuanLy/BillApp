@@ -1,280 +1,278 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bảng Cân Bằng Hụi</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Cân Bằng Hụi</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            font-size: 14pt;
-            color: #000;
-        }
-        .container {
-            width: 28cm;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            position: relative; /* Thêm để định vị nút */
-            padding-bottom: 80px; /* Thêm khoảng trống cho nút */
-        }
-        .header { margin-bottom: 20px; }
-        .header .line { display: flex; justify-content: space-between; }
-        .header .line .left { font-weight: bold; }
-        .header .title { text-align: center; font-size: 20pt; font-weight: bold; margin-top: 10px; }
-        .header .date { text-align: center; font-size: 11pt; }
-        .customer-name { font-size: 15pt; font-weight: bold; margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13pt;FONT-WEIGHT: bold; }
-        th, td { border: 1px solid #888; padding: 5px; text-align: center; vertical-align: middle; }
-        th { background-color: #d9e2f3; font-weight: bold; }
-        td { background-color: #f2f2f2; }
-        tr.total-row { font-weight: bold; font-size: 16pt; background-color: #fce4d6; }
-        .text-red { color: #ff0000; }
-        .text-green { color: #00b050; }
-        .text-bold { font-weight: bold; }
-        .text-right { text-align: right; }
-        .day-hui-col { width: 25%; text-align: left; }
-        .khui-col { width: 10%; }
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            font-size: 14pt;
+            color: #000;
+        }
+        .container {
+            width: 28cm;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative; /* Thêm để định vị nút */
+            padding-bottom: 80px; /* Thêm khoảng trống cho nút */
+        }
+        .header { margin-bottom: 20px; }
+        .header .line { display: flex; justify-content: space-between; }
+        .header .line .left { font-weight: bold; }
+        .header .title { text-align: center; font-size: 20pt; font-weight: bold; margin-top: 10px; }
+        .header .date { text-align: center; font-size: 11pt; }
+        .customer-name { font-size: 15pt; font-weight: bold; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13pt;FONT-WEIGHT: bold; }
+        th, td { border: 1px solid #888; padding: 5px; text-align: center; vertical-align: middle; }
+        th { background-color: #d9e2f3; font-weight: bold; }
+        td { background-color: #f2f2f2; }
+        tr.total-row { font-weight: bold; font-size: 16pt; background-color: #fce4d6; }
+        .text-red { color: #ff0000; }
+        .text-green { color: #00b050; }
+        .text-bold { font-weight: bold; }
+        .text-right { text-align: right; }
+        .day-hui-col { width: 25%; text-align: left; }
+        .khui-col { width: 10%; }
 
-        /* --- CSS CHO CÁC NÚT BẤM --- */
-        .bill-controls {
-            position: absolute;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
-            z-index: 10;
-        }
-        .bill-controls button {
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            font-family: Arial, sans-serif;
-            cursor: pointer;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.2s, transform 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .bill-controls button:hover {
-            transform: translateY(-2px);
-        }
-        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
-        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
-        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
+        /* --- CSS CHO CÁC NÚT BẤM --- */
+        .bill-controls {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+        .bill-controls button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .bill-controls button:hover {
+            transform: translateY(-2px);
+        }
+        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
+        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
+        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
 
-        @media print {
-            .bill-controls { display: none !important; }
-        }
-    </style>
+        @media print {
+            .bill-controls { display: none !important; }
+        }
+    </style>
 </head>
 <body>
-    <div class="container" id="bill-to-capture">
-        <div class="header">
-            <div class="line">
-                <div class="left">Chủ Hụi: <span data-field="chu_hui_ten"></span></div>
-                <div class="right">Điện Thoại: <span data-field="chu_hui_sdt"></span></div>
-            </div>
-            <div class="title">BẢNG CÂN BẰNG HỤI</div>
-            <div class="date">Ngày: <span data-field="ngay_in_bill"></span></div>
-        </div>
-        <div class="customer-name">Hụi Viên: <span data-field="hui_vien_ten"></span></div>
-        <table>
-            <thead>
-                <tr>
-                    <th>STT</th>
-                    <th class="day-hui-col">Dây Hụi</th>
-                    <th>Ngày Khui</th>
-                    <th>Số Tiền</th>
-                    <th class="khui-col">Khui</th>
-                    <th>Kỳ</th>
-                    <th>Hụi Chết</th>
-                    <th>Hụi Sống</th>
-                    <th>Lời - Lỗ</th>
-                </tr>
-            </thead>
-            <tbody id="details-tbody">
-            </tbody>
-        </table>
-        
-        <div class="bill-controls">
-            <button class="download-btn">Tải Bill</button>
-            <button class="copy-btn">Copy Bill</button>
-            <button class="share-btn">Gửi Bill</button>
-        </div>
-    </div>
+    <div class="container" id="bill-to-capture">
+        <div class="header">
+            <div class="line">
+                <div class="left">Chủ Hụi: <span data-field="chu_hui_ten"></span></div>
+                <div class="right">Điện Thoại: <span data-field="chu_hui_sdt"></span></div>
+            </div>
+            <div class="title">BẢNG CÂN BẰNG HỤI</div>
+            <div class="date">Ngày: <span data-field="ngay_in_bill"></span></div>
+        </div>
+        <div class="customer-name">Hụi Viên: <span data-field="hui_vien_ten"></span></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th class="day-hui-col">Dây Hụi</th>
+                    <th>Số Tiền</th>
+                    <th class="khui-col">Khui</th>
+                    <th>Kỳ</th>
+                    <th>Hụi Chết</th>
+                    <th>Hụi Sống</th>
+                    <th>Lời - Lỗ</th>
+                </tr>
+            </thead>
+            <tbody id="details-tbody">
+            </tbody>
+        </table>
+        
+        <div class="bill-controls">
+            <button class="download-btn">Tải Bill</button>
+            <button class="copy-btn">Copy Bill</button>
+            <button class="share-btn">Gửi Bill</button>
+        </div>
+    </div>
 
-    <script>
-        let billData = {}; // Biến toàn cục để lưu dữ liệu bill
+    <script>
+        let billData = {}; // Biến toàn cục để lưu dữ liệu bill
 
-        window.onload = function() {
-            try {
-                const encodedData = window.location.hash.substring(1);
-                if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
-                const jsonData = decodeURIComponent(encodedData);
-                billData = JSON.parse(jsonData); // Gán dữ liệu vào biến toàn cục
-                generateBill(billData);
-            } catch (error) {
-                document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
-                console.error("Lỗi:", error);
-            }
-        };
+        window.onload = function() {
+            try {
+                const encodedData = window.location.hash.substring(1);
+                if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
+                const jsonData = decodeURIComponent(encodedData);
+                billData = JSON.parse(jsonData); // Gán dữ liệu vào biến toàn cục
+                generateBill(billData);
+            } catch (error) {
+                document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
+                console.error("Lỗi:", error);
+            }
+        };
 
-        function formatCurrency(num) {
-            if (typeof num !== 'number' || num === null) return '';
-            return num.toLocaleString('vi-VN');
-        }
+        function formatCurrency(num) {
+            if (typeof num !== 'number' || num === null) return '';
+            return num.toLocaleString('vi-VN');
+        }
 
 function generateBill(data) {
-    // Điền thông tin chung
-    document.querySelector('[data-field="chu_hui_ten"]').textContent = data.chu_hui_ten || '';
-    document.querySelector('[data-field="chu_hui_sdt"]').textContent = data.chu_hui_sdt || '';
-    document.querySelector('[data-field="ngay_in_bill"]').textContent = data.ngay_in_bill || '';
-    document.querySelector('[data-field="hui_vien_ten"]').textContent = data.hui_vien_ten || '';
+    // Điền thông tin chung
+    document.querySelector('[data-field="chu_hui_ten"]').textContent = data.chu_hui_ten || '';
+    document.querySelector('[data-field="chu_hui_sdt"]').textContent = data.chu_hui_sdt || '';
+    document.querySelector('[data-field="ngay_in_bill"]').textContent = data.ngay_in_bill || '';
+    document.querySelector('[data-field="hui_vien_ten"]').textContent = data.hui_vien_ten || '';
 
-    // Xử lý bảng chi tiết
-    const tbody = document.getElementById('details-tbody');
-    tbody.innerHTML = '';
-    let tongHuiChet = 0;
-    let tongHuiSong = 0;
-    let tongLoiLo = 0;
+    // Xử lý bảng chi tiết
+    const tbody = document.getElementById('details-tbody');
+    tbody.innerHTML = '';
+    let tongHuiChet = 0;
+    let tongHuiSong = 0;
+    let tongLoiLo = 0;
 
-    if (data.details && Array.isArray(data.details)) {
-        // THAY ĐỔI: Thêm "(item, index)" để lấy số thứ tự
-        data.details.forEach((item, index) => {
-            const stt = index + 1; // Tự động tạo STT bắt đầu từ 1
-            const row = document.createElement('tr');
-            
-            let loiLoClass = '';
-            if (item.loi_lo > 0) {
-                loiLoClass = 'text-green';
-            } else if (item.loi_lo < 0) {
-                loiLoClass = 'text-red';
-            }
+    if (data.details && Array.isArray(data.details)) {
+        // THAY ĐỔI: Thêm "(item, index)" để lấy số thứ tự
+        data.details.forEach((item, index) => {
+            const stt = index + 1; // Tự động tạo STT bắt đầu từ 1
+            const row = document.createElement('tr');
+            
+            let loiLoClass = '';
+            if (item.loi_lo > 0) {
+                loiLoClass = 'text-green';
+            } else if (item.loi_lo < 0) {
+                loiLoClass = 'text-red';
+            }
 
-            // THAY ĐỔI: Dùng biến "stt" thay cho "item.stt"
-            row.innerHTML = `
-                <td>${stt}</td>
-                <td class="day-hui-col">${item.day_hui}</td>
-                <td>${item.ngay_khui}</td>
-                <td class="text-right">${formatCurrency(item.so_tien)}</td>
-                <td class="khui-col">${item.khui}</td>
-                <td>${item.ky}</td>
-                <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
-                <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
-                <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
-            `;
-            tbody.appendChild(row);
+            // THAY ĐỔI: Dùng biến "stt" thay cho "item.stt"
+            row.innerHTML = `
+                <td>${stt}</td>
+                <td class="day-hui-col">${item.day_hui}</td>
+                <td class="text-right">${formatCurrency(item.so_tien)}</td>
+                <td class="khui-col">${item.khui}</td>
+                <td>${item.ky}</td>
+                <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
+                <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
+                <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
+            `;
+            tbody.appendChild(row);
 
-            // Tính tổng
-            tongHuiChet += item.hui_chet || 0;
-            tongHuiSong += item.hui_song || 0;
-            tongLoiLo += item.loi_lo || 0;
-        });
-    }
-    
-    // Thêm dòng tổng cộng
-    let tongLoiLoClass = '';
-    if(tongLoiLo > 0) tongLoiLoClass = 'text-green';
-    if(tongLoiLo < 0) tongLoiLoClass = 'text-red';
+            // Tính tổng
+            tongHuiChet += item.hui_chet || 0;
+            tongHuiSong += item.hui_song || 0;
+            tongLoiLo += item.loi_lo || 0;
+        });
+    }
+    
+    // Thêm dòng tổng cộng
+    let tongLoiLoClass = '';
+    if(tongLoiLo > 0) tongLoiLoClass = 'text-green';
+    if(tongLoiLo < 0) tongLoiLoClass = 'text-red';
 
-    const totalRow = document.createElement('tr');
-    totalRow.className = 'total-row';
-    totalRow.innerHTML = `
-        <td colspan="6" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
-        <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
-        <td class="text-right">${formatCurrency(tongHuiSong)}</td>
-        <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
-    `;
-    tbody.appendChild(totalRow);
-        // 1. Tính toán số tiền cân bằng
-    const balance = tongHuiSong - tongHuiChet;
+    const totalRow = document.createElement('tr');
+    totalRow.className = 'total-row';
+    totalRow.innerHTML = `
+        <td colspan="5" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
+        <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
+        <td class="text-right">${formatCurrency(tongHuiSong)}</td>
+        <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
+    `;
+    tbody.appendChild(totalRow);
+        // 1. Tính toán số tiền cân bằng
+    const balance = tongHuiSong - tongHuiChet;
 
-    // 2. Xác định màu sắc (xanh cho dương, đỏ cho âm)
-    let balanceClass = '';
-    if (balance > 0) {
-        balanceClass = 'text-green text-bold';
-    } else if (balance < 0) {
-        balanceClass = 'text-red text-bold';
-    }
+    // 2. Xác định màu sắc (xanh cho dương, đỏ cho âm)
+    let balanceClass = '';
+    if (balance > 0) {
+        balanceClass = 'text-green text-bold';
+    } else if (balance < 0) {
+        balanceClass = 'text-red text-bold';
+    }
 
-    // 3. Tạo hàng mới cho bảng
-    const balanceRow = document.createElement('tr');
-    balanceRow.className = 'total-row'; // Dùng lại style của hàng tổng
-    balanceRow.innerHTML = `
-        <td colspan="6" >Cân Bằng Hụi (Âm/Dương)</td>
-        <td colspan="2" class="text-right ${balanceClass}">${formatCurrency(balance)}</td>
-    `;
+    // 3. Tạo hàng mới cho bảng
+    const balanceRow = document.createElement('tr');
+    balanceRow.className = 'total-row'; // Dùng lại style của hàng tổng
+    balanceRow.innerHTML = `
+        <td colspan="7" class="text-right">Cân Bằng Hụi (Âm/Dương)</td>
+        <td class="text-right ${balanceClass}">${formatCurrency(balance)}</td>
+    `;
 
-    // 4. Thêm hàng mới vào cuối bảng
-    tbody.appendChild(balanceRow);
+    // 4. Thêm hàng mới vào cuối bảng
+    tbody.appendChild(balanceRow);
 
-    // Gán sự kiện cho các nút
-    const billElement = document.getElementById('bill-to-capture');
-    document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
-    document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
-    document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+    // Gán sự kiện cho các nút
+    const billElement = document.getElementById('bill-to-capture');
+    document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
+    document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+    document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
 }
-        
-        // --- CÁC HÀM CHỨC NĂNG CHO NÚT BẤM ---
-        async function captureBill(element, callback) {
-            const controls = element.querySelector('.bill-controls');
-            if (controls) controls.style.display = 'none';
-            try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-                await callback(canvas);
-            } catch (error) {
-                console.error('Lỗi khi tạo ảnh:', error);
-                alert('Đã có lỗi xảy ra khi tạo ảnh.');
-            } finally {
-                if (controls) controls.style.display = 'block';
-            }
-        }
+        
+        // --- CÁC HÀM CHỨC NĂNG CHO NÚT BẤM ---
+        async function captureBill(element, callback) {
+            const controls = element.querySelector('.bill-controls');
+            if (controls) controls.style.display = 'none';
+            try {
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                await callback(canvas);
+            } catch (error) {
+                console.error('Lỗi khi tạo ảnh:', error);
+                alert('Đã có lỗi xảy ra khi tạo ảnh.');
+            } finally {
+                if (controls) controls.style.display = 'block';
+            }
+        }
 
-        function downloadBillAsImage(element) {
-            const filename = `BangCanBang_${billData.hui_vien_ten || 'bill'}.png`;
-            captureBill(element, canvas => {
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            });
-        }
+        function downloadBillAsImage(element) {
+            const filename = `BangCanBang_${billData.hui_vien_ten || 'bill'}.png`;
+            captureBill(element, canvas => {
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
 
-        function copyBillAsImage(element) {
-            captureBill(element, canvas => {
-                canvas.toBlob(blob => {
-                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
-                    .catch(err => alert('Lỗi khi copy.'));
-                });
-            });
-        }
+        function copyBillAsImage(element) {
+            captureBill(element, canvas => {
+                canvas.toBlob(blob => {
+                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                    .catch(err => alert('Lỗi khi copy.'));
+                });
+            });
+        }
 
-        async function shareBillAsImage(element) {
-            const filename = `BangCanBang_${billData.hui_vien_ten}.png`;
-            const textshare = `Bảng cân bằng hụi của ${billData.hui_vien_ten}.`;
-            if (!navigator.share) {
-                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
-                return;
-            }
-            captureBill(element, async canvas => {
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                const file = new File([blob], filename, { type: 'image/png' });
-                try {
-                    await navigator.share({ title: `Bảng Cân Bằng Hụi`, text: textshare, files: [file] });
-                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
-            });
-        }
-    </script>
+        async function shareBillAsImage(element) {
+            const filename = `BangCanBang_${billData.hui_vien_ten}.png`;
+            const textshare = `Bảng cân bằng hụi của ${billData.hui_vien_ten}.`;
+            if (!navigator.share) {
+                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
+                return;
+            }
+            captureBill(element, async canvas => {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const file = new File([blob], filename, { type: 'image/png' });
+                try {
+                    await navigator.share({ title: `Bảng Cân Bằng Hụi`, text: textshare, files: [file] });
+                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
+            });
+        }
+    </script>
 </body>
 </html>
