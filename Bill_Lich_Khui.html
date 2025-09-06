@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Khui Hụi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            font-size: 14pt;
+        }
+        .container {
+            width: 28cm;
+            padding: 1cm;
+            margin: auto;
+            background: white;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 14pt;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .title-section {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .title-section h1 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 28pt;
+            color: #0056b3;
+            margin: 0;
+        }
+        .title-section p {
+            margin: 5px 0 0;
+            font-size: 14pt;
+            color: #6c757d;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12pt;
+        }
+        th, td {
+            border: 1px solid #adb5bd;
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            color: #495057;
+        }
+        tr:nth-child(even) td {
+            background-color: #f8f9fa;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-left {
+            text-align: left;
+        }
+        .col-day-hui {
+            width: 35%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="bill-container">
+        <div class="header">
+            <div class="header-left">Chủ Hụi: <span id="chu-hui-ten"></span></div>
+            <div class="header-right">SĐT: <span id="chu-hui-sdt"></span></div>
+        </div>
+        <div class="title-section">
+            <h1>LỊCH KHUI HỤI</h1>
+            <p>Ngày: <span id="ngay-in-bill"></span></p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th class="col-day-hui text-left">DÂY HỤI</th>
+                    <th>GIỜ ĐẤU</th>
+                    <th>KỲ HẠN</th>
+                    <th>KỲ</th>
+                    <th class="text-right">TIỀN HỤI</th>
+                </tr>
+            </thead>
+            <tbody id="details-tbody">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // --- CÁC HÀM TIỆN ÍCH ---
+        function parseDate(dateString) { // Chấp nhận cả DD/MM/YYYY và YYYY-MM-DD
+            if (dateString.includes('-')) { // YYYY-MM-DD
+                const parts = dateString.split('-');
+                return new Date(parts[0], parts[1] - 1, parts[2]);
+            }
+            // DD/MM/YYYY
+            const parts = dateString.split('/');
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+
+        function addPeriod(startDate, value, unit) {
+            const date = new Date(startDate.getTime()); // Tạo bản sao để không thay đổi ngày gốc
+            const numericValue = parseInt(value) || 0;
+            if (numericValue === 0) return date;
+
+            if ((unit || '').toLowerCase().includes('tháng')) {
+                date.setMonth(date.getMonth() + numericValue);
+            } else { // Xử lý cho Ngày, Tuần, và các kỳ hạn theo ngày
+                date.setDate(date.getDate() + numericValue);
+            }
+            return date;
+        }
+        
+        function areDatesEqual(date1, date2) {
+            return date1.getFullYear() === date2.getFullYear() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getDate() === date2.getDate();
+        }
+        
+        function formatCurrency(num) {
+            if (typeof num !== 'number' || num === null) return '';
+            return num.toLocaleString('vi-VN');
+        }
+
+        // --- HÀM XỬ LÝ CHÍNH ---
+        function generateBill(data) {
+            document.getElementById('chu-hui-ten').textContent = data.chu_hui_ten || '';
+            document.getElementById('chu-hui-sdt').textContent = data.chu_hui_sdt || '';
+            document.getElementById('ngay-in-bill').textContent = data.ngay_in_bill || '';
+            
+            const tbody = document.getElementById('details-tbody');
+            tbody.innerHTML = '';
+            
+            const targetDate = parseDate(data.ngay_in_bill);
+            let todaysHuis = [];
+
+            if (data.danh_sach_day_hui && Array.isArray(data.danh_sach_day_hui)) {
+                data.danh_sach_day_hui.forEach(hui => {
+                    const startDate = parseDate(hui.ngay_khui);
+                    const maxKy = parseInt(hui.so_ky_toi_da) || 0;
+                    
+                    for (let ky = 1; ky <= maxKy; ky++) {
+                        const periodsToAdd = (ky - 1) * (parseInt(hui.ky_han_value) || 1);
+                        const currentDate = addPeriod(startDate, periodsToAdd, hui.ky_han_text);
+                        
+                        if (areDatesEqual(currentDate, targetDate)) {
+                            todaysHuis.push({
+                                ten_hui: hui.ten_hui,
+                                gio_dau: hui.gio_dau,
+                                ky_han_text: hui.ky_han_text,
+                                ky: `${ky}/${maxKy}`,
+                                tien_hui: hui.tien_hui
+                            });
+                            break; // Đã tìm thấy kỳ khui cho hôm nay, chuyển sang dây hụi tiếp theo
+                        }
+                    }
+                });
+            }
+
+            // Sắp xếp kết quả theo giờ đấu
+            todaysHuis.sort((a, b) => (a.gio_dau || '').localeCompare(b.gio_dau || ''));
+
+            // Hiển thị kết quả lên bảng
+            if(todaysHuis.length === 0){
+                 tbody.innerHTML = `<tr><td colspan="6">Không có lịch khui hụi trong ngày.</td></tr>`;
+            } else {
+                todaysHuis.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td class="text-left">${item.ten_hui}</td>
+                        <td>${item.gio_dau}</td>
+                        <td>${item.ky_han_text}</td>
+                        <td>${item.ky}</td>
+                        <td class="text-right">${formatCurrency(item.tien_hui)}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        // --- TẢI DỮ LIỆU KHI MỞ TRANG ---
+        window.onload = function() {
+            try {
+                const encodedData = window.location.hash.substring(1);
+                if (!encodedData) {
+                     // Dùng dữ liệu mẫu nếu không có dữ liệu truyền vào
+                    const sampleData = { "chu_hui_ten": "Lê Minh", "chu_hui_sdt": "0938338272", "ngay_in_bill": "07/09/2025", "danh_sach_day_hui": [ { "ten_hui": "Dây Y2 Tuần 3tr 15p", "ngay_khui": "2025-08-25", "gio_dau": "13:00", "ky_han_text": "Tuần", "ky_han_value": 7, "so_ky_toi_da": 15, "tien_hui": 3000000 }, { "ten_hui": "DÂY NGÀY 1TR ĐẤU 50p", "ngay_khui": "2025-09-01", "gio_dau": "14:30", "ky_han_text": "Ngày", "ky_han_value": 1, "so_ky_toi_da": 50, "tien_hui": 1000000 }, { "ten_hui": "Dây Tháng 5tr", "ngay_khui": "2025-09-07", "gio_dau": "15:00", "ky_han_text": "Tháng", "ky_han_value": 1, "so_ky_toi_da": 12, "tien_hui": 5000000 } ] };
+                    generateBill(sampleData);
+                    return;
+                }
+                const jsonData = decodeURIComponent(encodedData);
+                const billData = JSON.parse(jsonData);
+                generateBill(billData);
+            } catch (error) {
+                document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
+                console.error("Lỗi:", error);
+            }
+        };
+    </script>
+</body>
+</html>
