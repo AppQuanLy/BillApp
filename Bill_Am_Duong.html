@@ -113,155 +113,171 @@
         </div>
     </div>
 
-    <script>
-        let billData = {};
+   <script>
+    let billData = {}; // Biến toàn cục để lưu dữ liệu bill
 
-        window.onload = function() {
-            try {
-                const encodedData = window.location.hash.substring(1);
-                if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
-                const jsonData = decodeURIComponent(encodedData);
-                billData = JSON.parse(jsonData);
-                generateBill(billData);
-            } catch (error) {
-                document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
-                console.error("Lỗi:", error);
-            }
-        };
+    window.onload = function() {
+        try {
+            const encodedData = window.location.hash.substring(1);
+            if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
+            const jsonData = decodeURIComponent(encodedData);
+            billData = JSON.parse(jsonData); // Gán dữ liệu vào biến toàn cục
+            generateBill(billData);
+        } catch (error) {
+            document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
+            console.error("Lỗi:", error);
+        }
+    };
 
-        function formatCurrency(num) {
-            if (typeof num !== 'number' || num === null) return '';
-            return num.toLocaleString('vi-VN');
-        }
+    function formatCurrency(num) {
+        if (typeof num !== 'number' || num === null) return '';
+        return num.toLocaleString('vi-VN');
+    }
 
-function generateBill(data) {
-    document.querySelector('[data-field="chu_hui_ten"]').textContent = data.chu_hui_ten || '';
-    document.querySelector('[data-field="chu_hui_sdt"]').textContent = data.chu_hui_sdt || '';
-    document.querySelector('[data-field="ngay_in_bill"]').textContent = data.ngay_in_bill || '';
-    document.querySelector('[data-field="hui_vien_ten"]').textContent = data.hui_vien_ten || '';
+    function generateBill(data) {
+        // Điền thông tin chung
+        document.querySelector('[data-field="chu_hui_ten"]').textContent = data.chu_hui_ten || '';
+        document.querySelector('[data-field="chu_hui_sdt"]').textContent = data.chu_hui_sdt || '';
+        document.querySelector('[data-field="ngay_in_bill"]').textContent = data.ngay_in_bill || '';
+        document.querySelector('[data-field="hui_vien_ten"]').textContent = data.hui_vien_ten || '';
 
-    const tbody = document.getElementById('details-tbody');
-    tbody.innerHTML = '';
-    let tongHuiChet = 0;
-    let tongHuiSong = 0;
-    let tongLoiLo = 0;
+        // Xử lý bảng chi tiết
+        const tbody = document.getElementById('details-tbody');
+        tbody.innerHTML = '';
+        let tongHuiChet = 0;
+        let tongHuiSong = 0;
+        let tongLoiLo = 0;
 
-    if (data.details && Array.isArray(data.details)) {
-        data.details.forEach((item, index) => {
-            const stt = index + 1;
-            const row = document.createElement('tr');
-            
-            let loiLoClass = '';
-            if (item.loi_lo > 0) {
-                loiLoClass = 'text-green';
-            } else if (item.loi_lo < 0) {
-                loiLoClass = 'text-red';
-            }
+        if (data.details && Array.isArray(data.details)) {
+            data.details.forEach((item, index) => {
+                const stt = index + 1;
+                const row = document.createElement('tr');
+                
+                let loiLoClass = '';
+                if (item.loi_lo > 0) {
+                    loiLoClass = 'text-green';
+                } else if (item.loi_lo < 0) {
+                    loiLoClass = 'text-red';
+                }
 
-            // THÊM DỮ LIỆU CỘT MỚI VÀO DÒNG
-            row.innerHTML = `
-                <td>${stt}</td>
-                <td class="day-hui-col">${item.day_hui || ''}</td>
-                <td>${item.ngay_khui || ''}</td>
-                <td class="text-right">${formatCurrency(item.so_tien)}</td>
-                <td class="khui-col">${item.khui || ''}</td>
-                <td>${item.ky || ''}</td>
-                <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
-                <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
-                <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
-            `;
-            tbody.appendChild(row);
+                row.innerHTML = `
+                    <td>${stt}</td>
+                    <td class="day-hui-col">${item.day_hui || ''}</td>
+                    <td>${item.ngay_khui || ''}</td>
+                    <td class="text-right">${formatCurrency(item.so_tien)}</td>
+                    <td class="khui-col">${item.khui || ''}</td>
+                    <td>${item.ky || ''}</td>
+                    <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
+                    <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
+                    <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
+                `;
+                tbody.appendChild(row);
 
-            tongHuiChet += item.hui_chet || 0;
-            tongHuiSong += item.hui_song || 0;
-            tongLoiLo += item.loi_lo || 0;
-        });
-    }
-    
-    const totalRow = document.createElement('tr');
-    totalRow.className = 'total-row';
-    // TĂNG COLSPAN LÊN 1 ĐƠN VỊ
-    totalRow.innerHTML = `
-        <td colspan="6" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
-        <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
-        <td class="text-right">${formatCurrency(tongHuiSong)}</td>
-        <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
-    `;
-    tbody.appendChild(totalRow);
-    
-    const balance = tongHuiSong - tongHuiChet;
-    let balanceClass = '';
-    if (balance > 0) {
-        balanceClass = 'text-green text-bold';
-    } else if (balance < 0) {
-        balanceClass = 'text-red text-bold';
-    }
+                // Tính tổng
+                tongHuiChet += item.hui_chet || 0;
+                tongHuiSong += item.hui_song || 0;
+                tongLoiLo += item.loi_lo || 0;
+            });
+        }
+        
+        // **ĐOẠN CODE BỊ THIẾU ĐÃ ĐƯỢC THÊM LẠI Ở ĐÂY**
+        let tongLoiLoClass = '';
+        if (tongLoiLo > 0) {
+            tongLoiLoClass = 'text-green';
+        } else if (tongLoiLo < 0) {
+            tongLoiLoClass = 'text-red';
+        }
 
-    const balanceRow = document.createElement('tr');
-    balanceRow.className = 'total-row';
-    // TĂNG COLSPAN LÊN 1 ĐƠN VỊ
-    balanceRow.innerHTML = `
-        <td colspan="7" >Cân Bằng Hụi (Âm/Dương)</td>
-        <td colspan="2" class="text-right ${balanceClass}">${formatCurrency(balance)}</td>
-    `;
-    tbody.appendChild(balanceRow);
+        // Thêm dòng tổng cộng
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'total-row';
+        totalRow.innerHTML = `
+            <td colspan="6" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
+            <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
+            <td class="text-right">${formatCurrency(tongHuiSong)}</td>
+            <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
+        `;
+        tbody.appendChild(totalRow);
+        
+        // 1. Tính toán số tiền cân bằng
+        const balance = tongHuiSong - tongHuiChet;
 
-    const billElement = document.getElementById('bill-to-capture');
-    document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
-    document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
-    document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
-}
-        
-        // --- CÁC HÀM CHỨC NĂNG CHO NÚT BẤM ---
-        async function captureBill(element, callback) {
-            const controls = element.querySelector('.bill-controls');
-            if (controls) controls.style.display = 'none';
-            try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-                await callback(canvas);
-            } catch (error) {
-                console.error('Lỗi khi tạo ảnh:', error);
-                alert('Đã có lỗi xảy ra khi tạo ảnh.');
-            } finally {
-                if (controls) controls.style.display = 'block';
-            }
-        }
+        // 2. Xác định màu sắc (xanh cho dương, đỏ cho âm)
+        let balanceClass = '';
+        if (balance > 0) {
+            balanceClass = 'text-green text-bold';
+        } else if (balance < 0) {
+            balanceClass = 'text-red text-bold';
+        }
 
-        function downloadBillAsImage(element) {
-            const filename = `BangCanBang_${billData.hui_vien_ten || 'bill'}.png`;
-            captureBill(element, canvas => {
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            });
-        }
+        // 3. Tạo hàng mới cho bảng
+        const balanceRow = document.createElement('tr');
+        balanceRow.className = 'total-row'; // Dùng lại style của hàng tổng
+        balanceRow.innerHTML = `
+            <td colspan="7" >Cân Bằng Hụi (Âm/Dương)</td>
+            <td colspan="2" class="text-right ${balanceClass}">${formatCurrency(balance)}</td>
+        `;
 
-        function copyBillAsImage(element) {
-            captureBill(element, canvas => {
-                canvas.toBlob(blob => {
-                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
-                    .catch(err => alert('Lỗi khi copy.'));
-                });
-            });
-        }
+        // 4. Thêm hàng mới vào cuối bảng
+        tbody.appendChild(balanceRow);
 
-        async function shareBillAsImage(element) {
-            const filename = `BangCanBang_${billData.hui_vien_ten}.png`;
-            const textshare = `Bảng cân bằng hụi của ${billData.hui_vien_ten}.`;
-            if (!navigator.share) {
-                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
-                return;
-            }
-            captureBill(element, async canvas => {
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                const file = new File([blob], filename, { type: 'image/png' });
-                try {
-                    await navigator.share({ title: `Bảng Cân Bằng Hụi`, text: textshare, files: [file] });
-                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
-            });
-        }
-    </script>
+        // Gán sự kiện cho các nút
+        const billElement = document.getElementById('bill-to-capture');
+        document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
+        document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+        document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+    }
+        
+    // --- CÁC HÀM CHỨC NĂNG CHO NÚT BẤM ---
+    async function captureBill(element, callback) {
+        const controls = element.querySelector('.bill-controls');
+        if (controls) controls.style.display = 'none';
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+            await callback(canvas);
+        } catch (error) {
+            console.error('Lỗi khi tạo ảnh:', error);
+            alert('Đã có lỗi xảy ra khi tạo ảnh.');
+        } finally {
+            if (controls) controls.style.display = 'block';
+        }
+    }
+
+    function downloadBillAsImage(element) {
+        const filename = `BangCanBang_${billData.hui_vien_ten || 'bill'}.png`;
+        captureBill(element, canvas => {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+
+    function copyBillAsImage(element) {
+        captureBill(element, canvas => {
+            canvas.toBlob(blob => {
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                .catch(err => alert('Lỗi khi copy.'));
+            });
+        });
+    }
+
+    async function shareBillAsImage(element) {
+        const filename = `BangCanBang_${billData.hui_vien_ten}.png`;
+        const textshare = `Bảng cân bằng hụi của ${billData.hui_vien_ten}.`;
+        if (!navigator.share) {
+            alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
+            return;
+        }
+        captureBill(element, async canvas => {
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            const file = new File([blob], filename, { type: 'image/png' });
+            try {
+                await navigator.share({ title: `Bảng Cân Bằng Hụi`, text: textshare, files: [file] });
+            } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
+        });
+    }
+</script>
 </body>
 </html>
