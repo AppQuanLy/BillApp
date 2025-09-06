@@ -51,7 +51,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12pt;
+            font-size: 14pt;
         }
         th, td {
             border: 1px solid #adb5bd;
@@ -60,9 +60,9 @@
             vertical-align: middle;
         }
         th {
-            background-color: #e9ecef;
+            background-color: #0056b3;
             font-weight: bold;
-            color: #495057;
+            color: #ffffff;
         }
         tr:nth-child(even) td {
             background-color: #f8f9fa;
@@ -126,6 +126,7 @@
                 <tr>
                     <th>STT</th>
                     <th class="col-day-hui text-left">DÂY HỤI</th>
+                    <th>NGÀY KHUI</th>
                     <th>GIỜ ĐẤU</th>
                     <th>KỲ HẠN</th>
                     <th>KỲ</th>
@@ -204,6 +205,7 @@
                         if (areDatesEqual(currentDate, targetDate)) {
                             todaysHuis.push({
                                 ten_hui: hui.ten_hui,
+                                ngay_khui: hui.ngay_khui,
                                 gio_dau: hui.gio_dau,
                                 ky_han_text: hui.ky_han_text,
                                 ky: `${ky}/${maxKy}`,
@@ -225,6 +227,7 @@
                     row.innerHTML = `
                         <td>${index + 1}</td>
                         <td class="text-left">${item.ten_hui}</td>
+                        <td>${item.ngay_khui}</td>
                         <td>${item.gio_dau}</td>
                         <td>${item.ky_han_text}</td>
                         <td>${item.ky}</td>
