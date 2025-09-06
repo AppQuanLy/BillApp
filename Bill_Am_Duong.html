@@ -92,13 +92,14 @@
             <thead>
                 <tr>
                     <th>STT</th>
-                    <th class="day-hui-col">Dây Hụi</th>
-                    <th>Số Tiền</th>
-                    <th class="khui-col">Khui</th>
-                    <th>Kỳ</th>
-                    <th>Hụi Chết</th>
-                    <th>Hụi Sống</th>
-                    <th>Lời - Lỗ</th>
+                    <th class="day-hui-col">TÊN DÂY</th>
+                    <th>NGÀY KHUI</th>
+                    <th>TIỀN HỤI</th>
+                    <th class="khui-col">KỲ HẠN</th>
+                    <th>KỲ</th>
+                    <th>HỤI CHẾT</th>
+                    <th>HỤI SỐNG</th>
+                    <th>LỜI LỖ</th>
                 </tr>
             </thead>
             <tbody id="details-tbody">
@@ -164,6 +165,7 @@ function generateBill(data) {
             row.innerHTML = `
                 <td>${stt}</td>
                 <td class="day-hui-col">${item.day_hui}</td>
+                <td>${item.ngay_khui}</td>
                 <td class="text-right">${formatCurrency(item.so_tien)}</td>
                 <td class="khui-col">${item.khui}</td>
                 <td>${item.ky}</td>
@@ -188,7 +190,7 @@ function generateBill(data) {
     const totalRow = document.createElement('tr');
     totalRow.className = 'total-row';
     totalRow.innerHTML = `
-        <td colspan="5" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
+        <td colspan="6" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
         <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
         <td class="text-right">${formatCurrency(tongHuiSong)}</td>
         <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
@@ -209,8 +211,8 @@ function generateBill(data) {
     const balanceRow = document.createElement('tr');
     balanceRow.className = 'total-row'; // Dùng lại style của hàng tổng
     balanceRow.innerHTML = `
-        <td colspan="7" class="text-right">Cân Bằng Hụi (Âm/Dương)</td>
-        <td class="text-right ${balanceClass}">${formatCurrency(balance)}</td>
+        <td colspan="6" >Cân Bằng Hụi (Âm/Dương)</td>
+        <td colspan="2" ${balanceClass}">${formatCurrency(balance)}</td>
     `;
 
     // 4. Thêm hàng mới vào cuối bảng
