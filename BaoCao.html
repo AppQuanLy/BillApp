@@ -10,20 +10,18 @@
         .sidebar { flex: 0 0 280px; }
         .main-content { flex: 1; }
         .card { background-color: #fff; border: 1px solid #dee2e6; border-radius: .375rem; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075); margin-bottom: 20px; }
-        .card-header { padding: .75rem 1.25rem; margin-bottom: 0; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; font-weight: bold; font-size: 1.1rem; }
+        .card-header { padding: .75rem 1.25rem; margin-bottom: 0; background-color: #BF7D0D; border-bottom: 1px solid #dee2e6; font-weight: bold; font-size: 1.1rem; }
         .card-body { padding: 1.25rem; }
-        /* --- CSS MỚI CHO CÁC NÚT LỌC --- */
         .date-filters .input-group { margin-bottom: 10px; }
         .date-filters label { display: block; margin-bottom: .25rem; font-size: .9rem; }
         .date-filters .date-input { width: 100%; padding: .375rem .75rem; font-size: 1rem; border: 1px solid #ced4da; border-radius: .25rem; box-sizing: border-box; }
         .date-filters .filter-button { width: 100%; padding: .5rem 1rem; font-size: 1rem; font-weight: bold; color: #fff; background-color: #007bff; border-color: #007bff; border-radius: .25rem; cursor: pointer; }
         .date-filters .preset-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 15px; }
         .date-filters .preset-button { padding: .375rem .75rem; font-size: .875rem; border: 1px solid #6c757d; background-color: #fff; color: #6c757d; border-radius: .25rem; cursor: pointer; }
-        /* --- KẾT THÚC CSS MỚI --- */
         .summary-list { list-style: none; padding: 0; margin: 0; font-size: .9rem; }
         .summary-list li { display: flex; justify-content: space-between; padding: .5rem 0; border-bottom: 1px solid #f1f1f1; }
         .summary-list li:last-child { border-bottom: none; }
-        .summary-list .value { font-weight: bold; color: #007bff; }
+        .summary-list .value { font-weight: bold; color: #BF7D0D; }
         table { width: 100%; border-collapse: collapse; background-color: #fff; }
         th, td { border: 1px solid #dee2e6; padding: .75rem; vertical-align: middle; text-align: left; }
         thead th { background-color: #e9ecef; font-weight: 600; }
@@ -47,18 +45,20 @@
                     </div>
                     <button id="filter-button" class="filter-button">Xem Báo Cáo</button>
                     <div class="preset-group">
+                        <button class="preset-button" data-range="yesterday">Hôm Qua</button>
                         <button class="preset-button" data-range="today">Hôm nay</button>
+                        <button class="preset-button" data-range="last_week">Tuần Trước</button>
                         <button class="preset-button" data-range="this_week">Tuần này</button>
+                        <button class="preset-button" data-range="last_month">Tháng Trước</button>
                         <button class="preset-button" data-range="this_month">Tháng này</button>
-                        <button class="preset-button" data-range="last_month">Tháng trước</button>
                     </div>
                 </div>
             </div>
-             <div class="card">
+            <div class="card">
                 <div class="card-header">THÔNG TIN TỔNG</div>
                 <div class="card-body">
                     <ul class="summary-list">
-                        <li><span>★ Ngày Hoạt Động:</span><span class="value" data-field="tong_ngay_hoat_dong">0</span></li>
+                        <li><span>★ Dây Hoạt Động:</span><span class="value" data-field="tong_day_hoat_dong">0</span></li>
                         <li><span>★ Tổng Người Chơi:</span><span class="value" data-field="tong_nguoi_choi">0</span></li>
                         <li><span>★ Tổng Tiền Hốt:</span><span class="value" data-field="tong_tien_hot_all">0</span></li>
                         <li><span>★ Tổng Thảo:</span><span class="value" data-field="tong_thao_all">0</span></li>
@@ -93,130 +93,187 @@
                          </tr>
                      </thead>
                      <tbody id="details-tbody">
-                         </tbody>
+                     </tbody>
                  </table>
             </div>
         </div>
     </div>
 
- <script>
-    // --- SCRIPT MỚI VỚI LOGIC TƯƠNG TÁC (ĐÃ SỬA LỖI) ---
+    <script>
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLJQDuxeSyLg8ysxlCo__WpWUeHjHnpGIy5PODYa0fLoQUmBUO-LaVSuB7jXjP2Z9v/exec";
+        let RAW_DATA = null; 
 
-    // Dán URL của Apps Script bạn đã deploy vào đây
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMub92q-8UE7qMjjv_EPmZql9sNKZ_nS-TNWfavcJKLldr76l3xs1E__a0ligimExE/exec";
-
-    function formatCurrency(num) {
-        if (typeof num !== 'number' || num === null) return '0';
-        return num.toLocaleString('vi-VN');
-    }
-
-    function generateReport(data) {
-        // CÁC DÒNG GÂY LỖI ĐÃ ĐƯỢC XÓA BỎ KHỎI ĐÂY
-        document.querySelector('[data-field="tong_ngay_hoat_dong"]').textContent = formatCurrency(data.thong_tin_tong.ngay_hoat_dong);
-        document.querySelector('[data-field="tong_nguoi_choi"]').textContent = formatCurrency(data.thong_tin_tong.tong_nguoi_choi);
-        document.querySelector('[data-field="tong_tien_hot_all"]').textContent = formatCurrency(data.thong_tin_tong.tong_tien_hot);
-        document.querySelector('[data-field="tong_thao_all"]').textContent = formatCurrency(data.thong_tin_tong.tong_thao);
-        document.querySelector('[data-field="loc_so_bill_hot"]').textContent = formatCurrency(data.hoa_don_loc.so_bill_hot);
-        document.querySelector('[data-field="loc_tong_tien_hot"]').textContent = formatCurrency(data.hoa_don_loc.tong_tien_hot);
-        document.querySelector('[data-field="loc_tong_thao"]').textContent = formatCurrency(data.hoa_don_loc.tong_thao);
-        document.querySelector('[data-field="loc_dup_da_dong"]').textContent = formatCurrency(data.hoa_don_loc.dup_da_dong);
-        const tbody = document.getElementById('details-tbody');
-        tbody.innerHTML = '';
-        if (data.danh_sach_hot_hui && data.danh_sach_hot_hui.length > 0) {
-            data.danh_sach_hot_hui.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.hui_vien}</td>
-                    <td>${item.hanh_dong}</td>
-                    <td>${item.day_hui}</td>
-                    <td>${item.ky}</td>
-                    <td class="text-right">${formatCurrency(item.tham_keu)}</td>
-                    <td class="text-right">${formatCurrency(item.so_tien)}</td>
-                    <td>${item.ngay}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        } else {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Không có dữ liệu trong khoảng thời gian đã chọn.</td></tr>';
+        function formatCurrency(num) {
+            return (Number(num) || 0).toLocaleString('vi-VN');
         }
-    }
-    
-    // Hàm mới để gọi Apps Script và lấy dữ liệu
-    function fetchReportData(startDate, endDate) {
-        const tbody = document.getElementById('details-tbody');
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; font-weight:bold;">Đang tải dữ liệu báo cáo...</td></tr>';
-        
-        const finalUrl = `${APPS_SCRIPT_URL}?startDate=${startDate}&endDate=${endDate}`;
-        
-        fetch(finalUrl)
-            .then(response => response.json())
-            .then(data => {
-                generateReport(data);
-            })
-            .catch(error => {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Lỗi! Không thể tải dữ liệu. ${error.message}</td></tr>`;
-                console.error("Lỗi:", error);
-            });
-    }
-    
-    // Hàm tiện ích để định dạng ngày thành YYYY-MM-DD
-    function getIsoDate(date) {
-        return date.toISOString().split('T')[0];
-    }
 
-    // Khởi tạo và gán sự kiện khi trang được tải
-    window.onload = function() {
-        const startDateInput = document.getElementById('start-date');
-        const endDateInput = document.getElementById('end-date');
-        
-        // Mặc định: tải dữ liệu cho tháng này
-        const today = new Date();
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-        startDateInput.value = getIsoDate(firstDayOfMonth);
-        endDateInput.value = getIsoDate(lastDayOfMonth);
-        fetchReportData(startDateInput.value, endDateInput.value);
-        
-        // Gán sự kiện cho nút "Xem Báo Cáo"
-        document.getElementById('filter-button').addEventListener('click', () => {
-            if (startDateInput.value && endDateInput.value) {
-                fetchReportData(startDateInput.value, endDateInput.value);
+        function calculateAndRender(startDateStr, endDateStr) {
+            if (!RAW_DATA) {
+                document.getElementById('details-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;">Dữ liệu gốc chưa được tải.</td></tr>';
+                return;
             }
-        });
 
-        // Gán sự kiện cho các nút lọc nhanh
-        document.querySelectorAll('.preset-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const range = e.target.dataset.range;
-                const today = new Date();
-                let start, end;
+            const { dongHui, ds, hui, khachHang } = RAW_DATA;
+            const start = new Date(startDateStr);
+            const end = new Date(endDateStr);
+            end.setHours(23, 59, 59, 999);
 
-                switch(range) {
-                    case 'today':
-                        start = end = today;
-                        break;
-                    case 'this_week':
-                        const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Tuần bắt đầu từ T2
-                        start = firstDayOfWeek;
-                        end = new Date(start.getTime());
-                        end.setDate(start.getDate() + 6);
-                        break;
-                    case 'this_month':
-                         start = new Date(today.getFullYear(), today.getMonth(), 1);
-                         end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                        break;
-                    case 'last_month':
-                        start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                        end = new Date(today.getFullYear(), today.getMonth(), 0);
-                        break;
-                }
-                startDateInput.value = getIsoDate(start);
-                endDateInput.value = getIsoDate(end);
-                fetchReportData(startDateInput.value, endDateInput.value);
+            const dsMap = new Map(ds.map(item => [item['MA DH'], item]));
+            const khachHangMap = new Map(khachHang.map(item => [item['MA_HV'], item['HOI VIEN']]));
+            const huiToKhachHangMap = new Map(hui.map(item => [item['MA HUI'], item['MA HV']]));
+            
+            const filteredDongHui = dongHui.filter(row => {
+                if (!row['NGAY']) return false;
+                const ngayGiaoDich = new Date(row['NGAY']);
+                return ngayGiaoDich >= start && ngayGiaoDich <= end;
             });
-        });
-    };
-</script>
+            
+            const loc_hot_hui = filteredDongHui.filter(row => row['LOAI'] === 'Hốt Hụi');
+            document.querySelector('[data-field="loc_so_bill_hot"]').textContent = formatCurrency(loc_hot_hui.length);
+            document.querySelector('[data-field="loc_tong_tien_hot"]').textContent = formatCurrency(loc_hot_hui.reduce((sum, item) => sum + (Number(item['SO TIEN']) || 0), 0));
+            
+            let loc_tong_thao = 0;
+            let loc_dup_da_dong = 0;
+            filteredDongHui.forEach(row => {
+                const dayInfo = dsMap.get(row['DAY']);
+                if (dayInfo) {
+                    if (dayInfo['KIEU THAO'] === 'Thu Khi Hốt') loc_tong_thao += Number(row['TIEN THAO']) || 0;
+                    else if ((Number(row['KY']) === 1) && row['DONG PHI'] === 'Đã Xong') loc_tong_thao += (Number(row['TIEN THAO PHIEU']) || 0) * (Number(dayInfo['TIEN THAO']) || 0);
+                }
+                const chanDupCount = String(row['CHAN DUP'] || '').split(',').filter(Boolean).length;
+                loc_dup_da_dong += chanDupCount * (Number(row['TIEN CHET']) || 0);
+            });
+            document.querySelector('[data-field="loc_tong_thao"]').textContent = formatCurrency(loc_tong_thao);
+            document.querySelector('[data-field="loc_dup_da_dong"]').textContent = formatCurrency(loc_dup_da_dong);
+
+            const activeDs = ds.filter(row => String(row['TRANG THAI']).trim().toLowerCase() === 'đang hoạt động');
+            const activeDsKeys = new Set(activeDs.map(row => row['MA DH']));
+            document.querySelector('[data-field="tong_day_hoat_dong"]').textContent = formatCurrency(activeDs.length);
+
+            const activeHuiMembers = hui.filter(h => activeDsKeys.has(h['MA_DH']));
+            document.querySelector('[data-field="tong_nguoi_choi"]').textContent = formatCurrency(new Set(activeHuiMembers.map(h => h['MA HV'])).size);
+
+            const all_hot_hui = dongHui.filter(row => row['LOAI'] === 'Hốt Hụi' && activeDsKeys.has(row['DAY']));
+            document.querySelector('[data-field="tong_tien_hot_all"]').textContent = formatCurrency(all_hot_hui.reduce((sum, item) => sum + (Number(item['SO TIEN']) || 0), 0));
+
+            let tong_thao_all = 0;
+            dongHui.forEach(row => {
+                 const dayInfo = dsMap.get(row['DAY']);
+                 if(dayInfo && activeDsKeys.has(row['DAY'])) {
+                     if (dayInfo['KIEU THAO'] === 'Thu Khi Hốt') tong_thao_all += Number(row['TIEN THAO']) || 0;
+                     else if ((Number(row['KY']) === 1) && row['DONG PHI'] === 'Đã Xong') tong_thao_all += (Number(row['TIEN THAO PHIEU']) || 0) * (Number(dayInfo['TIEN THAO']) || 0);
+                 }
+            });
+            document.querySelector('[data-field="tong_thao_all"]').textContent = formatCurrency(tong_thao_all);
+
+            const tbody = document.getElementById('details-tbody');
+            tbody.innerHTML = '';
+            if (loc_hot_hui.length > 0) {
+                loc_hot_hui.forEach(item => {
+                    const dayInfo = dsMap.get(item['DAY']);
+                    const maKhachHang = huiToKhachHangMap.get(item['NGUOI DONG']);
+                    const tenHuiVien = khachHangMap.get(maKhachHang) || item['NGUOI DONG'];
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${tenHuiVien}</td>
+                        <td>Hốt Hụi</td>
+                        <td>${dayInfo ? dayInfo['TEN HUI'] : item['DAY']}</td>
+                        <td>${item['KY']}</td>
+                        <td class="text-right">${formatCurrency(item['THAM'])}</td>
+                        <td class="text-right">${formatCurrency(item['SO TIEN'])}</td>
+                        <td>${new Date(item['NGAY']).toLocaleDateString('vi-VN')}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Không có dữ liệu trong khoảng thời gian đã chọn.</td></tr>';
+            }
+        }
+        
+        /**
+         * HÀM MỚI ĐÃ SỬA LỖI MÚI GIỜ
+         * Thay thế cho hàm getIsoDate cũ
+         */
+        function getLocalDateAsIsoString(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        window.onload = function() {
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const tbody = document.getElementById('details-tbody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; font-weight:bold;">Đang tải toàn bộ dữ liệu...</td></tr>';
+            
+            fetch(APPS_SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) throw new Error(data.error);
+                    RAW_DATA = data; 
+                    
+                    // Mặc định tải dữ liệu cho tháng này khi mở
+                    const today = new Date();
+                    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    startDateInput.value = getLocalDateAsIsoString(firstDayOfMonth);
+                    endDateInput.value = getLocalDateAsIsoString(lastDayOfMonth);
+                    calculateAndRender(startDateInput.value, endDateInput.value);
+                })
+                .catch(error => {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Lỗi! Không thể tải dữ liệu. ${error.message}</td></tr>`;
+                    console.error("Lỗi:", error);
+                });
+            
+            document.getElementById('filter-button').addEventListener('click', () => {
+                if (startDateInput.value && endDateInput.value) {
+                    calculateAndRender(startDateInput.value, endDateInput.value);
+                }
+            });
+
+            document.querySelectorAll('.preset-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const range = e.target.dataset.range;
+                    const today = new Date();
+                    let start = new Date(); // Khởi tạo để tránh lỗi
+                    let end = new Date();
+
+                    switch(range) {
+                        case 'today':
+                            start = end = today;
+                            break;
+                        case 'yesterday':
+                            start = end = new Date();
+                            start.setDate(start.getDate() - 1);
+                            end.setDate(end.getDate() - 1);
+                            break;
+                        case 'this_week':
+                            start = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)));
+                            end = new Date(start.getTime());
+                            end.setDate(start.getDate() + 6);
+                            break;
+                        case 'last_week':
+                            end = new Date();
+                            end.setDate(end.getDate() - end.getDay() - (end.getDay() === 0 ? 0 : 1));
+                            start = new Date(end.getTime());
+                            start.setDate(start.getDate() - 6);
+                            break;
+                        case 'this_month':
+                             start = new Date(today.getFullYear(), today.getMonth(), 1);
+                             end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                            break;
+                        case 'last_month':
+                            start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                            end = new Date(today.getFullYear(), today.getMonth(), 0);
+                            break;
+                    }
+                    startDateInput.value = getLocalDateAsIsoString(start);
+                    endDateInput.value = getLocalDateAsIsoString(end);
+                    calculateAndRender(startDateInput.value, endDateInput.value);
+                });
+            });
+        };
+    </script>
 </body>
 </html>
