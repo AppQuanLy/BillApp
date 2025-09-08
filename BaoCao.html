@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Hốt Hụi</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; line-height: 1.5; color: #212529; background-color: #f8f9fa; margin: 0; }
+        .wrapper { display: flex; max-width: 1600px; margin: 20px auto; gap: 20px; }
+        .sidebar { flex: 0 0 280px; }
+        .main-content { flex: 1; }
+        .card { background-color: #fff; border: 1px solid #dee2e6; border-radius: .375rem; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075); margin-bottom: 20px; }
+        .card-header { padding: .75rem 1.25rem; margin-bottom: 0; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; font-weight: bold; font-size: 1.1rem; }
+        .card-body { padding: 1.25rem; }
+        /* --- CSS MỚI CHO CÁC NÚT LỌC --- */
+        .date-filters .input-group { margin-bottom: 10px; }
+        .date-filters label { display: block; margin-bottom: .25rem; font-size: .9rem; }
+        .date-filters .date-input { width: 100%; padding: .375rem .75rem; font-size: 1rem; border: 1px solid #ced4da; border-radius: .25rem; box-sizing: border-box; }
+        .date-filters .filter-button { width: 100%; padding: .5rem 1rem; font-size: 1rem; font-weight: bold; color: #fff; background-color: #007bff; border-color: #007bff; border-radius: .25rem; cursor: pointer; }
+        .date-filters .preset-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 15px; }
+        .date-filters .preset-button { padding: .375rem .75rem; font-size: .875rem; border: 1px solid #6c757d; background-color: #fff; color: #6c757d; border-radius: .25rem; cursor: pointer; }
+        /* --- KẾT THÚC CSS MỚI --- */
+        .summary-list { list-style: none; padding: 0; margin: 0; font-size: .9rem; }
+        .summary-list li { display: flex; justify-content: space-between; padding: .5rem 0; border-bottom: 1px solid #f1f1f1; }
+        .summary-list li:last-child { border-bottom: none; }
+        .summary-list .value { font-weight: bold; color: #007bff; }
+        table { width: 100%; border-collapse: collapse; background-color: #fff; }
+        th, td { border: 1px solid #dee2e6; padding: .75rem; vertical-align: middle; text-align: left; }
+        thead th { background-color: #e9ecef; font-weight: 600; }
+        tbody tr:nth-of-type(odd) { background-color: rgba(0,0,0,.05); }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">Lọc Dữ Liệu</div>
+                <div class="card-body date-filters">
+                    <div class="input-group">
+                        <label for="start-date">Từ ngày:</label>
+                        <input type="date" id="start-date" class="date-input">
+                    </div>
+                    <div class="input-group">
+                        <label for="end-date">Đến ngày:</label>
+                        <input type="date" id="end-date" class="date-input">
+                    </div>
+                    <button id="filter-button" class="filter-button">Xem Báo Cáo</button>
+                    <div class="preset-group">
+                        <button class="preset-button" data-range="today">Hôm nay</button>
+                        <button class="preset-button" data-range="this_week">Tuần này</button>
+                        <button class="preset-button" data-range="this_month">Tháng này</button>
+                        <button class="preset-button" data-range="last_month">Tháng trước</button>
+                    </div>
+                </div>
+            </div>
+             <div class="card">
+                <div class="card-header">THÔNG TIN TỔNG</div>
+                <div class="card-body">
+                    <ul class="summary-list">
+                        <li><span>★ Ngày Hoạt Động:</span><span class="value" data-field="tong_ngay_hoat_dong">0</span></li>
+                        <li><span>★ Tổng Người Chơi:</span><span class="value" data-field="tong_nguoi_choi">0</span></li>
+                        <li><span>★ Tổng Tiền Hốt:</span><span class="value" data-field="tong_tien_hot_all">0</span></li>
+                        <li><span>★ Tổng Thảo:</span><span class="value" data-field="tong_thao_all">0</span></li>
+                    </ul>
+                </div>
+            </div>
+             <div class="card">
+                <div class="card-header">HÓA ĐƠN (THEO KỲ LỌC)</div>
+                <div class="card-body">
+                    <ul class="summary-list">
+                        <li><span>✎ Số Bill Hốt:</span><span class="value" data-field="loc_so_bill_hot">0</span></li>
+                        <li><span>✎ Tổng Tiền Hốt:</span><span class="value" data-field="loc_tong_tien_hot">0</span></li>
+                        <li><span>✎ Tổng Thảo:</span><span class="value" data-field="loc_tong_thao">0</span></li>
+                        <li><span>✎ Đúp Đã Đóng:</span><span class="value" data-field="loc_dup_da_dong">0</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="card">
+                 <div class="card-header">DANH SÁCH</div>
+                 <table>
+                     <thead>
+                         <tr>
+                             <th>HỤI VIÊN</th>
+                             <th>ĐÓNG / HỐT HỤI</th>
+                             <th>DÂY HỤI</th>
+                             <th>KỲ</th>
+                             <th class="text-right">THĂM KÊU</th>
+                             <th class="text-right">SỐ TIỀN</th>
+                             <th>NGÀY</th>
+                         </tr>
+                     </thead>
+                     <tbody id="details-tbody">
+                         </tbody>
+                 </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SCRIPT MỚI VỚI LOGIC TƯƠNG TÁC ---
+
+        // Dán URL của Apps Script bạn đã deploy ở bước trước vào đây
+        const APPS_SCRIPT_URL = "URL_APPS_SCRIPT_CUA_BAN";
+
+        function formatCurrency(num) {
+            if (typeof num !== 'number' || num === null) return '0';
+            return num.toLocaleString('vi-VN');
+        }
+
+        function generateReport(data) {
+            // (Hàm này giữ nguyên như cũ, không thay đổi)
+            document.querySelector('[data-field="ngay_loc_bat_dau"]').textContent = data.ngay_loc_bat_dau || '';
+            document.querySelector('[data-field="ngay_loc_ket_thuc"]').textContent = data.ngay_loc_ket_thuc || '';
+            document.querySelector('[data-field="tong_ngay_hoat_dong"]').textContent = formatCurrency(data.thong_tin_tong.ngay_hoat_dong);
+            document.querySelector('[data-field="tong_nguoi_choi"]').textContent = formatCurrency(data.thong_tin_tong.tong_nguoi_choi);
+            document.querySelector('[data-field="tong_tien_hot_all"]').textContent = formatCurrency(data.thong_tin_tong.tong_tien_hot);
+            document.querySelector('[data-field="tong_thao_all"]').textContent = formatCurrency(data.thong_tin_tong.tong_thao);
+            document.querySelector('[data-field="loc_so_bill_hot"]').textContent = formatCurrency(data.hoa_don_loc.so_bill_hot);
+            document.querySelector('[data-field="loc_tong_tien_hot"]').textContent = formatCurrency(data.hoa_don_loc.tong_tien_hot);
+            document.querySelector('[data-field="loc_tong_thao"]').textContent = formatCurrency(data.hoa_don_loc.tong_thao);
+            document.querySelector('[data-field="loc_dup_da_dong"]').textContent = formatCurrency(data.hoa_don_loc.dup_da_dong);
+            const tbody = document.getElementById('details-tbody');
+            tbody.innerHTML = '';
+            if (data.danh_sach_hot_hui && data.danh_sach_hot_hui.length > 0) {
+                data.danh_sach_hot_hui.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.hui_vien}</td>
+                        <td>${item.hanh_dong}</td>
+                        <td>${item.day_hui}</td>
+                        <td>${item.ky}</td>
+                        <td class="text-right">${formatCurrency(item.tham_keu)}</td>
+                        <td class="text-right">${formatCurrency(item.so_tien)}</td>
+                        <td>${item.ngay}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Không có dữ liệu trong khoảng thời gian đã chọn.</td></tr>';
+            }
+        }
+        
+        // Hàm mới để gọi Apps Script và lấy dữ liệu
+        function fetchReportData(startDate, endDate) {
+            const tbody = document.getElementById('details-tbody');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; font-weight:bold;">Đang tải dữ liệu báo cáo...</td></tr>';
+            
+            const finalUrl = `${APPS_SCRIPT_URL}?startDate=${startDate}&endDate=${endDate}`;
+            
+            fetch(finalUrl)
+                .then(response => response.json())
+                .then(data => {
+                    generateReport(data);
+                })
+                .catch(error => {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Lỗi! Không thể tải dữ liệu. ${error.message}</td></tr>`;
+                    console.error("Lỗi:", error);
+                });
+        }
+        
+        // Hàm tiện ích để định dạng ngày thành YYYY-MM-DD
+        function getIsoDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // Khởi tạo và gán sự kiện khi trang được tải
+        window.onload = function() {
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            
+            // Mặc định: tải dữ liệu cho tháng này
+            const today = new Date();
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+            startDateInput.value = getIsoDate(firstDayOfMonth);
+            endDateInput.value = getIsoDate(lastDayOfMonth);
+            fetchReportData(startDateInput.value, endDateInput.value);
+            
+            // Gán sự kiện cho nút "Xem Báo Cáo"
+            document.getElementById('filter-button').addEventListener('click', () => {
+                if (startDateInput.value && endDateInput.value) {
+                    fetchReportData(startDateInput.value, endDateInput.value);
+                }
+            });
+
+            // Gán sự kiện cho các nút lọc nhanh
+            document.querySelectorAll('.preset-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const range = e.target.dataset.range;
+                    const today = new Date();
+                    let start, end;
+
+                    switch(range) {
+                        case 'today':
+                            start = end = today;
+                            break;
+                        case 'this_week':
+                            const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Tuần bắt đầu từ T2
+                            start = firstDayOfWeek;
+                            end = new Date(start.getTime());
+                            end.setDate(start.getDate() + 6);
+                            break;
+                        case 'this_month':
+                             start = new Date(today.getFullYear(), today.getMonth(), 1);
+                             end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                            break;
+                        case 'last_month':
+                            start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                            end = new Date(today.getFullYear(), today.getMonth(), 0);
+                            break;
+                    }
+                    startDateInput.value = getIsoDate(start);
+                    endDateInput.value = getIsoDate(end);
+                    fetchReportData(startDateInput.value, endDateInput.value);
+                });
+            });
+        };
+    </script>
+</body>
+</html>
