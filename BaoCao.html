@@ -99,184 +99,200 @@
         </div>
     </div>
 
-    <script>
-        // DÁN URL CỦA APPS SCRIPT BẠN VỪA DEPLOY VÀO ĐÂY
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLJQDuxeSyLg8ysxlCo__WpWUeHjHnpGIy5PODYa0fLoQUmBUO-LaVSuB7jXjP2Z9v/exec";
-        let RAW_DATA = null;
-        let SPREADSHEET_ID = null;
+   <script>
+    // Các biến toàn cục sẽ được lấy động từ URL
+    let RAW_DATA = null;
+    let SPREADSHEET_ID = null;
+    let APPS_SCRIPT_URL = null;
 
-        function formatCurrency(num) {
-            return (Number(num) || 0).toLocaleString('vi-VN');
+    function formatCurrency(num) {
+        return (Number(num) || 0).toLocaleString('vi-VN');
+    }
+
+    // Hàm tính toán và hiển thị dữ liệu lên giao diện
+    function calculateAndRender(startDateStr, endDateStr) {
+        if (!RAW_DATA) {
+            document.getElementById('details-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;">Dữ liệu gốc chưa được tải.</td></tr>';
+            return;
         }
 
-        function calculateAndRender(startDateStr, endDateStr) {
-            if (!RAW_DATA) {
-                document.getElementById('details-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;">Dữ liệu gốc chưa được tải.</td></tr>';
-                return;
+        const { dongHui, ds, hui, khachHang } = RAW_DATA;
+        const start = new Date(startDateStr);
+        const end = new Date(endDateStr);
+        end.setHours(23, 59, 59, 999);
+
+        // Tạo các "bản đồ" tra cứu để tăng tốc độ xử lý
+        const dsMap = new Map(ds.map(item => [item['MA DH'], item]));
+        const khachHangMap = new Map(khachHang.map(item => [item['MA_HV'], item['HOI VIEN']]));
+        const huiToKhachHangMap = new Map(hui.map(item => [item['MA HUI'], item['MA HV']]));
+        
+        // Lọc giao dịch trong khoảng thời gian người dùng chọn
+        const filteredDongHui = dongHui.filter(row => {
+            if (!row['NGAY']) return false;
+            const ngayGiaoDich = new Date(row['NGAY']);
+            return ngayGiaoDich >= start && ngayGiaoDich <= end;
+        });
+        
+        // --- TÍNH TOÁN CHO HÓA ĐƠN (THEO KỲ LỌC) ---
+        const loc_hot_hui = filteredDongHui.filter(row => row['LOAI'] === 'Hốt Hụi');
+        document.querySelector('[data-field="loc_so_bill_hot"]').textContent = formatCurrency(loc_hot_hui.length);
+        document.querySelector('[data-field="loc_tong_tien_hot"]').textContent = formatCurrency(loc_hot_hui.reduce((sum, item) => sum + (Number(item['SO TIEN']) || 0), 0));
+        
+        let loc_tong_thao = 0;
+        let loc_dup_da_dong = 0;
+        filteredDongHui.forEach(row => {
+            const dayInfo = dsMap.get(row['DAY']);
+            if (dayInfo) {
+                if (dayInfo['KIEU THAO'] === 'Thu Khi Hốt') loc_tong_thao += Number(row['TIEN THAO']) || 0;
+                else if ((Number(row['KY']) === 1) && row['DONG PHI'] === 'Đã Xong') loc_tong_thao += (Number(row['TIEN THAO PHIEU']) || 0) * (Number(dayInfo['TIEN THAO']) || 0);
             }
+            const chanDupCount = String(row['CHAN DUP'] || '').split(',').filter(Boolean).length;
+            loc_dup_da_dong += chanDupCount * (Number(row['TIEN CHET']) || 0);
+        });
+        document.querySelector('[data-field="loc_tong_thao"]').textContent = formatCurrency(loc_tong_thao);
+        document.querySelector('[data-field="loc_dup_da_dong"]').textContent = formatCurrency(loc_dup_da_dong);
 
-            const { dongHui, ds, hui, khachHang } = RAW_DATA;
-            const start = new Date(startDateStr);
-            const end = new Date(endDateStr);
-            end.setHours(23, 59, 59, 999);
+        // --- TÍNH TOÁN CHO THÔNG TIN TỔNG (Dựa trên toàn bộ dữ liệu) ---
+        const activeDs = ds.filter(row => String(row['TRANG THAI']).trim().toLowerCase() === 'đang hoạt động');
+        const activeDsKeys = new Set(activeDs.map(row => row['MA DH']));
+        document.querySelector('[data-field="tong_day_hoat_dong"]').textContent = formatCurrency(activeDs.length);
 
-            const dsMap = new Map(ds.map(item => [item['MA DH'], item]));
-            const khachHangMap = new Map(khachHang.map(item => [item['MA_HV'], item['HOI VIEN']]));
-            const huiToKhachHangMap = new Map(hui.map(item => [item['MA HUI'], item['MA HV']]));
-            
-            const filteredDongHui = dongHui.filter(row => {
-                if (!row['NGAY']) return false;
-                const ngayGiaoDich = new Date(row['NGAY']);
-                return ngayGiaoDich >= start && ngayGiaoDich <= end;
+        const activeHuiMembers = hui.filter(h => activeDsKeys.has(h['MA_DH']));
+        document.querySelector('[data-field="tong_nguoi_choi"]').textContent = formatCurrency(new Set(activeHuiMembers.map(h => h['MA HV'])).size);
+
+        const all_hot_hui = dongHui.filter(row => row['LOAI'] === 'Hốt Hụi' && activeDsKeys.has(row['DAY']));
+        document.querySelector('[data-field="tong_tien_hot_all"]').textContent = formatCurrency(all_hot_hui.reduce((sum, item) => sum + (Number(item['SO TIEN']) || 0), 0));
+
+        let tong_thao_all = 0;
+        dongHui.forEach(row => {
+             const dayInfo = dsMap.get(row['DAY']);
+             if(dayInfo && activeDsKeys.has(row['DAY'])) {
+                 if (dayInfo['KIEU THAO'] === 'Thu Khi Hốt') tong_thao_all += Number(row['TIEN THAO']) || 0;
+                 else if ((Number(row['KY']) === 1) && row['DONG PHI'] === 'Đã Xong') tong_thao_all += (Number(row['TIEN THAO PHIEU']) || 0) * (Number(dayInfo['TIEN THAO']) || 0);
+             }
+        });
+        document.querySelector('[data-field="tong_thao_all"]').textContent = formatCurrency(tong_thao_all);
+
+        // --- HIỂN THỊ DANH SÁCH ĐÃ LỌC ---
+        const tbody = document.getElementById('details-tbody');
+        tbody.innerHTML = '';
+        if (loc_hot_hui.length > 0) {
+            loc_hot_hui.forEach(item => {
+                const dayInfo = dsMap.get(item['DAY']);
+                const maKhachHang = huiToKhachHangMap.get(item['NGUOI DONG']);
+                const tenHuiVien = khachHangMap.get(maKhachHang) || item['NGUOI DONG'];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${tenHuiVien}</td>
+                    <td>Hốt Hụi</td>
+                    <td>${dayInfo ? dayInfo['TEN HUI'] : item['DAY']}</td>
+                    <td>${item['KY']}</td>
+                    <td class="text-right">${formatCurrency(item['THAM'])}</td>
+                    <td class="text-right">${formatCurrency(item['SO TIEN'])}</td>
+                    <td>${new Date(item['NGAY']).toLocaleDateString('vi-VN')}</td>
+                `;
+                tbody.appendChild(row);
             });
-            
-            const loc_hot_hui = filteredDongHui.filter(row => row['LOAI'] === 'Hốt Hụi');
-            document.querySelector('[data-field="loc_so_bill_hot"]').textContent = formatCurrency(loc_hot_hui.length);
-            document.querySelector('[data-field="loc_tong_tien_hot"]').textContent = formatCurrency(loc_hot_hui.reduce((sum, item) => sum + (Number(item['SO TIEN']) || 0), 0));
-            
-            let loc_tong_thao = 0;
-            let loc_dup_da_dong = 0;
-            filteredDongHui.forEach(row => {
-                const dayInfo = dsMap.get(row['DAY']);
-                if (dayInfo) {
-                    if (dayInfo['KIEU THAO'] === 'Thu Khi Hốt') loc_tong_thao += Number(row['TIEN THAO']) || 0;
-                    else if ((Number(row['KY']) === 1) && row['DONG PHI'] === 'Đã Xong') loc_tong_thao += (Number(row['TIEN THAO PHIEU']) || 0) * (Number(dayInfo['TIEN THAO']) || 0);
-                }
-                const chanDupCount = String(row['CHAN DUP'] || '').split(',').filter(Boolean).length;
-                loc_dup_da_dong += chanDupCount * (Number(row['TIEN CHET']) || 0);
+        } else {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Không có dữ liệu trong khoảng thời gian đã chọn.</td></tr>';
+        }
+    }
+    
+    // Hàm gọi Apps Script để lấy dữ liệu thô
+    function fetchRawData() {
+        const tbody = document.getElementById('details-tbody');
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; font-weight:bold;">Đang tải toàn bộ dữ liệu...</td></tr>';
+        
+        const finalUrl = `${APPS_SCRIPT_URL}?spreadsheetId=${SPREADSHEET_ID}`;
+        
+        fetch(finalUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                RAW_DATA = data; // Lưu dữ liệu thô vào biến toàn cục
+                
+                // Sau khi tải xong, tự động lọc theo tháng hiện tại
+                document.querySelector('.preset-button[data-range="this_month"]').click();
+            })
+            .catch(error => {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Lỗi! Không thể tải dữ liệu. ${error.message}</td></tr>`;
+                console.error("Lỗi:", error);
             });
-            document.querySelector('[data-field="loc_tong_thao"]').textContent = formatCurrency(loc_tong_thao);
-            document.querySelector('[data-field="loc_dup_da_dong"]').textContent = formatCurrency(loc_dup_da_dong);
+    }
 
-            const activeDs = ds.filter(row => String(row['TRANG THAI']).trim().toLowerCase() === 'đang hoạt động');
-            const activeDsKeys = new Set(activeDs.map(row => row['MA DH']));
-            document.querySelector('[data-field="tong_day_hoat_dong"]').textContent = formatCurrency(activeDs.length);
+    // Hàm tiện ích để định dạng ngày thành YYYY-MM-DD
+    function getLocalDateAsIsoString(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
-            const activeHuiMembers = hui.filter(h => activeDsKeys.has(h['MA_DH']));
-            document.querySelector('[data-field="tong_nguoi_choi"]').textContent = formatCurrency(new Set(activeHuiMembers.map(h => h['MA HV'])).size);
+    // Khởi tạo trang khi được tải
+    window.onload = function() {
+        // Đọc ssid và scriptUrl từ đường link
+        const urlParams = new URLSearchParams(window.location.search);
+        SPREADSHEET_ID = urlParams.get('ssid');
+        APPS_SCRIPT_URL = urlParams.get('scriptUrl');
 
-            const all_hot_hui = dongHui.filter(row => row['LOAI'] === 'Hốt Hụi' && activeDsKeys.has(row['DAY']));
-            document.querySelector('[data-field="tong_tien_hot_all"]').textContent = formatCurrency(all_hot_hui.reduce((sum, item) => sum + (Number(item['SO TIEN']) || 0), 0));
-
-            let tong_thao_all = 0;
-            dongHui.forEach(row => {
-                 const dayInfo = dsMap.get(row['DAY']);
-                 if(dayInfo && activeDsKeys.has(row['DAY'])) {
-                     if (dayInfo['KIEU THAO'] === 'Thu Khi Hốt') tong_thao_all += Number(row['TIEN THAO']) || 0;
-                     else if ((Number(row['KY']) === 1) && row['DONG PHI'] === 'Đã Xong') tong_thao_all += (Number(row['TIEN THAO PHIEU']) || 0) * (Number(dayInfo['TIEN THAO']) || 0);
-                 }
-            });
-            document.querySelector('[data-field="tong_thao_all"]').textContent = formatCurrency(tong_thao_all);
-
-            const tbody = document.getElementById('details-tbody');
-            tbody.innerHTML = '';
-            if (loc_hot_hui.length > 0) {
-                loc_hot_hui.forEach(item => {
-                    const dayInfo = dsMap.get(item['DAY']);
-                    const maKhachHang = huiToKhachHangMap.get(item['NGUOI DONG']);
-                    const tenHuiVien = khachHangMap.get(maKhachHang) || item['NGUOI DONG'];
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${tenHuiVien}</td>
-                        <td>Hốt Hụi</td>
-                        <td>${dayInfo ? dayInfo['TEN HUI'] : item['DAY']}</td>
-                        <td>${item['KY']}</td>
-                        <td class="text-right">${formatCurrency(item['THAM'])}</td>
-                        <td class="text-right">${formatCurrency(item['SO TIEN'])}</td>
-                        <td>${new Date(item['NGAY']).toLocaleDateString('vi-VN')}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            } else {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Không có dữ liệu trong khoảng thời gian đã chọn.</td></tr>';
-            }
+        if (!SPREADSHEET_ID || !APPS_SCRIPT_URL) {
+            document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">Không tìm thấy ID của file Google Sheet hoặc URL của Apps Script. Vui lòng kiểm tra lại Action trong AppSheet.</p>`;
+            return;
         }
         
-        function getLocalDateAsIsoString(date) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
+        // Tải dữ liệu thô từ Apps Script
+        fetchRawData();
 
-        function fetchAndRender() {
-            const startDateInput = document.getElementById('start-date');
-            const endDateInput = document.getElementById('end-date');
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+        
+        // Gán sự kiện cho nút "Xem Báo Cáo"
+        document.getElementById('filter-button').addEventListener('click', () => {
             if (startDateInput.value && endDateInput.value) {
                 calculateAndRender(startDateInput.value, endDateInput.value);
             }
-        }
+        });
 
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            SPREADSHEET_ID = urlParams.get('ssid');
+        // Gán sự kiện cho các nút lọc nhanh
+        document.querySelectorAll('.preset-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const range = e.target.dataset.range;
+                const today = new Date();
+                let start = new Date(), end = new Date();
 
-            if (!SPREADSHEET_ID) {
-                document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">Không tìm thấy ID của file Google Sheet. Vui lòng kiểm tra lại Action trong AppSheet.</p>`;
-                return;
-            }
-
-            const startDateInput = document.getElementById('start-date');
-            const endDateInput = document.getElementById('end-date');
-            const tbody = document.getElementById('details-tbody');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; font-weight:bold;">Đang tải toàn bộ dữ liệu...</td></tr>';
-            
-            const finalUrl = `${APPS_SCRIPT_URL}?spreadsheetId=${SPREADSHEET_ID}`;
-
-            fetch(finalUrl)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) throw new Error(data.error);
-                    RAW_DATA = data; 
-                    
-                    const today = new Date();
-                    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                    startDateInput.value = getLocalDateAsIsoString(firstDayOfMonth);
-                    endDateInput.value = getLocalDateAsIsoString(lastDayOfMonth);
-                    fetchAndRender();
-                })
-                .catch(error => {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Lỗi! Không thể tải dữ liệu. ${error.message}</td></tr>`;
-                    console.error("Lỗi:", error);
-                });
-            
-            document.getElementById('filter-button').addEventListener('click', fetchAndRender);
-
-            document.querySelectorAll('.preset-button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const range = e.target.dataset.range;
-                    const today = new Date();
-                    let start = new Date(), end = new Date();
-                    switch(range) {
-                        case 'today': start = end = today; break;
-                        case 'yesterday':
-                            start.setDate(start.getDate() - 1);
-                            end.setDate(end.getDate() - 1);
-                            break;
-                        case 'this_week':
-                            start.setDate(start.getDate() - start.getDay() + (start.getDay() === 0 ? -6 : 1));
-                            end = new Date(start.getTime()); end.setDate(start.getDate() + 6);
-                            break;
-                        case 'last_week':
-                            end.setDate(end.getDate() - end.getDay() - (end.getDay() === 0 ? 0 : 1));
-                            start = new Date(end.getTime()); start.setDate(start.getDate() - 6);
-                            break;
-                        case 'this_month':
-                             start = new Date(today.getFullYear(), today.getMonth(), 1);
-                             end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                            break;
-                        case 'last_month':
-                            start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                            end = new Date(today.getFullYear(), today.getMonth(), 0);
-                            break;
-                    }
-                    startDateInput.value = getLocalDateAsIsoString(start);
-                    endDateInput.value = getLocalDateAsIsoString(end);
-                    fetchAndRender();
-                });
+                switch(range) {
+                    case 'today':
+                        start = end = today;
+                        break;
+                    case 'yesterday':
+                        start.setDate(start.getDate() - 1);
+                        end.setDate(end.getDate() - 1);
+                        break;
+                    case 'this_week':
+                        start.setDate(start.getDate() - start.getDay() + (start.getDay() === 0 ? -6 : 1));
+                        end = new Date(start.getTime());
+                        end.setDate(start.getDate() + 6);
+                        break;
+                    case 'last_week':
+                        end.setDate(end.getDate() - end.getDay() - (end.getDay() === 0 ? 0 : 1));
+                        start = new Date(end.getTime());
+                        start.setDate(start.getDate() - 6);
+                        break;
+                    case 'this_month':
+                         start = new Date(today.getFullYear(), today.getMonth(), 1);
+                         end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                        break;
+                    case 'last_month':
+                        start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                        end = new Date(today.getFullYear(), today.getMonth(), 0);
+                        break;
+                }
+                startDateInput.value = getLocalDateAsIsoString(start);
+                endDateInput.value = getLocalDateAsIsoString(end);
+                calculateAndRender(startDateInput.value, endDateInput.value);
             });
-        };
-    </script>
+        });
+    };
+</script>
 </body>
 </html>
