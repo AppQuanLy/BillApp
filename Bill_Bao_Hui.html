@@ -22,30 +22,38 @@
             padding: 5px 10px; font-size: 12px; cursor: pointer; color: white; border: none; 
             border-radius: 4px; transition: background-color 0.2s; 
         }
-        /* --- CSS MỚI CHO HEADER --- */
-        .bill-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start; /* Căn các mục lên trên cùng */
-            padding-bottom: 15px;
-            border-bottom: 1px solid #ccc;
-            margin-bottom: 15px;
-        }
-        .header-left {
-            font-weight: bold;
-            font-size: 14pt;
-            line-height: 1.5;
-        }
-        .header-left p {
-            margin: 0; /* Xóa khoảng cách mặc định của thẻ p */
-        }
-        .header-right {
-            display: flex;
-            align-items: center; /* Căn giữa tiêu đề và mã QR theo chiều dọc */
-            gap: 20px; /* Khoảng cách giữa tiêu đề và mã QR */
-        }
-        .header-title-date {
-            text-align: center;
+            /* --- CSS MỚI CHO HEADER --- */
+            .bill-header {
+                position: relative; /* Tạo không gian để định vị các phần tử con */
+                min-height: 150px;  /* Đảm bảo header có đủ chiều cao cho mã QR */
+                border-bottom: 1px solid #ccc;
+                margin-bottom: 15px;
+            }
+            .header-left {
+                position: absolute; /* Định vị tuyệt đối ở bên trái */
+                left: 0;
+                top: 0;
+                font-weight: bold;
+                font-size: 14pt;
+                line-height: 1.5;
+            }
+            .header-left p { margin: 0; }
+            
+            .header-title-date {
+                position: absolute; /* Định vị tuyệt đối ở chính giữa */
+                left: 50%;
+                top: 0;
+                transform: translateX(-50%); /* Căn giữa chính xác */
+                text-align: center;
+                width: 60%; /* Tăng độ rộng để tiêu đề không bị xuống hàng */
+            }
+
+        .qr-code {
+            width: 150px;
+            height: 150px;
+            position: absolute; /* Định vị tuyệt đối ở bên phải */
+            right: 0;
+            top: 0;
         }
         .info-panel button { padding: 10px 20px; font-size: 14px; font-weight: bold; }
 
@@ -97,20 +105,18 @@
                 <button class="copy-btn">Copy Bill</button>
                 <button class="share-btn">Gửi Bill</button>
             </div>
-            <div class="bill-header">
-    <div class="header-left">
-        <p>Chủ hụi: <span data-field="chu_hui"></span></p>
-        <p>SĐT: <span data-field="sdt"></span></p>
-        <p data-field="bank_info"></p>
-    </div>
-    <div class="header-right">
-        <div class="header-title-date">
-            <h2 style="margin: 5px 0 0 0; font-size: 25pt;">BILL BÁO HỤI</h2>
-            <p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p>
+        <div class="bill-header">
+            <div class="header-left">
+                <p>Chủ hụi: <span data-field="chu_hui"></span></p>
+                <p>SĐT: <span data-field="sdt"></span></p>
+                <p data-field="bank_info"></p>
+            </div>
+            <div class="header-title-date">
+                <h2 style="margin: 5px 0 0 0; font-size: 25pt;">BILL BÁO HỤI</h2>
+                <p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p>
+            </div>
+            <img data-field="qr_bill_url" class="qr-code" alt="QR">
         </div>
-        <img data-field="qr_bill_url" class="qr-code" alt="QR">
-    </div>
-</div>
             <table class="summary-table text-center">
                 <thead><tr><th class="highlight" data-field="summary_title_hui_vien"></th><th class="highlight" data-field="summary_title_hui_chet"></th><th class="highlight" data-field="summary_title_hui_song"></th><th class="highlight">Âm/Dương *</th><th class="highlight">Lợi Nhuận</th></tr></thead>
                 <tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="font-bold" data-field="am_duong"></td><td class="font-bold" data-field="loi_nhuan"></td></tr></tbody>
