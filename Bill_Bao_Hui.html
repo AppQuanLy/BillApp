@@ -22,6 +22,31 @@
             padding: 5px 10px; font-size: 12px; cursor: pointer; color: white; border: none; 
             border-radius: 4px; transition: background-color 0.2s; 
         }
+        /* --- CSS MỚI CHO HEADER --- */
+        .bill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Căn các mục lên trên cùng */
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 15px;
+        }
+        .header-left {
+            font-weight: bold;
+            font-size: 14pt;
+            line-height: 1.5;
+        }
+        .header-left p {
+            margin: 0; /* Xóa khoảng cách mặc định của thẻ p */
+        }
+        .header-right {
+            display: flex;
+            align-items: center; /* Căn giữa tiêu đề và mã QR theo chiều dọc */
+            gap: 20px; /* Khoảng cách giữa tiêu đề và mã QR */
+        }
+        .header-title-date {
+            text-align: center;
+        }
         .info-panel button { padding: 10px 20px; font-size: 14px; font-weight: bold; }
 
         .download-btn { background-color: #0275d8; }
@@ -72,10 +97,20 @@
                 <button class="copy-btn">Copy Bill</button>
                 <button class="share-btn">Gửi Bill</button>
             </div>
-            <table class="header-table no-border">
-                <tr><td class="font-bold" style="width: 33%;">Chủ hụi: <span data-field="chu_hui"></span></td><td class="font-bold" style="width: 33%;">SDT: <span data-field="sdt"></span></td><td class="font-bold" style="width: 34%;" data-field="bank_info"></td></tr>
-                <tr><td colspan="2" class="text-center"><h2 style="margin: 5px 0 0 0; font-size: 25pt;">BILL BÁO HỤI</h2><p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p></td><td class="text-right"><img data-field="qr_bill_url" class="qr-code" alt="QR"></td></tr>
-            </table>
+            <div class="bill-header">
+    <div class="header-left">
+        <p>Chủ hụi: <span data-field="chu_hui"></span></p>
+        <p>SĐT: <span data-field="sdt"></span></p>
+        <p data-field="bank_info"></p>
+    </div>
+    <div class="header-right">
+        <div class="header-title-date">
+            <h2 style="margin: 5px 0 0 0; font-size: 25pt;">BILL BÁO HỤI</h2>
+            <p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p>
+        </div>
+        <img data-field="qr_bill_url" class="qr-code" alt="QR">
+    </div>
+</div>
             <table class="summary-table text-center">
                 <thead><tr><th class="highlight" data-field="summary_title_hui_vien"></th><th class="highlight" data-field="summary_title_hui_chet"></th><th class="highlight" data-field="summary_title_hui_song"></th><th class="highlight">Âm/Dương *</th><th class="highlight">Lợi Nhuận</th></tr></thead>
                 <tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="font-bold" data-field="am_duong"></td><td class="font-bold" data-field="loi_nhuan"></td></tr></tbody>
