@@ -1,314 +1,312 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Khui Hụi</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 20px;
-            font-size: 15pt;
-            font-weight: bold;
-        }
-        .container {
-            width: 28cm;
-            padding: 1cm;
-            margin: auto;
-            background: white;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            box-sizing: border-box;
-            position: relative;
-            padding-bottom: 80px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            font-size: 14pt;
-            border-bottom: 2px solid #dee2e6;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-        }
-        .title-section {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .title-section h1 {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 34pt;
-            color: #0056b3;
-            margin: 0;
-        }
-        .title-section p {
-            margin: 5px 0 0;
-            font-size: 16pt;
-            font-weight: Bold;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14pt;
-        }
-        th, td {
-            border: 1px solid #adb5bd;
-            padding: 10px;
-            text-align: center;
-            vertical-align: middle;
-        }
-        th {
-            background-color: #0056b3;
-            font-weight: bold;
-            color: #ffffff;
-        }
-        tr:nth-child(even) td {
-            background-color: #f8f9fa;
-        }
-        .text-right {
-            text-align: right;
-        }
-        .text-left {
-            text-align: left;
-        }
-        .col-day-hui {
-            width: 35%;
-        }
-        .bill-controls {
-            position: absolute;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
-            z-index: 10;
-        }
-        .bill-controls button {
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            font-family: Arial, sans-serif;
-            cursor: pointer;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.2s, transform 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .bill-controls button:hover {
-            transform: translateY(-2px);
-        }
-        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
-        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
-        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Khui Hụi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            font-size: 15pt;
+            font-weight: bold;
+        }
+        .container {
+            width: 28cm;
+            padding: 1cm;
+            margin: auto;
+            background: white;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            position: relative;
+            padding-bottom: 80px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 14pt;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .title-section {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .title-section h1 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 34pt;
+            color: #0056b3;
+            margin: 0;
+        }
+        .title-section p {
+            margin: 5px 0 0;
+            font-size: 16pt;
+            font-weight: Bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14pt;
+        }
+        th, td {
+            border: 1px solid #adb5bd;
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #0056b3;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        tr:nth-child(even) td {
+            background-color: #f8f9fa;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-left {
+            text-align: left;
+        }
+        .col-day-hui {
+            width: 35%;
+        }
+        .bill-controls {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+        .bill-controls button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .bill-controls button:hover {
+            transform: translateY(-2px);
+        }
+        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
+        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
+        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
 
-        @media print {
-            .bill-controls { display: none !important; }
-        }
-    </style>
+        @media print {
+            .bill-controls { display: none !important; }
+        }
+    </style>
 </head>
 <body>
-    <div class="container" id="bill-container">
-        <div class="header">
-            <div class="header-left">Chủ Hụi: <span id="chu-hui-ten"></span></div>
-            <div class="header-right">SĐT: <span id="chu-hui-sdt"></span></div>
-        </div>
-        <div class="title-section">
-            <h1>LỊCH KHUI HỤI</h1>
-            <p>Ngày: <span id="ngay-in-bill"></span></p>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>STT</th>
-                    <th class="col-day-hui text-left">DÂY HỤI</th>
-                    <th>NGÀY KHUI</th>
-                    <th>GIỜ ĐẤU</th>
-                    <th>KỲ HẠN</th>
-                    <th>KỲ</th>
-                    <th class="text-right">TIỀN HỤI</th>
-                </tr>
-            </thead>
-            <tbody id="details-tbody">
-                </tbody>
-        </table>
-        
-        <div class="bill-controls">
-            <button class="download-btn">Tải Bill</button>
-            <button class="copy-btn">Copy Bill</button>
-            <button class="share-btn">Gửi Bill</button>
-        </div>
-    </div>
+    <div class="container" id="bill-container">
+        <div class="header">
+            <div class="header-left">Chủ Hụi: <span id="chu-hui-ten"></span></div>
+            <div class="header-right">SĐT: <span id="chu-hui-sdt"></span></div>
+        </div>
+        <div class="title-section">
+            <h1>LỊCH KHUI HỤI</h1>
+            <p>Ngày: <span id="ngay-in-bill"></span></p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th class="col-day-hui text-left">DÂY HỤI</th>
+                    <th>NGÀY KHUI</th>
+                    <th>GIỜ ĐẤU</th>
+                    <th>KỲ HẠN</th>
+                    <th>KỲ</th>
+                    <th class="text-right">TIỀN HỤI</th>
+                </tr>
+            </thead>
+            <tbody id="details-tbody">
+            </tbody>
+        </table>
+        
+        <div class="bill-controls">
+            <button class="download-btn">Tải Bill</button>
+            <button class="copy-btn">Copy Bill</button>
+            <button class="share-btn">Gửi Bill</button>
+        </div>
+    </div>
 
-    <script>
-        let billData = {};
+    <script>
+        let billData = {};
 
-        function parseDate(dateString) {
-            if (!dateString) return null;
-            if (dateString.includes('-')) {
-                const parts = dateString.split('-');
-                return new Date(parts[0], parts[1] - 1, parts[2]);
-            }
-            const parts = dateString.split('/');
-            return new Date(parts[2], parts[1] - 1, parts[0]);
-        }
+        function parseDate(dateString) {
+            if (!dateString) return null;
+            if (dateString.includes('-')) {
+                const parts = dateString.split('-');
+                return new Date(parts[0], parts[1] - 1, parts[2]);
+            }
+            const parts = dateString.split('/');
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
 
-        function addPeriod(startDate, value, unit) {
-            const date = new Date(startDate.getTime());
-            // THAY ĐỔI QUAN TRỌNG: Dùng parseFloat để đọc số 0.5
-            const numericValue = parseFloat(value) || 0;
-            if (numericValue === 0) return date;
-            if ((unit || '').toLowerCase().includes('tháng')) {
-                date.setMonth(date.getMonth() + numericValue);
-            } else {
-                date.setDate(date.getDate() + numericValue);
-            }
-            return date;
-        }
-        
-        function areDatesEqual(date1, date2) {
-            return date1.getFullYear() === date2.getFullYear() &&
-                   date1.getMonth() === date2.getMonth() &&
-                   date1.getDate() === date2.getDate();
-        }
-        
-        function formatCurrency(num) {
-            if (typeof num !== 'number' || num === null) return '';
-            return num.toLocaleString('vi-VN');
-        }
+        function addPeriod(startDate, value, unit) {
+            const date = new Date(startDate.getTime());
+            const numericValue = parseFloat(value) || 0;
+            if (numericValue === 0) return date;
+            if ((unit || '').toLowerCase().includes('tháng')) {
+                date.setMonth(date.getMonth() + numericValue);
+            } else {
+                date.setDate(date.getDate() + numericValue);
+            }
+            return date;
+        }
+        
+        function areDatesEqual(date1, date2) {
+            return date1.getFullYear() === date2.getFullYear() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getDate() === date2.getDate();
+        }
+        
+        function formatCurrency(num) {
+            if (typeof num !== 'number' || num === null) return '';
+            return num.toLocaleString('vi-VN');
+        }
 
-        function generateBill(data) {
-            billData = data;
-            document.getElementById('chu-hui-ten').textContent = data.chu_hui_ten || '';
-            document.getElementById('chu-hui-sdt').textContent = data.chu_hui_sdt || '';
-            document.getElementById('ngay-in-bill').textContent = data.ngay_in_bill || '';
-            
-            const tbody = document.getElementById('details-tbody');
-            tbody.innerHTML = '';
-            
-            const targetDate = parseDate(data.ngay_in_bill);
-            let todaysHuis = [];
+        function generateBill(data) {
+            billData = data;
+            document.getElementById('chu-hui-ten').textContent = data.chu_hui_ten || '';
+            document.getElementById('chu-hui-sdt').textContent = data.chu_hui_sdt || '';
+            document.getElementById('ngay-in-bill').textContent = data.ngay_in_bill || '';
+            
+            const tbody = document.getElementById('details-tbody');
+            tbody.innerHTML = '';
+            
+            const targetDate = parseDate(data.ngay_in_bill);
+            let todaysHuis = [];
 
-            if (data.danh_sach_day_hui && Array.isArray(data.danh_sach_day_hui)) {
-                data.danh_sach_day_hui.forEach(hui => {
-                    const startDate = parseDate(hui.ngay_khui);
-                    const maxKy = parseInt(hui.so_ky_toi_da) || 0;
-                    const soNgayKy = parseFloat(hui.ky_han_value) || 1; // Đọc giá trị 0.5
-                    
-                    for (let ky = 1; ky <= maxKy; ky++) {
-                        // TÍNH TOÁN NGÀY DỰA TRÊN CÔNG THỨC MỚI CỦA APPSHEET
-                        const periodsToAdd = Math.floor((ky - 1) * soNgayKy);
-                        const currentDate = addPeriod(startDate, periodsToAdd, 'Ngày'); // Luôn cộng theo ngày
-                        
-                        if (areDatesEqual(currentDate, targetDate)) {
-                            todaysHuis.push({
-                                ten_hui: hui.ten_hui,
-                                ngay_khui: hui.ngay_khui,
-                                gio_dau: hui.gio_dau,
-                                ky_han_text: hui.ky_han_text,
-                                ky: `${ky}/${maxKy}`,
-                                tien_hui: hui.tien_hui
-                            });
-                            break;
-                        }
-                    }
-                });
-            }
+            if (data.danh_sach_day_hui && Array.isArray(data.danh_sach_day_hui)) {
+                data.danh_sach_day_hui.forEach(hui => {
+                    const startDate = parseDate(hui.ngay_khui);
+                    const maxKy = parseInt(hui.so_ky_toi_da) || 0;
+                    const soNgayKy = parseFloat(hui.ky_han_value) || 1;
+                    
+                    for (let ky = 1; ky <= maxKy; ky++) {
+                        const daysToAdd = Math.floor((ky - 1) * soNgayKy);
+                        const currentDate = addPeriod(startDate, daysToAdd, 'Ngày');
+                        
+                        if (areDatesEqual(currentDate, targetDate)) {
+                            todaysHuis.push({
+                                ten_hui: hui.ten_hui,
+                                ngay_khui: hui.ngay_khui,
+                                gio_dau: hui.gio_dau,
+                                ky_han_text: hui.ky_han_text,
+                                ky: `${ky}/${maxKy}`,
+                                tien_hui: hui.tien_hui
+                            });
+                            break;
+                        }
+                    }
+                });
+            }
 
-            todaysHuis.sort((a, b) => (a.gio_dau || '').localeCompare(b.gio_dau || ''));
+            todaysHuis.sort((a, b) => (a.gio_dau || '').localeCompare(b.gio_dau || ''));
 
-            if(todaysHuis.length === 0){
-                 tbody.innerHTML = `<tr><td colspan="7">Không có lịch khui hụi trong ngày.</td></tr>`;
-            } else {
-                todaysHuis.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td class="text-left" >${item.ten_hui}</td>
-                        <td>${item.ngay_khui}</td>
-                        <td>${item.gio_dau}</td>
-                        <td>${item.ky_han_text}</td>
-                        <td>${item.ky}</td>
-                        <td class="text-right">${formatCurrency(item.tien_hui)}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
+            if(todaysHuis.length === 0){
+                 tbody.innerHTML = `<tr><td colspan="7">Không có lịch khui hụi trong ngày.</td></tr>`;
+            } else {
+                todaysHuis.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td class="text-left">${item.ten_hui}</td>
+                        <td>${item.ngay_khui}</td>
+                        <td>${item.gio_dau}</td>
+                        <td>${item.ky_han_text}</td>
+                        <td>${item.ky}</td>
+                        <td class="text-right">${formatCurrency(item.tien_hui)}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
 
-            const billElement = document.getElementById('bill-container');
-            document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
-            document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
-            document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
-        }
+            const billElement = document.getElementById('bill-container');
+            document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
+            document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+            document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+        }
 
-        window.onload = function() {
-            try {
-                const encodedData = window.location.hash.substring(1);
-                if (!encodedData) {
-                    const sampleData = { "chu_hui_ten": "Lê Minh", "chu_hui_sdt": "0938338272", "ngay_in_bill": "07/09/2025", "danh_sach_day_hui": [ { "ten_hui": "Dây Y2 Tuần 3tr 15p", "ngay_khui": "25/08/2025", "gio_dau": "13:00", "ky_han_text": "Tuần", "ky_han_value": 7, "so_ky_toi_da": 15, "tien_hui": 3000000 }, { "ten_hui": "DÂY NGÀY 1TR ĐẤU 50p", "ngay_khui": "01/09/2025", "gio_dau": "14:30", "ky_han_text": "Ngày", "ky_han_value": 0.5, "so_ky_toi_da": 50, "tien_hui": 1000000 }, { "ten_hui": "Dây Tháng 5tr", "ngay_khui": "07/09/2025", "gio_dau": "15:00", "ky_han_text": "Tháng", "ky_han_value": 1, "so_ky_toi_da": 12, "tien_hui": 5000000 } ] };
-                    generateBill(sampleData);
-                    return;
-                }
-                const jsonData = decodeURIComponent(encodedData);
-                const billData = JSON.parse(jsonData);
-                generateBill(billData);
-            } catch (error) {
-                document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
-                console.error("Lỗi:", error);
-            }
-        };
+        window.onload = function() {
+            try {
+                const encodedData = window.location.hash.substring(1);
+                if (!encodedData) {
+                    const sampleData = { "chu_hui_ten": "Lê Minh", "chu_hui_sdt": "0938338272", "ngay_in_bill": "07/09/2025", "danh_sach_day_hui": [ { "ten_hui": "Dây Y2 Tuần 3tr 15p", "ngay_khui": "25/08/2025", "gio_dau": "13:00", "ky_han_text": "Tuần", "ky_han_value": 7, "so_ky_toi_da": 15, "tien_hui": 3000000 }, { "ten_hui": "Dây Ngày 2 Lần", "ngay_khui": "01/09/2025", "gio_dau": "14:30", "ky_han_text": "Ngày/2 Lần", "ky_han_value": 0.5, "so_ky_toi_da": 50, "tien_hui": 1000000 }, { "ten_hui": "Dây Tháng 5tr", "ngay_khui": "07/09/2025", "gio_dau": "15:00", "ky_han_text": "Tháng", "ky_han_value": 1, "so_ky_toi_da": 12, "tien_hui": 5000000 } ] };
+                    generateBill(sampleData);
+                    return;
+                }
+                const jsonData = decodeURIComponent(encodedData);
+                const billData = JSON.parse(jsonData);
+                generateBill(billData);
+            } catch (error) {
+                document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
+                console.error("Lỗi:", error);
+            }
+        };
 
-        async function captureBill(element, callback) {
-            const controls = element.querySelector('.bill-controls');
-            if (controls) controls.style.display = 'none';
-            try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-                await callback(canvas);
-            } catch (error) {
-                console.error('Lỗi khi tạo ảnh:', error);
-                alert('Đã có lỗi xảy ra khi tạo ảnh.');
-            } finally {
-                if (controls) controls.style.display = 'flex';
-            }
-        }
+        async function captureBill(element, callback) {
+            const controls = element.querySelector('.bill-controls');
+            if (controls) controls.style.display = 'none';
+            try {
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                await callback(canvas);
+            } catch (error) {
+                console.error('Lỗi khi tạo ảnh:', error);
+                alert('Đã có lỗi xảy ra khi tạo ảnh.');
+            } finally {
+                if (controls) controls.style.display = 'flex';
+            }
+        }
 
-        function downloadBillAsImage(element) {
-            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
-            captureBill(element, canvas => {
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            });
-        }
+        function downloadBillAsImage(element) {
+            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+            captureBill(element, canvas => {
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
 
-        function copyBillAsImage(element) {
-            captureBill(element, canvas => {
-                canvas.toBlob(blob => {
-                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
-                    .catch(err => alert('Lỗi khi copy.'));
-                });
-            });
-        }
+        function copyBillAsImage(element) {
+            captureBill(element, canvas => {
+                canvas.toBlob(blob => {
+                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                    .catch(err => alert('Lỗi khi copy.'));
+                });
+            });
+        }
 
-        async function shareBillAsImage(element) {
-            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
-            const textshare = `Lịch khui hụi ngày ${billData.ngay_in_bill}.`;
-  _          if (!navigator.share) {
-                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
-                return;
-            }
-            captureBill(element, async canvas => {
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                const file = new File([blob], filename, { type: 'image/png' });
-                try {
-                    await navigator.share({ title: `Lịch Khui Hụi`, text: textshare, files: [file] });
-                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
-            });
-        }
-    </script>
+        async function shareBillAsImage(element) {
+            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+            const textshare = `Lịch khui hụi ngày ${billData.ngay_in_bill}.`;
+            if (!navigator.share) {
+                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
+                return;
+            }
+            captureBill(element, async canvas => {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const file = new File([blob], filename, { type: 'image/png' });
+                try {
+                    await navigator.share({ title: `Lịch Khui Hụi`, text: textshare, files: [file] });
+                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
+            });
+        }
+    </script>
 </body>
 </html>
