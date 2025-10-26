@@ -20,7 +20,7 @@
         /* --- CSS CHO HEADER --- */
         .bill-header {
             position: relative;
-            min-height: 150px;
+            min-height: 165px;
             border-bottom: 1px solid #ccc;
             margin-bottom: 15px;
         }
@@ -31,6 +31,7 @@
             font-weight: bold;
             font-size: 14pt;
             line-height: 1.5;
+            max-width: 30%; 
         }
         .header-left p { margin: 0; }
         
@@ -43,8 +44,8 @@
             width: 60%;
         }
         .qr-code {
-            width: 150px;
-            height: 150px;
+            width: 165px;
+            height: 165px;
             position: absolute;
             right: 0;
             top: 0;
@@ -73,9 +74,9 @@
 
         /* --- CSS MỚI CHO CÁC DÒNG GHI CHÚ --- */
         .footer-notes {
-            font-size: 12pt;
+            font-size: 14pt;
             font-weight: normal;
-            text-align: left;
+            text-align: center;
             margin-top: 10px;
         }
 
@@ -108,7 +109,7 @@
                 <div class="header-left">
                     <p>Chủ hụi: <span data-field="chu_hui"></span></p>
                     <p>SĐT: <span data-field="sdt"></span></p>
-                    <p>Địa chỉ: <span data-field="dia_chi" style="font-weight: normal;"></span></p>
+                    <p>Địa chỉ: <span data-field="dia_chi"></span></p>
                     <p data-field="bank_info"></p>
                 </div>
                 <div class="header-title-date">
