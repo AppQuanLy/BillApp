@@ -17,15 +17,44 @@
         .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
         .bill-controls button, .info-panel button { padding: 5px 10px; font-size: 12px; cursor: pointer; color: white; border: none; border-radius: 4px; transition: background-color 0.2s; }
         
-        .bill-header { position: relative; min-height: 150px; border-bottom: 1px solid #ccc; margin-bottom: 15px; }
-        .header-left { position: absolute; left: 0; top: 0; font-weight: bold; font-size: 14pt; line-height: 1.5; }
+        /* --- CSS CHO HEADER --- */
+        .bill-header {
+            position: relative;
+            min-height: 165px;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 15px;
+        }
+        .header-left {
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-weight: bold;
+            font-size: 14pt;
+            line-height: 1.5;
+            max-width: 30%; 
+        }
         .header-left p { margin: 0; }
-        .header-title-date { position: absolute; left: 50%; top: 35px; transform: translateX(-50%); text-align: center; width: 60%; }
-        .qr-code { width: 150px; height: 150px; position: absolute; right: 0; top: 0; }
+        
+        .header-title-date {
+            position: absolute;
+            left: 50%;
+            top: 35px; /* Điều chỉnh vị trí tiêu đề cho cân đối */
+            transform: translateX(-50%);
+            text-align: center;
+            width: 60%;
+        }
+        .qr-code {
+            width: 165px;
+            height: 165px;
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
         .info-panel button { padding: 10px 20px; font-size: 14px; font-weight: bold; }
         .download-btn { background-color: #0275d8; }
         .copy-btn { background-color: #5bc0de; }
         .share-btn { background-color: #5cb85c; }
+        
         .download-btn:hover { background-color: #025aa5; }
         .copy-btn:hover { background-color: #31b0d5; }
         .share-btn:hover { background-color: #449d44; }
@@ -35,13 +64,21 @@
         .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; }
         .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
         .text-red { color: #d90000; } .text-green { color: #00b050; }
-        .summary-table th { background-color: #b1e835; }
+        .summary-table th { background-color: #d9e1f2; }
         .summary-table .highlight { background-color: #b1e835; } .details-table th { background-color: #b1e835; }
         .details-table { margin-bottom: 10px; font-size: 14pt;font-weight: bold;} .footer-banner { padding: 5px; text-align: left; font-size: 14pt; color: white; margin-bottom: 5px;}
         .footer-container { display: flex; align-items: flex-start; gap: 10px;}
         .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; }
         .footer-right { width: 60%; }
         .totals-table td { padding: 5px 7px; font-size: 16pt; }
+
+        /* --- CSS MỚI CHO CÁC DÒNG GHI CHÚ --- */
+        .footer-notes {
+            font-size: 14pt;
+            font-weight: normal;
+            text-align: center;
+            margin-top: 10px;
+        }
 
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -67,10 +104,12 @@
                 <button class="copy-btn">Copy Bill</button>
                 <button class="share-btn">Gửi Bill</button>
             </div>
+            
             <div class="bill-header">
                 <div class="header-left">
                     <p>Chủ hụi: <span data-field="chu_hui"></span></p>
                     <p>SĐT: <span data-field="sdt"></span></p>
+                    <p>Địa chỉ: <span data-field="dia_chi"></span></p>
                     <p data-field="bank_info"></p>
                 </div>
                 <div class="header-title-date">
@@ -79,16 +118,26 @@
                 </div>
                 <img data-field="qr_bill_url" class="qr-code" alt="QR">
             </div>
+
             <table class="summary-table text-center">
                 <thead><tr><th class="highlight" data-field="summary_title_hui_vien"></th><th class="highlight" data-field="summary_title_hui_chet"></th><th class="highlight" data-field="summary_title_hui_song"></th><th class="highlight">Âm/Dương *</th><th class="highlight">Lợi Nhuận</th></tr></thead>
                 <tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="font-bold" data-field="am_duong"></td><td class="font-bold" data-field="loi_nhuan"></td></tr></tbody>
             </table>
+            
             <table class="details-table text-center">
-                <thead><tr><th style="width: 4%;">STT</th><th>Dây Hụi</th><th>Kỳ</th><th>Khui</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Thăm</th><th>Thảo</th><th>Đúp</th></tr></thead>
+                <thead><tr><th style="width: 4%;">STT</th><th>Dây Hụi</th><th>Ngày</th><th>Kỳ</th><th>Khui</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Thăm</th><th>Thảo</th><th>Đúp</th></tr></thead>
                 <tbody data-field="details_tbody"></tbody>
             </table>
+
             <div class="footer-container">
-                <div class="footer-left"><div class="footer-banner" data-field="footer_banner"></div><span data-field="footer_hoi_vien"></span></div>
+                <div class="footer-left">
+                    <div class="footer-banner" data-field="footer_banner"></div>
+                    <span data-field="footer_hoi_vien"></span>
+                    <div class="footer-notes">
+                        <p data-field="ghi_chu_1"></p>
+                        <p data-field="ghi_chu_2"></p>
+                    </div>
+                </div>
                 <div class="footer-right">
                     <table class="totals-table no-border">
                         <tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham"></td></tr>
@@ -137,34 +186,73 @@
                 const billNode = document.importNode(billTemplate.content, true);
                 const q = (selector) => billNode.querySelector(selector);
                 
-                q('[data-field="chu_hui"]').textContent = kh.chu_hui || ''; q('[data-field="sdt"]').textContent = kh.sdt || ''; q('[data-field="bank_info"]').textContent = kh.bank_info || ''; q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; q('[data-field="qr_bill_url"]').src = kh.qr_bill_url || '';
-                q('[data-field="summary_title_hui_vien"]').textContent = `Hụi Viên | ${kh.tong_so_day || 0} Dây, ${kh.tong_so_chan || 0} C`; q('[data-field="summary_title_hui_chet"]').textContent = `Hụi Chết | ${kh.tong_so_chan_chet || 0} C`; q('[data-field="summary_title_hui_song"]').textContent = `Hụi Sống | ${kh.tong_so_chan_song || 0} C`;
-                q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="tong_hui_chet"]').textContent = formatCurrency(kh.tong_hui_chet); q('[data-field="tong_hui_song"]').textContent = formatCurrency(kh.tong_hui_song); const amDuongCell = q('[data-field="am_duong"]'); const amDuongValue = kh.am_duong || 0; amDuongCell.textContent = formatCurrency(amDuongValue); if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } const loiNhuanCell = q('[data-field="loi_nhuan"]'); const loiNhuanValue = kh.loi_nhuan || 0; loiNhuanCell.textContent = formatCurrency(loiNhuanValue); if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
+                // --- THÊM DỮ LIỆU MỚI VÀO CÁC TRƯỜNG ---
+                q('[data-field="chu_hui"]').textContent = kh.chu_hui || ''; 
+                q('[data-field="sdt"]').textContent = kh.sdt || ''; 
+                q('[data-field="bank_info"]').textContent = kh.bank_info || ''; 
+                q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; 
+                q('[data-field="qr_bill_url"]').src = kh.qr_bill_url || '';
+                
+                q('[data-field="dia_chi"]').textContent = kh.dia_chi || ''; // <-- DỮ LIỆU ĐỊA CHỈ
+                q('[data-field="ghi_chu_1"]').textContent = kh.ghi_chu_1 || ''; // <-- DỮ LIỆU GHI CHÚ 1
+                q('[data-field="ghi_chu_2"]').textContent = kh.ghi_chu_2 || ''; // <-- DỮ LIỆU GHI CHÚ 2
+                
+                // --- PHẦN CÒN LẠI GIỮ NGUYÊN ---
+                q('[data-field="summary_title_hui_vien"]').textContent = `Hụi Viên | ${kh.tong_so_day || 0} Dây, ${kh.tong_so_chan || 0} C`; 
+                q('[data-field="summary_title_hui_chet"]').textContent = `Hụi Chết | ${kh.tong_so_chan_chet || 0} C`; 
+                q('[data-field="summary_title_hui_song"]').textContent = `Hụi Sống | ${kh.tong_so_chan_song || 0} C`;
+                q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; 
+                q('[data-field="tong_hui_chet"]').textContent = formatCurrency(kh.tong_hui_chet); 
+                q('[data-field="tong_hui_song"]').textContent = formatCurrency(kh.tong_hui_song); 
+                const amDuongCell = q('[data-field="am_duong"]'); 
+                const amDuongValue = kh.am_duong || 0; 
+                amDuongCell.textContent = formatCurrency(amDuongValue); 
+                if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } 
+                const loiNhuanCell = q('[data-field="loi_nhuan"]'); 
+                const loiNhuanValue = kh.loi_nhuan || 0; 
+                loiNhuanCell.textContent = formatCurrency(loiNhuanValue); 
+                if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
                 
                 const detailsBody = q('[data-field="details_tbody"]');
                 const allDetails = [].concat(kh.chan_hui_details || []).concat(kh.hui_1_1_details || []).concat(kh.ghi_no_details || []);
                 
                 if (allDetails.length > 0) {
-                    // THAY ĐỔI 2: THÊM BIẾN ĐẾM STT
                     let sttCounter = 1;
                     allDetails.forEach(d => {
                         const row = document.createElement('tr');
                         if ((d.khui || '').toLowerCase().includes('nợ')) {
                             row.style.backgroundColor = '#fff0f0';
-                            // TĂNG COLSPAN LÊN 1
-                            row.innerHTML = `<td colspan="7" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
+                            row.innerHTML = `<td colspan="8" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
                         } else {
-                            // THÊM DỮ LIỆU CỘT STT VÀO DÒNG
-                            row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
-                            sttCounter++; // Tăng biến đếm
+                            // --- THÊM DỮ LIỆU CỘT "NGÀY" VÀO DÒNG ---
+                            row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ngay_mo || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
+                            sttCounter++;
                         }
                         detailsBody.appendChild(row);
                     });
                 }
                 
-                q('[data-field="footer_hoi_vien"]').textContent = kh.hoi_vien || ''; q('[data-field="bill_tong_dong"]').textContent = formatCurrency(kh.bill_tong_dong); q('[data-field="bill_tong_hot"]').textContent = formatCurrency(kh.bill_tong_hot); q('[data-field="tong_tham"]').textContent = `Tổng Thăm: ${formatCurrency(kh.tong_tham)}`; q('[data-field="tong_thao"]').textContent = `Tổng Thảo: ${formatCurrency(kh.tong_thao)}`;
-                const banner = q('[data-field="footer_banner"]'); const tongDong = kh.bill_tong_dong || 0; const tongHot = kh.bill_tong_hot || 0;
-                if (tongDong > tongHot) { banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; banner.style.backgroundColor = '#d90000'; q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; q('[data-field="final_amount"]').textContent = formatCurrency(tongDong - tongHot); q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; } else { banner.textContent = 'Hụi Viên được nhận tiền'; banner.style.backgroundColor = '#00b050'; q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; q('[data-field="final_amount"]').textContent = formatCurrency(tongHot - tongDong); q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; }
+                q('[data-field="footer_hoi_vien"]').textContent = kh.hoi_vien || ''; 
+                q('[data-field="bill_tong_dong"]').textContent = formatCurrency(kh.bill_tong_dong); 
+                q('[data-field="bill_tong_hot"]').textContent = formatCurrency(kh.bill_tong_hot); 
+                q('[data-field="tong_tham"]').textContent = `Tổng Thăm: ${formatCurrency(kh.tong_tham)}`; 
+                q('[data-field="tong_thao"]').textContent = `Tổng Thảo: ${formatCurrency(kh.tong_thao)}`;
+                const banner = q('[data-field="footer_banner"]'); 
+                const tongDong = kh.bill_tong_dong || 0; 
+                const tongHot = kh.bill_tong_hot || 0;
+                if (tongDong > tongHot) { 
+                    banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; 
+                    banner.style.backgroundColor = '#d90000'; 
+                    q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; 
+                    q('[data-field="final_amount"]').textContent = formatCurrency(tongDong - tongHot); 
+                    q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; 
+                } else { 
+                    banner.textContent = 'Hụi Viên được nhận tiền'; 
+                    banner.style.backgroundColor = '#00b050'; 
+                    q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; 
+                    q('[data-field="final_amount"]').textContent = formatCurrency(tongHot - tongDong); 
+                    q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; 
+                }
                 
                 const billElement = billNode.querySelector('.bill-page');
                 billElement.dataset.sdt = kh.sdt_kh || '';
