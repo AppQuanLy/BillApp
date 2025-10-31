@@ -194,13 +194,9 @@
         return num.toLocaleString('vi-VN');
     }
 
-    /**
-     * Hàm addPeriod đã chính xác, dùng parseFloat
-     */
     function addPeriod(dateString, value, unit) {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
         
-        // Luôn làm tròn xuống số nguyên ngày cần cộng
         const daysToAdd = Math.floor(parseFloat(value) || 0); 
         
         if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) {
@@ -228,9 +224,7 @@
     }
 
     /**
-     * HÀM GENERATEBILL ĐÃ SỬA LỖI LOGIC
-     * - Tính NGÀY cho chân Sống dựa trên STT.
-     * - Hiển thị KỲ từ JSON (kể cả khi rỗng).
+     * HÀM GENERATEBILL ĐÃ SỬA LẠI LOGIC SORT
      */
     function generateBill(data) {
         for (const key in data) {
@@ -245,11 +239,15 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            // Sắp xếp theo STT (ky)
-            data.danh_sach_chan.forEach((chan, index) => {
-                chan.ky_num = parseInt(chan.ky) || (index + 1);
+            
+            // --- LOGIC SẮP XẾP ĐÃ SỬA LẠI ---
+            // Sắp xếp chỉ dựa trên giá trị 'ky' từ JSON.
+            // Nếu 'ky' rỗng hoặc không phải là số, đẩy nó xuống cuối.
+            data.danh_sach_chan.sort((a, b) => {
+                const kyA = parseInt(a.ky) || Infinity;
+                const kyB = parseInt(b.ky) || Infinity;
+                return kyA - kyB;
             });
-            data.danh_sach_chan.sort((a, b) => a.ky_num - b.ky_num);
 
             const ngayMo = data.ngay_mo;
             const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
@@ -276,8 +274,8 @@
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive';
                     
-                    // --- LOGIC TÍNH TOÁN ĐÚNG ---
                     // Tính ngày dựa trên STT (index + 1)
+                    // Vì danh sách đã được sắp xếp đúng, STT sẽ khớp với KỲ
                     const periodsToAdd = (stt - 1) * kyHanValueFloat;
                     ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
                 }
@@ -369,4 +367,5 @@
 </script>
 </body>
 </html>
+
 
