@@ -195,8 +195,7 @@
     }
 
     /**
-     * Hàm addPeriod (Đã sửa lỗi)
-     * Dùng Math.floor(value) để lấy đúng số ngày cần cộng
+     * Hàm addPeriod đã chính xác, dùng parseFloat
      */
     function addPeriod(dateString, value, unit) {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
@@ -204,7 +203,6 @@
         // Luôn làm tròn xuống số nguyên ngày cần cộng
         const daysToAdd = Math.floor(parseFloat(value) || 0); 
         
-        // Nếu số ngày cộng là 0 (ví dụ kỳ 1, kỳ 2 của dây 0.5), trả về ngày gốc
         if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) {
              return dateString;
         }
@@ -230,8 +228,9 @@
     }
 
     /**
-     * HÀM GENERATEBILL ĐÃ ĐƯỢC VIẾT LẠI HOÀN TOÀN
-     * Sử dụng logic tính toán độc lập cho mỗi dòng dựa trên KỲ từ JSON
+     * HÀM GENERATEBILL ĐÃ SỬA LỖI LOGIC
+     * - Tính NGÀY cho chân Sống dựa trên STT.
+     * - Hiển thị KỲ từ JSON (kể cả khi rỗng).
      */
     function generateBill(data) {
         for (const key in data) {
@@ -246,8 +245,7 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            // Sắp xếp theo KỲ
-            // Đảm bảo `ky` là số để sort, nếu không có thì dùng index
+            // Sắp xếp theo STT (ky)
             data.danh_sach_chan.forEach((chan, index) => {
                 chan.ky_num = parseInt(chan.ky) || (index + 1);
             });
@@ -260,7 +258,6 @@
             const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
             if (manKyDuKienEl) {
                 const soKyInt = parseInt(data.so_ky) || 0;
-                // Công thức: Ngày Mở + FLOOR((Số Kỳ Cuối - 1) * 0.5)
                 const periodsToAdd = (soKyInt - 1) * kyHanValueFloat;
                 manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
             }
@@ -279,19 +276,10 @@
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive';
                     
-                    // Chuyển KỲ sang số để tính toán
-                    const kyForCalc = parseInt(kyHienThi); 
-                    
-                    // Chỉ tính ngày nếu KỲ là một con số hợp lệ và lớn hơn 0
-                    if (!isNaN(kyForCalc) && kyForCalc > 0) {
-                        // --- LOGIC TÍNH TOÁN ĐỘC LẬP (ĐÃ SỬA) ---
-                        // Công thức: Ngày = Ngày Mở + FLOOR((Kỳ - 1) * 0.5)
-                        const periodsToAdd = (kyForCalc - 1) * kyHanValueFloat;
-                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
-                    } else {
-                        // Nếu hụi viên "Sống" nhưng không có KỲ (trường hợp lạ), để trống ngày
-                        ngayHienThi = ""; 
-                    }
+                    // --- LOGIC TÍNH TOÁN ĐÚNG ---
+                    // Tính ngày dựa trên STT (index + 1)
+                    const periodsToAdd = (stt - 1) * kyHanValueFloat;
+                    ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
                 }
                 
                 const ngayClass = (statusText !== 'V' && statusText !== 'S') ? 'text-red' : '';
@@ -381,3 +369,4 @@
 </script>
 </body>
 </html>
+
