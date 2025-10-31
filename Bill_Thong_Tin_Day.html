@@ -24,7 +24,7 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             box-sizing: border-box;
             position: relative;
-            padding-bottom: 80px;
+            padding-bottom: 80px; 
         }
         .header {
             display: flex;
@@ -52,24 +52,80 @@
             gap: 10px 5px;
             margin-bottom: 20px;
         }
-        .info-item { font-size: 12pt; }
-        .info-item .label { font-weight: bold; display: inline-block; width: 90px; }
-        .info-item .value { font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #888; padding: 6px 8px; text-align: center; vertical-align: middle; }
-        th { background-color: #d9e2f3; font-weight: bold; }
-        .status-cell.dead { background-color: #ff0000; color: white; font-weight: bold; }
-        .status-cell.alive { background-color: #00b050; color: white; font-weight: bold; }
-        .total-row td { font-weight: bold; background-color: #f2f2f2; }
+        .info-item {
+            font-size: 12pt;
+        }
+        .info-item .label {
+            font-weight: bold;
+            display: inline-block;
+            width: 90px;
+        }
+        .info-item .value {
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #888;
+            padding: 6px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #d9e2f3;
+            font-weight: bold;
+        }
+        .status-cell.dead {
+            background-color: #ff0000;
+            color: white;
+            font-weight: bold;
+        }
+        .status-cell.alive {
+            background-color: #00b050;
+            color: white;
+            font-weight: bold;
+        }
+        .total-row td {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
         .text-blue { color: #0070c0; }
         .text-red { color: #ff0000; }
         .font-bold { font-weight: bold; }
-        .bill-controls { position: absolute; bottom: 1cm; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 10; }
-        .bill-controls button { padding: 10px 20px; font-size: 14px; font-weight: bold; font-family: Arial, sans-serif; cursor: pointer; color: white; border: none; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .download-btn { background-color: #0275d8; }
-        .copy-btn { background-color: #5bc0de; }
-        .share-btn { background-color: #5cb85c; }
-        @media print { .bill-controls { display: none !important; } }
+        
+        .bill-controls {
+            position: absolute;
+            bottom: 1cm;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+        .bill-controls button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .bill-controls button:hover {
+            transform: translateY(-2px);
+        }
+        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
+        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
+        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
+
+        @media print {
+            .bill-controls { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -138,17 +194,19 @@
         return num.toLocaleString('vi-VN');
     }
 
+    /**
+     * HÀM ADDPERIOD ĐÃ SỬA LỖI
+     * Dùng Math.floor(value) để lấy đúng số ngày cần cộng
+     */
     function addPeriod(dateString, value, unit) {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
         
-        // Dùng parseFloat để đọc đúng giá trị 0.5
-        const numericValue = parseFloat(value) || 0;
-        // Sửa lại: Phải dùng Math.floor ở BÊN NGOÀI trước khi gọi hàm này
-        const daysToAdd = Math.floor(numericValue); 
+        // Luôn làm tròn xuống số nguyên ngày cần cộng
+        const daysToAdd = Math.floor(parseFloat(value) || 0); 
         
-        if (daysToAdd === 0 && value > 0 && !unit.toLowerCase().includes('tháng')) {
-             // Đây là trường hợp 0.5, 0.3... làm tròn xuống 0, vẫn trả ngày gốc
-             return dateString;
+        // Nếu số ngày cộng là 0 (ví dụ kỳ 1, kỳ 2 của dây 0.5), trả về ngày gốc
+        if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) {
+            return dateString;
         }
 
         const [day, month, year] = dateString.split('/');
@@ -172,8 +230,8 @@
     }
 
     /**
-     * HÀM GENERATEBILL ĐÃ ĐƯỢC VIẾT LẠI HOÀN TOÀN
-     * Sử dụng logic tính toán độc lập cho mỗi dòng
+     * HÀM GENERATEBILL ĐÃ SỬA LỖI
+     * Logic tính ngày đã được viết lại hoàn toàn để giống với công thức AppSheet
      */
     function generateBill(data) {
         for (const key in data) {
@@ -188,9 +246,8 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            // Sắp xếp theo STT (giả sử JSON đã có 'stt_trong_day' hoặc dùng index)
-            // Nếu bạn không gửi `stt_trong_day`, chúng ta dùng STT của bảng
-            data.danh_sach_chan.sort((a, b) => (a.ky || (index + 1)) - (b.ky || (index + 1)));
+            // Sắp xếp theo STT (ky)
+            data.danh_sach_chan.sort((a, b) => (a.ky || 0) - (b.ky || 0));
 
             const ngayMo = data.ngay_mo;
             const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
@@ -199,26 +256,28 @@
             const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
             if (manKyDuKienEl) {
                 const soKyInt = parseInt(data.so_ky) || 0;
-                const daysToAdd = Math.floor((soKyInt - 1) * kyHanValueFloat);
-                manKyDuKienEl.textContent = addPeriod(ngayMo, daysToAdd, data.ky_han_unit);
+                const periodsToAdd = (soKyInt - 1) * kyHanValueFloat;
+                manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
             }
 
+            // Lặp qua từng hụi viên
             data.danh_sach_chan.forEach((chan, index) => {
-                const stt = index + 1; // STT chính là KỲ
+                const stt = index + 1;
+                const kyHienThi = chan.ky || stt; // Lấy kỳ từ JSON, nếu không có thì dùng STT
+                
                 const row = document.createElement('tr');
-                let ngayHienThi = chan.ngay;
+                let ngayHienThi = chan.ngay; // Ngày của hụi viên "Chết"
 
                 const statusText = chan.status; 
                 let statusClass = 'dead';
-                let kyHienThi = chan.ky || stt; // Ưu tiên `ky` từ JSON, nếu không có thì dùng `stt`
 
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive';
                     
                     // --- LOGIC TÍNH TOÁN ĐỘC LẬP (ĐÃ SỬA) ---
-                    // Công thức: Ngày Mở + FLOOR((STT - 1) * 0.5)
-                    const daysToAdd = Math.floor((stt - 1) * kyHanValueFloat);
-                    ngayHienThi = addPeriod(ngayMo, daysToAdd, data.ky_han_unit);
+                    // Công thức: Ngày = Ngày Mở + FLOOR((Kỳ - 1) * 0.5)
+                    const periodsToAdd = (kyHienThi - 1) * kyHanValueFloat;
+                    ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
                 }
                 
                 const ngayClass = (statusText !== 'V' && statusText !== 'S') ? 'text-red' : '';
@@ -256,7 +315,6 @@
         document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
     }
 
-    // --- CÁC HÀM HỖ TRỢ KHÁC ---
     async function captureBill(element, callback) {
         const controls = element.querySelector('.bill-controls');
         if (controls) controls.style.display = 'none';
