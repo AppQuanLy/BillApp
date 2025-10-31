@@ -195,7 +195,7 @@
     }
 
     /**
-     * Hàm addPeriod đã được sửa lỗi
+     * Hàm addPeriod (Đã sửa lỗi)
      * Dùng Math.floor(value) để lấy đúng số ngày cần cộng
      */
     function addPeriod(dateString, value, unit) {
@@ -246,10 +246,10 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            // Sắp xếp theo STT (ky)
-            // Đảm bảo `ky` là số để sort
-            data.danh_sach_chan.forEach(chan => {
-                chan.ky_num = parseInt(chan.ky) || (data.danh_sach_chan.indexOf(chan) + 1);
+            // Sắp xếp theo KỲ
+            // Đảm bảo `ky` là số để sort, nếu không có thì dùng index
+            data.danh_sach_chan.forEach((chan, index) => {
+                chan.ky_num = parseInt(chan.ky) || (index + 1);
             });
             data.danh_sach_chan.sort((a, b) => a.ky_num - b.ky_num);
 
