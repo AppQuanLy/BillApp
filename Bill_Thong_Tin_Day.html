@@ -231,7 +231,7 @@
 
     /**
      * HÀM GENERATEBILL ĐÃ ĐƯỢC VIẾT LẠI HOÀN TOÀN
-     * Sử dụng logic tính toán độc lập cho mỗi dòng dựa trên STT
+     * Sử dụng logic tính toán độc lập cho mỗi dòng dựa trên KỲ từ JSON
      */
     function generateBill(data) {
         for (const key in data) {
@@ -249,7 +249,7 @@
             // Sắp xếp theo STT (ky)
             // Đảm bảo `ky` là số để sort
             data.danh_sach_chan.forEach(chan => {
-                chan.ky_num = parseInt(chan.ky) || 0;
+                chan.ky_num = parseInt(chan.ky) || (data.danh_sach_chan.indexOf(chan) + 1);
             });
             data.danh_sach_chan.sort((a, b) => a.ky_num - b.ky_num);
 
@@ -268,7 +268,7 @@
             // Lặp qua từng hụi viên
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1; // STT là thứ tự hiển thị
-                const kyHienThi = chan.ky || stt; // Lấy kỳ từ JSON
+                const kyHienThi = chan.ky || ""; // Lấy KỲ từ JSON, nếu rỗng thì là chuỗi rỗng
                 
                 const row = document.createElement('tr');
                 let ngayHienThi = chan.ngay; // Mặc định là ngày của hụi viên "Chết"
@@ -279,11 +279,19 @@
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive';
                     
-                    // --- LOGIC TÍNH TOÁN ĐỘC LẬP (ĐÃ SỬA) ---
-                    // Công thức: Ngày = Ngày Mở + FLOOR((Kỳ - 1) * 0.5)
-                    // Dùng kyHienThi (là `chan.ky`) để tính
-                    const periodsToAdd = (kyHienThi - 1) * kyHanValueFloat;
-                    ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                    // Chuyển KỲ sang số để tính toán
+                    const kyForCalc = parseInt(kyHienThi); 
+                    
+                    // Chỉ tính ngày nếu KỲ là một con số hợp lệ và lớn hơn 0
+                    if (!isNaN(kyForCalc) && kyForCalc > 0) {
+                        // --- LOGIC TÍNH TOÁN ĐỘC LẬP (ĐÃ SỬA) ---
+                        // Công thức: Ngày = Ngày Mở + FLOOR((Kỳ - 1) * 0.5)
+                        const periodsToAdd = (kyForCalc - 1) * kyHanValueFloat;
+                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                    } else {
+                        // Nếu hụi viên "Sống" nhưng không có KỲ (trường hợp lạ), để trống ngày
+                        ngayHienThi = ""; 
+                    }
                 }
                 
                 const ngayClass = (statusText !== 'V' && statusText !== 'S') ? 'text-red' : '';
