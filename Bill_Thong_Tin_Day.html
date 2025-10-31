@@ -138,10 +138,20 @@
         return num.toLocaleString('vi-VN');
     }
 
+    /**
+     * Hàm addPeriod (Đã sửa lỗi)
+     * Dùng Math.floor(value) để lấy đúng số ngày cần cộng
+     */
     function addPeriod(dateString, value, unit) {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
-        const numericValue = parseFloat(value) || 0;
-        if (numericValue === 0 && value !== 0) return dateString;
+        
+        // Luôn làm tròn xuống số nguyên ngày cần cộng
+        const daysToAdd = Math.floor(parseFloat(value) || 0); 
+        
+        // Nếu số ngày cộng là 0, trả về ngày gốc
+        if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) {
+             return dateString;
+        }
 
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
@@ -150,11 +160,11 @@
         if ((unit || '').toLowerCase().includes('tháng')) {
             const originalDay = date.getDate();
             date.setDate(1);
-            date.setMonth(date.getMonth() + numericValue);
+            date.setMonth(date.getMonth() + daysToAdd);
             const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
             date.setDate(Math.min(originalDay, lastDayOfNewMonth));
         } else {
-            date.setDate(date.getDate() + numericValue);
+            date.setDate(date.getDate() + daysToAdd);
         }
         
         const newDay = String(date.getDate()).padStart(2, '0');
@@ -163,6 +173,10 @@
         return `${newDay}/${newMonth}/${newYear}`;
     }
 
+    /**
+     * HÀM GENERATEBILL ĐÃ ĐƯỢC VIẾT LẠI HOÀN TOÀN
+     * Sử dụng logic tính toán độc lập cho mỗi dòng dựa trên STT
+     */
     function generateBill(data) {
         for (const key in data) {
             if (key !== 'danh_sach_chan') {
@@ -176,40 +190,40 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            // Sắp xếp lại để ưu tiên các trạng thái tùy biến (khác S/V) lên trên cùng với C/X
-            data.danh_sach_chan.sort((a, b) => {
-                const aIsAlive = (a.status === 'S' || a.status === 'V');
-                const bIsAlive = (b.status === 'S' || b.status === 'V');
-                if (aIsAlive && !bIsAlive) return 1;
-                if (!aIsAlive && bIsAlive) return -1;
-                return (a.ky || Infinity) - (b.ky || Infinity);
-            });
+            // Sắp xếp theo STT (ky)
+            // (Thực ra không cần sort nếu JSON đã đúng thứ tự, nhưng để an toàn)
+            data.danh_sach_chan.sort((a, b) => (a.ky || 0) - (b.ky || 0));
 
-            let anchorDate = data.ngay_mo;
-            const deadMembers = data.danh_sach_chan.filter(chan => (chan.status !== 'S' && chan.status !== 'V') && chan.ngay);
-            if (deadMembers.length > 0) {
-                deadMembers.sort((a, b) => (a.ky || 0) - (b.ky || 0));
-                anchorDate = deadMembers[deadMembers.length - 1].ngay;
+            const ngayMo = data.ngay_mo;
+            const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
+
+            // Tính ngày mãn kỳ chính xác
+            const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
+            if (manKyDuKienEl) {
+                const soKyInt = parseInt(data.so_ky) || 0;
+                // Công thức: Ngày Mở + FLOOR((Số Kỳ Cuối - 1) * 0.5)
+                const periodsToAdd = (soKyInt - 1) * kyHanValueFloat;
+                manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
             }
 
-            const isNewHui = (deadMembers.length === 0);
-            let liveMemberCounter = 0; 
-            const kyHanValueFloat = parseFloat(data.ky_han_value) || 1;
-
+            // Lặp qua từng hụi viên
             data.danh_sach_chan.forEach((chan, index) => {
-                const stt = index + 1;
+                const stt = index + 1; // STT chính là KỲ
+                const kyHienThi = chan.ky || stt; // Lấy kỳ từ JSON, nếu không có thì dùng STT
+                
                 const row = document.createElement('tr');
-                let ngayHienThi = chan.ngay;
+                let ngayHienThi = chan.ngay; // Ngày của hụi viên "Chết"
 
-                // --- LOGIC TÙY BIẾN STATUS ---
                 const statusText = chan.status; 
-                let statusClass = 'dead'; // Mặc định là màu đỏ
+                let statusClass = 'dead';
 
                 if (statusText === 'V' || statusText === 'S') {
-                    statusClass = 'alive'; // Đổi sang màu xanh
-                    liveMemberCounter++;
-                    const periodsToAdd = isNewHui ? (liveMemberCounter - 1) * kyHanValueFloat : liveMemberCounter * kyHanValueFloat;
-                    ngayHienThi = addPeriod(isNewHui ? data.ngay_mo : anchorDate, periodsToAdd, data.ky_han_unit);
+                    statusClass = 'alive';
+                    
+                    // --- LOGIC TÍNH TOÁN ĐỘC LẬP (ĐÃ SỬA) ---
+                    // Công thức: Ngày = Ngày Mở + FLOOR((Kỳ - 1) * 0.5)
+                    const periodsToAdd = (kyHienThi - 1) * kyHanValueFloat;
+                    ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
                 }
                 
                 const ngayClass = (statusText !== 'V' && statusText !== 'S') ? 'text-red' : '';
@@ -219,7 +233,7 @@
                     <td style="text-align: left;">${chan.ten_hui_vien}</td>
                     <td class="status-cell ${statusClass}">${statusText}</td>
                     <td class="${ngayClass} font-bold">${ngayHienThi || ''}</td>
-                    <td>${chan.ky || ''}</td>
+                    <td>${kyHienThi}</td> 
                     <td>${formatCurrency(chan.tham)}</td>
                     <td>${formatCurrency(chan.tien_dong)}</td>
                     <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
@@ -299,4 +313,5 @@
 </script>
 </body>
 </html>
+
 
