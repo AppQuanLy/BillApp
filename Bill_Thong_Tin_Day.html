@@ -24,7 +24,7 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             box-sizing: border-box;
             position: relative;
-            padding-bottom: 80px; 
+            padding-bottom: 80px;
         }
         .header {
             display: flex;
@@ -52,80 +52,24 @@
             gap: 10px 5px;
             margin-bottom: 20px;
         }
-        .info-item {
-            font-size: 12pt;
-        }
-        .info-item .label {
-            font-weight: bold;
-            display: inline-block;
-            width: 90px;
-        }
-        .info-item .value {
-            font-weight: bold;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid #888;
-            padding: 6px 8px;
-            text-align: center;
-            vertical-align: middle;
-        }
-        th {
-            background-color: #d9e2f3;
-            font-weight: bold;
-        }
-        .status-cell.dead {
-            background-color: #ff0000;
-            color: white;
-            font-weight: bold;
-        }
-        .status-cell.alive {
-            background-color: #00b050;
-            color: white;
-            font-weight: bold;
-        }
-        .total-row td {
-            font-weight: bold;
-            background-color: #f2f2f2;
-        }
+        .info-item { font-size: 12pt; }
+        .info-item .label { font-weight: bold; display: inline-block; width: 90px; }
+        .info-item .value { font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #888; padding: 6px 8px; text-align: center; vertical-align: middle; }
+        th { background-color: #d9e2f3; font-weight: bold; }
+        .status-cell.dead { background-color: #ff0000; color: white; font-weight: bold; }
+        .status-cell.alive { background-color: #00b050; color: white; font-weight: bold; }
+        .total-row td { font-weight: bold; background-color: #f2f2f2; }
         .text-blue { color: #0070c0; }
         .text-red { color: #ff0000; }
         .font-bold { font-weight: bold; }
-        
-        .bill-controls {
-            position: absolute;
-            bottom: 1cm;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
-            z-index: 10;
-        }
-        .bill-controls button {
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            font-family: Arial, sans-serif;
-            cursor: pointer;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.2s, transform 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .bill-controls button:hover {
-            transform: translateY(-2px);
-        }
-        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
-        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
-        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
-
-        @media print {
-            .bill-controls { display: none !important; }
-        }
+        .bill-controls { position: absolute; bottom: 1cm; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 10; }
+        .bill-controls button { padding: 10px 20px; font-size: 14px; font-weight: bold; font-family: Arial, sans-serif; cursor: pointer; color: white; border: none; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .download-btn { background-color: #0275d8; }
+        .copy-btn { background-color: #5bc0de; }
+        .share-btn { background-color: #5cb85c; }
+        @media print { .bill-controls { display: none !important; } }
     </style>
 </head>
 <body>
@@ -194,20 +138,10 @@
         return num.toLocaleString('vi-VN');
     }
 
-    /**
-     * HÀM ADDPERIOD ĐÃ SỬA LỖI
-     * Dùng Math.floor(value) để lấy đúng số ngày cần cộng
-     */
     function addPeriod(dateString, value, unit) {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
-        
-        // Luôn làm tròn xuống số nguyên ngày cần cộng
-        const daysToAdd = Math.floor(parseFloat(value) || 0); 
-        
-        // Nếu số ngày cộng là 0 (ví dụ kỳ 1, kỳ 2 của dây 0.5), trả về ngày gốc
-        if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) {
-            return dateString;
-        }
+        const numericValue = parseFloat(value) || 0;
+        if (numericValue === 0 && value !== 0) return dateString;
 
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
@@ -216,11 +150,11 @@
         if ((unit || '').toLowerCase().includes('tháng')) {
             const originalDay = date.getDate();
             date.setDate(1);
-            date.setMonth(date.getMonth() + daysToAdd);
+            date.setMonth(date.getMonth() + numericValue);
             const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
             date.setDate(Math.min(originalDay, lastDayOfNewMonth));
         } else {
-            date.setDate(date.getDate() + daysToAdd);
+            date.setDate(date.getDate() + numericValue);
         }
         
         const newDay = String(date.getDate()).padStart(2, '0');
@@ -229,10 +163,6 @@
         return `${newDay}/${newMonth}/${newYear}`;
     }
 
-    /**
-     * HÀM GENERATEBILL ĐÃ SỬA LỖI
-     * Logic tính ngày đã được viết lại hoàn toàn để giống với công thức AppSheet
-     */
     function generateBill(data) {
         for (const key in data) {
             if (key !== 'danh_sach_chan') {
@@ -246,38 +176,40 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            // Sắp xếp theo STT (ky)
-            data.danh_sach_chan.sort((a, b) => (a.ky || 0) - (b.ky || 0));
+            // Sắp xếp lại để ưu tiên các trạng thái tùy biến (khác S/V) lên trên cùng với C/X
+            data.danh_sach_chan.sort((a, b) => {
+                const aIsAlive = (a.status === 'S' || a.status === 'V');
+                const bIsAlive = (b.status === 'S' || b.status === 'V');
+                if (aIsAlive && !bIsAlive) return 1;
+                if (!aIsAlive && bIsAlive) return -1;
+                return (a.ky || Infinity) - (b.ky || Infinity);
+            });
 
-            const ngayMo = data.ngay_mo;
-            const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
-
-            // Tính ngày mãn kỳ chính xác
-            const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
-            if (manKyDuKienEl) {
-                const soKyInt = parseInt(data.so_ky) || 0;
-                const periodsToAdd = (soKyInt - 1) * kyHanValueFloat;
-                manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+            let anchorDate = data.ngay_mo;
+            const deadMembers = data.danh_sach_chan.filter(chan => (chan.status !== 'S' && chan.status !== 'V') && chan.ngay);
+            if (deadMembers.length > 0) {
+                deadMembers.sort((a, b) => (a.ky || 0) - (b.ky || 0));
+                anchorDate = deadMembers[deadMembers.length - 1].ngay;
             }
 
-            // Lặp qua từng hụi viên
+            const isNewHui = (deadMembers.length === 0);
+            let liveMemberCounter = 0; 
+            const kyHanValueFloat = parseFloat(data.ky_han_value) || 1;
+
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
-                const kyHienThi = chan.ky || stt; // Lấy kỳ từ JSON, nếu không có thì dùng STT
-                
                 const row = document.createElement('tr');
-                let ngayHienThi = chan.ngay; // Ngày của hụi viên "Chết"
+                let ngayHienThi = chan.ngay;
 
+                // --- LOGIC TÙY BIẾN STATUS ---
                 const statusText = chan.status; 
-                let statusClass = 'dead';
+                let statusClass = 'dead'; // Mặc định là màu đỏ
 
                 if (statusText === 'V' || statusText === 'S') {
-                    statusClass = 'alive';
-                    
-                    // --- LOGIC TÍNH TOÁN ĐỘC LẬP (ĐÃ SỬA) ---
-                    // Công thức: Ngày = Ngày Mở + FLOOR((Kỳ - 1) * 0.5)
-                    const periodsToAdd = (kyHienThi - 1) * kyHanValueFloat;
-                    ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                    statusClass = 'alive'; // Đổi sang màu xanh
+                    liveMemberCounter++;
+                    const periodsToAdd = isNewHui ? (liveMemberCounter - 1) * kyHanValueFloat : liveMemberCounter * kyHanValueFloat;
+                    ngayHienThi = addPeriod(isNewHui ? data.ngay_mo : anchorDate, periodsToAdd, data.ky_han_unit);
                 }
                 
                 const ngayClass = (statusText !== 'V' && statusText !== 'S') ? 'text-red' : '';
@@ -287,7 +219,7 @@
                     <td style="text-align: left;">${chan.ten_hui_vien}</td>
                     <td class="status-cell ${statusClass}">${statusText}</td>
                     <td class="${ngayClass} font-bold">${ngayHienThi || ''}</td>
-                    <td>${kyHienThi}</td> 
+                    <td>${chan.ky || ''}</td>
                     <td>${formatCurrency(chan.tham)}</td>
                     <td>${formatCurrency(chan.tien_dong)}</td>
                     <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
@@ -367,3 +299,4 @@
 </script>
 </body>
 </html>
+
