@@ -20,14 +20,14 @@
         /* --- CSS CHO HEADER --- */
         .bill-header {
             position: relative;
-            min-height: 165px;
+            min-height: 200px;
             border-bottom: 1px solid #ccc;
             margin-bottom: 15px;
         }
         .header-left {
             position: absolute;
             left: 0;
-            top: 0;
+            top: 15px;
             font-weight: bold;
             font-size: 14pt;
             line-height: 1.5;
@@ -38,14 +38,14 @@
         .header-title-date {
             position: absolute;
             left: 50%;
-            top: 35px; /* Điều chỉnh vị trí tiêu đề cho cân đối */
+            top: 50px; /* Điều chỉnh vị trí tiêu đề cho cân đối */
             transform: translateX(-50%);
             text-align: center;
             width: 60%;
         }
         .qr-code {
-            width: 165px;
-            height: 165px;
+            width: 200px;
+            height: 200px;
             position: absolute;
             right: 0;
             top: 0;
@@ -113,7 +113,7 @@
                     <p data-field="bank_info"></p>
                 </div>
                 <div class="header-title-date">
-                    <h2 style="margin: 5px 0 0 0; font-size: 25pt;">BILL BÁO HỤI</h2>
+                    <h2 style="margin: 5px 0 0 0; font-size: 30pt;">BILL BÁO HỤI</h2>
                     <p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p>
                 </div>
                 <img data-field="qr_bill_url" class="qr-code" alt="QR">
