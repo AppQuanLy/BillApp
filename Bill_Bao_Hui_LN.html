@@ -208,10 +208,7 @@
                 const amDuongValue = kh.am_duong || 0; 
                 amDuongCell.textContent = formatCurrency(amDuongValue); 
                 if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } 
-                const loiNhuanCell = q('[data-field="loi_nhuan"]'); 
-                const loiNhuanValue = kh.loi_nhuan || 0; 
-                loiNhuanCell.textContent = formatCurrency(loiNhuanValue); 
-                if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
+               
                 
                 const detailsBody = q('[data-field="details_tbody"]');
                 const allDetails = [].concat(kh.chan_hui_details || []).concat(kh.hui_1_1_details || []).concat(kh.ghi_no_details || []);
