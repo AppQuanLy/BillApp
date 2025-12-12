@@ -100,9 +100,183 @@
         </div>
     </template>
     
-    <script>
+    <!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Tin Dây Hụi</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            font-size: 14pt;
+            color: #000;
+        }
+        .container {
+            width: 28cm;
+            padding: 1cm;
+            margin: auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            position: relative;
+            padding-bottom: 80px; 
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .title-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .title-section h1 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 26pt;
+            color: #0070c0;
+            margin: 0;
+        }
+        .title-section p {
+            margin: 5px 0 0;
+            font-size: 12pt;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr;
+            gap: 10px 5px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            font-size: 12pt;
+        }
+        .info-item .label {
+            font-weight: bold;
+            display: inline-block;
+            width: 90px;
+        }
+        .info-item .value {
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #888;
+            padding: 6px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #d9e2f3;
+            font-weight: bold;
+        }
+        .status-cell.dead {
+            background-color: #ff0000;
+            color: white;
+            font-weight: bold;
+        }
+        .status-cell.alive {
+            background-color: #00b050;
+            color: white;
+            font-weight: bold;
+        }
+        .total-row td {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
+        .text-blue { color: #0070c0; }
+        .text-red { color: #ff0000; }
+        .font-bold { font-weight: bold; }
+        
+        .bill-controls {
+            position: absolute;
+            bottom: 1cm;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+        .bill-controls button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .bill-controls button:hover {
+            transform: translateY(-2px);
+        }
+        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
+        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
+        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
+
+        @media print {
+            .bill-controls { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="bill-to-capture">
+        <div class="header">
+            <div class="left">
+                Chủ Hụi: <span data-field="chu_hui_ten" class="font-bold"></span><br>
+                SĐT: <span data-field="chu_hui_sdt" class="font-bold"></span>
+            </div>
+        </div>
+        <div class="title-section">
+            <h1>THÔNG TIN DÂY HỤI</h1>
+            <p>Ngày: <span data-field="ngay_in_bill"></span></p>
+        </div>
+        <div class="info-grid">
+            <div class="info-item"><span class="label">Dây:</span><span data-field="day_ten" class="value"></span></div>
+            <div class="info-item"><span class="label">Kỳ Hạn:</span><span data-field="ky_han_text" class="value text-blue"></span></div>
+            <div class="info-item"><span class="label">Thu Thảo</span></div>
+            <div class="info-item"><span class="label">Số Kỳ:</span><span data-field="so_ky" class="value"></span></div>
+            <div class="info-item"><span class="label">Mãn Kỳ:</span><span data-field="man_ky_du_kien" class="value text-blue"></span></div>
+            <div class="info-item"><span data-field="thu_khi_hot" class="value text-red"></span></div>
+            <div class="info-item"><span class="label">Ngày Mở:</span><span data-field="ngay_mo" class="value text-blue"></span></div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>TÊN HỤI VIÊN</th>
+                    <th>S / C</th>
+                    <th>NGÀY</th>
+                    <th>KỲ</th>
+                    <th>THĂM</th>
+                    <th>TIỀN ĐÓNG</th>
+                    <th>TIỀN HỐT</th>
+                </tr>
+            </thead>
+            <tbody id="details-tbody">
+            </tbody>
+        </table>
+        
+        <div class="bill-controls">
+            <button class="download-btn">Tải Bill</button>
+            <button class="copy-btn">Copy Bill</button>
+            <button class="share-btn">Gửi Bill</button>
+        </div>
+    </div>
+
+<script>
     let billData = {};
-    let readyBlob = null; // Biến để lưu file ảnh đã tạo sẵn
 
     window.onload = function() {
         try {
@@ -110,13 +284,7 @@
             if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
             const jsonData = decodeURIComponent(encodedData);
             billData = JSON.parse(jsonData);
-            
-            // 1. Tạo nội dung bill
             generateBill(billData);
-            
-            // 2. Kích hoạt tạo ảnh ngầm ngay lập tức
-            initAutoCapture(); 
-
         } catch (error) {
             document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
             console.error("Lỗi:", error);
@@ -130,8 +298,12 @@
 
     function addPeriod(dateString, value, unit) {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
+        
         const daysToAdd = Math.floor(parseFloat(value) || 0); 
-        if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) return dateString;
+        
+        if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) {
+             return dateString;
+        }
 
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
@@ -155,190 +327,113 @@
 
     function generateBill(data) {
         for (const key in data) {
+            // Loại bỏ kiểm tra 'danh_sach_chan' để tránh lỗi với các trường khác
             if (key !== 'danh_sach_chan') {
                 const element = document.querySelector(`[data-field="${key}"]`);
-                if (element) element.textContent = data[key];
+                // CHỈ GÁN NẾU TÌM THẤY ELEMENT (Tránh lỗi null)
+                if (element) {
+                    element.textContent = data[key];
+                }
             }
         }
         
         const tbody = document.getElementById('details-tbody');
-        tbody.innerHTML = '';
-        let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
+        if (tbody) {
+            tbody.innerHTML = '';
+            let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
-        if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            data.danh_sach_chan.forEach((chan, index) => {
-                chan.ky_num = parseInt(chan.ky) || (index + 1);
-            });
-            data.danh_sach_chan.sort((a, b) => a.ky_num - b.ky_num);
-
-            const ngayMo = data.ngay_mo;
-            const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
-            const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
-            if (manKyDuKienEl) {
-                const soKyInt = parseInt(data.so_ky) || 0;
-                const periodsToAdd = (soKyInt - 1) * kyHanValueFloat;
-                manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
-            }
-
-            data.danh_sach_chan.forEach((chan, index) => {
-                const stt = index + 1;
-                const kyHienThi = chan.ky || "";
-                const row = document.createElement('tr');
-                let ngayHienThi = chan.ngay;
-                const statusText = chan.status; 
-                let statusClass = 'dead';
-
-                if (statusText === 'V' || statusText === 'S') {
-                    statusClass = 'alive';
-                    const kyForCalc = parseInt(kyHienThi); 
-                    if (!isNaN(kyForCalc) && kyForCalc > 0) {
-                        const periodsToAdd = (kyForCalc - 1) * kyHanValueFloat;
-                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
-                    } else {
-                        ngayHienThi = ""; 
-                    }
-                }
-                
-                const ngayClass = (statusText !== 'V' && statusText !== 'S') ? 'text-red' : '';
-                
-                row.innerHTML = `
-                    <td>${stt}</td>
-                    <td style="text-align: left;">${chan.ten_hui_vien}</td>
-                    <td class="status-cell ${statusClass}">${statusText}</td>
-                    <td class="${ngayClass} font-bold">${ngayHienThi || ''}</td>
-                    <td>${kyHienThi}</td> 
-                    <td>${formatCurrency(chan.tham)}</td>
-                    <td>${formatCurrency(chan.tien_dong)}</td>
-                    <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
-                `;
-                tbody.appendChild(row);
-                tongTham += chan.tham || 0;
-                tongTienHot += chan.tien_hot || 0;
-                tongTienDong += chan.tien_dong || 0;
-            });
-        }
-        
-        const totalRow = document.createElement('tr');
-        totalRow.className = 'total-row';
-        totalRow.innerHTML = `
-            <td colspan="5" style="text-align: center; font-size: 14pt;">TỔNG:</td>
-            <td class="text-blue">${formatCurrency(tongTham)}</td>
-            <td>${formatCurrency(tongTienDong)}</td> 
-            <td class="text-red">${formatCurrency(tongTienHot)}</td>
-        `;
-        tbody.appendChild(totalRow);
-        
-        // Gán sự kiện cho các nút Tải và Copy (không cần đợi ảnh ngầm)
-        const billElement = document.getElementById('bill-to-capture');
-        document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
-        document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
-        // Nút Gửi Bill sẽ được xử lý riêng
-        document.querySelector('.share-btn').addEventListener('click', shareReadyBlob);
-    }
-
-    // --- HÀM TẠO ẢNH NGẦM (QUAN TRỌNG) ---
-    async function initAutoCapture() {
-        const billElement = document.getElementById('bill-to-capture');
-        const shareBtn = document.querySelector('.share-btn');
-        
-        // Đổi trạng thái nút
-        shareBtn.textContent = "⏳ Đang tạo ảnh...";
-        shareBtn.disabled = true;
-        shareBtn.style.opacity = "0.6";
-
-        const controls = billElement.querySelector('.bill-controls');
-        controls.style.display = 'none'; // Ẩn nút để chụp
-
-        try {
-            // Chờ 500ms để trình duyệt render xong hết font chữ, layout
-            await new Promise(r => setTimeout(r, 500));
-
-            // Dùng scale 1.5 để cân bằng giữa nét và nhẹ RAM
-            const canvas = await html2canvas(billElement, { 
-                scale: 1.5, 
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff'
-            });
-            
-            // Lưu ảnh vào biến toàn cục
-            readyBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-            
-            // Đổi lại nút thành Sẵn sàng
-            shareBtn.textContent = "Gửi Bill";
-            shareBtn.disabled = false;
-            shareBtn.style.opacity = "1";
-            
-        } catch (error) {
-            console.error("Lỗi tạo ảnh ngầm:", error);
-            shareBtn.textContent = "Lỗi tạo ảnh";
-            // Nếu scale 1.5 lỗi (tràn RAM), thử lại với scale 1.0
-            try {
-                const canvasLow = await html2canvas(billElement, { scale: 1, useCORS: true, backgroundColor: '#ffffff' });
-                readyBlob = await new Promise(resolve => canvasLow.toBlob(resolve, 'image/png'));
-                shareBtn.textContent = "Gửi Bill (SD)";
-                shareBtn.disabled = false;
-                shareBtn.style.opacity = "1";
-            } catch (err2) {
-                 shareBtn.textContent = "Không thể tạo ảnh";
-            }
-        } finally {
-            controls.style.display = 'flex'; // Hiện lại nút
-        }
-    }
-
-    // --- HÀM GỬI ẢNH ĐÃ CÓ SẴN ---
-    async function shareReadyBlob() {
-        if (!readyBlob) {
-            alert("Đang xử lý hình ảnh, vui lòng đợi giây lát...");
-            return;
-        }
-
-        const sdt = billData.sdt || '';
-        const hoivien = billData.hoi_vien || 'Bill'; // Sửa lại key cho đúng với dữ liệu
-        const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png';
-        const file = new File([readyBlob], filename, { type: 'image/png' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-                await navigator.share({
-                    files: [file]
+            if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
+                // Sắp xếp theo STT (KỲ)
+                data.danh_sach_chan.forEach((chan, index) => {
+                    chan.ky_num = parseInt(chan.ky) || (index + 1);
                 });
-            } catch (err) {
-                console.log("Người dùng hủy chia sẻ");
+                data.danh_sach_chan.sort((a, b) => a.ky_num - b.ky_num);
+
+                const ngayMo = data.ngay_mo;
+                const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
+
+                // Tính ngày mãn kỳ
+                const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
+                if (manKyDuKienEl) {
+                    const soKyInt = parseInt(data.so_ky) || 0;
+                    const periodsToAdd = (soKyInt - 1) * kyHanValueFloat;
+                    manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                }
+
+                data.danh_sach_chan.forEach((chan, index) => {
+                    const stt = index + 1;
+                    const kyHienThi = chan.ky || ""; 
+                    
+                    const row = document.createElement('tr');
+                    let ngayHienThi = chan.ngay; 
+
+                    const statusText = chan.status; 
+                    let statusClass = 'dead';
+
+                    if (statusText === 'V' || statusText === 'S') {
+                        statusClass = 'alive';
+                        
+                        // Logic tính ngày: Dùng STT để tính toán
+                        const periodsToAdd = (stt - 1) * kyHanValueFloat;
+                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                    }
+                    
+                    const ngayClass = (statusText !== 'V' && statusText !== 'S') ? 'text-red' : '';
+                    
+                    row.innerHTML = `
+                        <td>${stt}</td>
+                        <td style="text-align: left;">${chan.ten_hui_vien}</td>
+                        <td class="status-cell ${statusClass}">${statusText}</td>
+                        <td class="${ngayClass} font-bold">${ngayHienThi || ''}</td>
+                        <td>${kyHienThi}</td> 
+                        <td>${formatCurrency(chan.tham)}</td>
+                        <td>${formatCurrency(chan.tien_dong)}</td>
+                        <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
+                    `;
+                    tbody.appendChild(row);
+                    tongTham += chan.tham || 0;
+                    tongTienHot += chan.tien_hot || 0;
+                    tongTienDong += chan.tien_dong || 0;
+                });
             }
-        } else {
-            alert('Máy này không hỗ trợ gửi file trực tiếp. Vui lòng dùng nút "Tải Bill" hoặc "Copy Bill".');
+            
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td colspan="5" style="text-align: center; font-size: 14pt;">TỔNG:</td>
+                <td class="text-blue">${formatCurrency(tongTham)}</td>
+                <td>${formatCurrency(tongTienDong)}</td> 
+                <td class="text-red">${formatCurrency(tongTienHot)}</td>
+            `;
+            tbody.appendChild(totalRow);
         }
+        
+        const billElement = document.getElementById('bill-to-capture');
+        const btnDownload = document.querySelector('.download-btn');
+        if (btnDownload) btnDownload.addEventListener('click', () => downloadBillAsImage(billElement));
+        
+        const btnCopy = document.querySelector('.copy-btn');
+        if (btnCopy) btnCopy.addEventListener('click', () => copyBillAsImage(billElement));
+        
+        const btnShare = document.querySelector('.share-btn');
+        if (btnShare) btnShare.addEventListener('click', () => shareBillAsImage(billElement));
     }
 
-    // --- CÁC HÀM CŨ (GIỮ NGUYÊN HOẶC RÚT GỌN ĐỂ TÁI SỬ DỤNG) ---
-    function captureBill(element, callback) {
-        // Hàm này giờ chỉ dùng cho nút Download/Copy (tạo ảnh mới để đảm bảo fresh)
+    async function captureBill(element, callback) {
         const controls = element.querySelector('.bill-controls');
         if (controls) controls.style.display = 'none';
-        html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => {
-            callback(canvas);
-            controls.style.display = 'flex';
-        }).catch(err => {
-            alert('Lỗi khi tạo ảnh.');
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+            await callback(canvas);
+        } catch (error) {
+            console.error('Lỗi khi tạo ảnh:', error);
+            alert('Đã có lỗi xảy ra khi tạo ảnh.');
+        } finally {
             if (controls) controls.style.display = 'flex';
-        });
+        }
     }
 
     function downloadBillAsImage(element) {
-        // Nếu đã có readyBlob, dùng luôn cho nhanh
-        if (readyBlob) {
-            const sdt = billData.sdt;
-            const hoivien = billData.hoi_vien || 'Bill';
-            const filename = (sdt ? sdt : `ThongTinDay_${billData.day_ten || 'bill'}`) + '.png';
-            const link = document.createElement('a');
-            link.download = filename;
-            link.href = URL.createObjectURL(readyBlob);
-            link.click();
-            return;
-        }
-        // Nếu chưa có (lỗi gì đó), thì chạy cách cũ
         const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
         captureBill(element, canvas => {
             const link = document.createElement('a');
@@ -349,13 +444,6 @@
     }
 
     function copyBillAsImage(element) {
-        // Copy thì nên chụp mới hoặc dùng blob
-        if (readyBlob) {
-             navigator.clipboard.write([new ClipboardItem({ 'image/png': readyBlob })])
-                .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
-                .catch(err => alert('Lỗi khi copy.'));
-             return;
-        }
         captureBill(element, canvas => {
             canvas.toBlob(blob => {
                 navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
@@ -364,6 +452,24 @@
             });
         });
     }
+
+    async function shareBillAsImage(element) {
+        const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
+        const textshare = `Thông tin dây hụi ${billData.day_ten}.`;
+        if (!navigator.share) {
+            alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
+            return;
+        }
+        captureBill(element, async canvas => {
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            const file = new File([blob], filename, { type: 'image/png' });
+            try {
+                await navigator.share({ title: `Thông Tin Dây Hụi`, text: textshare, files: [file] });
+            } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
+        });
+    }
 </script>
+</body>
+</html>
 </body>
 </html>
