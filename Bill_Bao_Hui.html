@@ -214,7 +214,7 @@
                 if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
                 
                 const detailsBody = q('[data-field="details_tbody"]');
-                const allDetails = [].concat(kh.chan_hui_details || []).concat(kh.hui_1_1_details || []).concat(kh.ghi_no_details || []);
+                const allDetails = [].concat(kh.chan_hui_details || []).concat(kh.hui_1_1_details || []).concat(kh.ghi_no_details || []).concat(kh.tien_gop_details || []);
                 
                 if (allDetails.length > 0) {
                     let sttCounter = 1;
