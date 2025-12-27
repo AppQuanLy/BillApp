@@ -143,9 +143,17 @@
     </template>
     
 <script>
-    // --- 1. BỘ XỬ LÝ VIETQR CHUẨN (ĐÃ FIX LỖI CRC 4 KÝ TỰ & SỐ TIỀN) ---
+// --- BỘ XỬ LÝ VIETQR CHUẨN (FIX LỖI TIẾNG VIỆT & CRC) ---
     const VietQR = {
-        // Hàm tính Checksum CRC16 (CCITT-FALSE) chuẩn ngân hàng
+        // Hàm xóa dấu tiếng Việt (Chuyển thành không dấu)
+        removeAccents: function(str) {
+            return str.normalize('NFD')
+                      .replace(/[\u0300-\u036f]/g, '')
+                      .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+                      .replace(/[^a-zA-Z0-9 ]/g, ''); // Chỉ giữ lại chữ, số và khoảng trắng
+        },
+        
+        // Tính Checksum CRC16 chuẩn (Xử lý từng ký tự ASCII)
         crc16: function(data) {
             let crc = 0xFFFF;
             for (let i = 0; i < data.length; i++) {
@@ -154,57 +162,65 @@
                     if ((crc & 0x8000) != 0) crc = (crc << 1) ^ 0x1021;
                     else crc = crc << 1;
                 }
-                crc = crc & 0xFFFF; // Đảm bảo luôn là 16-bit
+                crc = crc & 0xFFFF;
             }
             let hex = crc.toString(16).toUpperCase();
-            // QUAN TRỌNG: CRC bắt buộc phải đủ 4 ký tự (VD: 00AB)
             return "0000".substring(0, 4 - hex.length) + hex;
         },
+
         generatePayload: function(bankBin, bankNumber, amount, content) {
+            // Hàm tạo trường dữ liệu: ID + Độ dài + Giá trị
             const field = (id, value) => {
                 const valStr = String(value);
-                return id + (valStr.length < 10 ? "0" + valStr.length : valStr.length) + valStr;
+                const len = valStr.length;
+                return id + (len < 10 ? "0" + len : len) + valStr;
             };
             
-            // Cấu trúc Merchant Info (ID 38)
-            const consumerInfo = field("00", "A000000727") + field("01", field("00", bankBin) + field("01", bankNumber)) + field("02", "QRIBFTTA");
+            // 1. Xử lý sạch dữ liệu đầu vào (Tránh lỗi dư khoảng trắng, ký tự lạ)
+            const cleanBin = String(bankBin).replace(/\D/g, '');
+            const cleanAccount = String(bankNumber).replace(/[^a-zA-Z0-9]/g, ''); // STK có thể có chữ
             
-            // Bắt đầu ghép chuỗi QR
-            let qrStr = field("00", "01") + field("01", "12") + field("38", consumerInfo) + field("53", "704");
+            // 2. Cấu trúc Merchant Info (ID 38)
+            const consumerInfo = field("00", "A000000727") + 
+                                 field("01", field("00", cleanBin) + field("01", cleanAccount)) + 
+                                 field("02", "QRIBFTTA"); // Service Code chuyển khoản
             
-            // Xử lý số tiền: Xóa hết dấu chấm, phẩy trước khi đưa vào
+            // 3. Ghép chuỗi cơ bản
+            let qrStr = field("00", "01") + // Payload Format
+                        field("01", "12") + // Point of Initiation (12: Dynamic/Dynamic Amount)
+                        field("38", consumerInfo) + 
+                        field("53", "704"); // Currency (VND)
+            
+            // 4. Xử lý số tiền
             if (amount) {
-                const cleanAmount = String(amount).replace(/\D/g, ''); // Chỉ giữ lại số
+                const cleanAmount = String(amount).replace(/\D/g, '');
                 if (parseInt(cleanAmount) > 0) {
                     qrStr += field("54", cleanAmount);
                 }
             }
             
-            qrStr += field("58", "VN");
+            qrStr += field("58", "VN"); // Country Code
             
+            // 5. Xử lý nội dung (QUAN TRỌNG: Chuyển về KHÔNG DẤU)
             if (content && content.length > 0) {
-                // Xử lý nội dung: Tiếng Việt không dấu, bỏ ký tự lạ
-                const cleanContent = content.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9 ]/g, '').trim();
-                if (cleanContent.length > 0) {
-                    qrStr += field("62", field("08", cleanContent));
+                const safeContent = this.removeAccents(content);
+                if (safeContent.length > 0) {
+                    qrStr += field("62", field("08", safeContent));
                 }
             }
             
-            // ID CRC là 63, độ dài 04
+            // 6. Tính CRC
             qrStr += "6304"; 
             qrStr += this.crc16(qrStr);
+            
             return qrStr;
         },
-        // Đọc chuỗi từ AppSheet: "BIN|STK|TIEN|NOIDUNG"
+
         parseRawData: function(rawString) {
             if (!rawString) return null;
             const parts = rawString.split('|');
             if (parts.length >= 2) {
-                const bin = parts[0].trim();
-                const stk = parts[1].trim();
-                const amount = parts[2] || "0";
-                const content = parts[3] || "";
-                return this.generatePayload(bin, stk, amount, content);
+                return this.generatePayload(parts[0], parts[1], parts[2], parts[3]);
             }
             return null;
         }
