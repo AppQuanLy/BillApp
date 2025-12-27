@@ -143,7 +143,7 @@
     </template>
     
     <script>
-        // --- 3. BỘ XỬ LÝ VIETQR & LOGIC (MỚI) ---
+// --- BỘ XỬ LÝ VIETQR & LOGIC (BẢN NÂNG CẤP ĐA NĂNG) ---
         const VietQR = {
             crc16: function(data) {
                 let crc = 0xFFFF;
@@ -164,9 +164,14 @@
                 };
                 const consumerInfo = field("00", "A000000727") + field("01", field("00", bankBin) + field("01", bankNumber)) + field("02", "QRIBFTTA");
                 let qrStr = field("00", "01") + field("01", "12") + field("38", consumerInfo) + field("53", "704");
-                if (amount > 0) qrStr += field("54", amount);
+                
+                // Xử lý số tiền: Nếu không có hoặc = 0 thì không đưa vào QR (để khách tự nhập)
+                if (amount && parseInt(amount) > 0) qrStr += field("54", amount);
+                
                 qrStr += field("58", "VN");
                 if (content && content.length > 0) {
+                    // Giải mã nội dung nếu bị mã hóa URL (ví dụ %20 thành dấu cách)
+                    try { content = decodeURIComponent(content); } catch(e){}
                     let additional = field("08", content);
                     qrStr += field("62", additional);
                 }
@@ -175,13 +180,30 @@
                 return qrStr;
             },
             parseUrlAndGenerate: function(oldUrl) {
+                if (!oldUrl) return null;
                 try {
-                    const regex = /image\/(\d+)-([A-Za-z0-9]+)-.*amount=(\d+)(?:&addInfo=([^&]+))?/;
-                    const match = decodeURIComponent(oldUrl).match(regex);
-                    if (match) {
-                        return this.generatePayload(match[1], match[2], match[3], match[4] || "");
+                    // 1. Tìm Ngân hàng (BIN) và Số Tài Khoản trong link
+                    // Chấp nhận cả link img.vietqr.io lẫn link quickchart nếu có cấu trúc tương tự
+                    const binAccRegex = /image\/(\d+)-([A-Za-z0-9]+)/; 
+                    const matchMain = oldUrl.match(binAccRegex);
+                    
+                    if (matchMain) {
+                        const bin = matchMain[1];
+                        const acc = matchMain[2];
+                        
+                        // 2. Tìm Số tiền (Tìm riêng để tránh lỗi nếu thứ tự thay đổi)
+                        let amount = "0";
+                        const amountMatch = oldUrl.match(/[?&]amount=(\d+)/);
+                        if (amountMatch) amount = amountMatch[1];
+
+                        // 3. Tìm Nội dung (Tìm riêng)
+                        let content = "";
+                        const infoMatch = oldUrl.match(/[?&]addInfo=([^&]+)/);
+                        if (infoMatch) content = infoMatch[1];
+
+                        return this.generatePayload(bin, acc, amount, content);
                     }
-                } catch (e) { console.error("Lỗi parse VietQR", e); }
+                } catch (e) { console.error("Lỗi đọc link QR:", e); }
                 return null;
             }
         };
@@ -238,10 +260,14 @@
                 q('[data-field="bank_info"]').textContent = kh.bank_info || ''; 
                 q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; 
                 
-                // --- XỬ LÝ QR CODE LOCAL (QUAN TRỌNG) ---
+// --- XỬ LÝ QR CODE LOCAL (CẬP NHẬT) ---
                 const qrContainer = q('[data-field="qr_container"]');
                 const oldLink = kh.qr_bill_url; 
-                if (oldLink && qrContainer) {
+                
+                // Xóa nội dung cũ (nếu có)
+                qrContainer.innerHTML = "";
+
+                if (oldLink) {
                     const qrPayload = VietQR.parseUrlAndGenerate(oldLink);
                     if (qrPayload) {
                         try {
@@ -252,11 +278,17 @@
                                 correctLevel: QRCode.CorrectLevel.L
                             });
                         } catch (err) {
-                            console.error("Lỗi vẽ QR:", err);
+                            console.error("Lỗi thư viện vẽ QR:", err);
+                            qrContainer.innerHTML = "<span style='font-size:10px; color:red'>Lỗi vẽ QR</span>";
                         }
                     } else {
-                        qrContainer.innerHTML = "<span style='font-size:10px; color:red'>Lỗi Link QR</span>";
+                        // Link có nhưng không đọc được BIN/Tài khoản
+                        qrContainer.innerHTML = "<span style='font-size:10px; color:red; display:block; padding-top:40px;'>Lỗi link QR<br>(Sai định dạng)</span>";
+                        console.log("Link lỗi:", oldLink); // Xem link lỗi trong F12
                     }
+                } else {
+                    // Trường hợp AppSheet KHÔNG gửi link sang
+                    qrContainer.innerHTML = "<span style='font-size:10px; color:red; display:block; padding-top:40px;'>Chưa có<br>thông tin CK</span>";
                 }
                 
                 q('[data-field="dia_chi"]').textContent = kh.dia_chi || ''; 
