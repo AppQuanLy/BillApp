@@ -143,18 +143,19 @@
     </template>
     
 <script>
-    // --- 1. BỘ XỬ LÝ VIETQR CHUẨN NAPAS/EMVCO ---
+    // --- 1. BỘ XỬ LÝ VIETQR (BẢN TRUNG TÍNH - INPUT SAO OUTPUT VẬY) ---
     const VietQR = {
-        // Hàm xóa dấu & ký tự lạ (Giữ lại chữ/số/khoảng trắng)
+        // Hàm xóa dấu tiếng Việt (Dùng cho Tên & Nội dung)
         cleanText: function(str) {
             if (!str) return "";
             return str.normalize('NFD')
                       .replace(/[\u0300-\u036f]/g, '')
                       .replace(/đ/g, 'd').replace(/Đ/g, 'D')
-                      .replace(/[^a-zA-Z0-9 ]/g, '').trim();
+                      .replace(/[^a-zA-Z0-9 ]/g, '') 
+                      .trim();
         },
         
-        // Tính CRC16
+        // Tính Checksum CRC16
         crc16: function(data) {
             let crc = 0xFFFF;
             for (let i = 0; i < data.length; i++) {
@@ -170,70 +171,66 @@
         },
 
         generatePayload: function(bankBin, bankNumber, amount, content) {
-            // Hàm tạo trường dữ liệu: ID + Độ dài + Giá trị
             const field = (id, value) => {
                 const valStr = String(value);
                 const len = valStr.length;
                 return id + (len < 10 ? "0" + len : len) + valStr;
             };
             
-            // --- KIỂM TRA DỮ LIỆU QUAN TRỌNG ---
-            const cleanBin = String(bankBin).replace(/\D/g, ''); // Chỉ lấy số
-            const cleanAccount = String(bankNumber).replace(/[^a-zA-Z0-9]/g, ''); // Số TK
+            // --- XỬ LÝ DỮ LIỆU ĐẦU VÀO ---
             
-            // Nếu thiếu BIN hoặc STK thì không tạo được QR chuẩn
-            if (cleanBin.length < 4 || cleanAccount.length < 1) {
-                console.error("Thiếu thông tin ngân hàng:", bankBin, bankNumber);
-                return null;
-            }
-
-            // 1. Cấu trúc Merchant Info (ID 38) - QUAN TRỌNG NHẤT
-            const merchantInfo = field("00", "A000000727") + // GUI
-                                 field("01", field("00", cleanBin) + field("01", cleanAccount)) + // Beneficiary
-                                 field("02", "QRIBFTTA"); // Service Code
-
-            // 2. Ghép chuỗi chính
-            let qrStr = field("00", "01") + // Format
-                        field("01", "12") + // Init Method
-                        field("38", merchantInfo) + // Merchant Info
-                        field("53", "704"); // Currency VND
+            // 1. BIN Ngân hàng: Chỉ lấy số
+            const cleanBin = String(bankBin).replace(/\D/g, ''); 
             
-            // 3. Xử lý số tiền
+            // 2. Số Tài Khoản: GIỮ NGUYÊN (Chỉ xóa khoảng trắng hoặc ký tự đặc biệt như - . nếu có)
+            // Không can thiệp thêm/bớt số 0
+            const cleanAccount = String(bankNumber).replace(/[^a-zA-Z0-9]/g, ''); 
+            
+            // Kiểm tra tối thiểu
+            if (cleanBin.length < 4 || cleanAccount.length < 1) return null;
+
+            // --- TẠO CHUỖI QR ---
+            const merchantInfo = field("00", "A000000727") + 
+                                 field("01", field("00", cleanBin) + field("01", cleanAccount)) + 
+                                 field("02", "QRIBFTTA");
+
+            let qrStr = field("00", "01") + 
+                        field("01", "12") + 
+                        field("38", merchantInfo) + 
+                        field("53", "704"); 
+            
+            // Số tiền (Nếu > 0)
             if (amount) {
                 const cleanAmount = String(amount).replace(/\D/g, '');
                 if (parseInt(cleanAmount) > 0) qrStr += field("54", cleanAmount);
             }
             
-            qrStr += field("58", "VN"); // Country
+            qrStr += field("58", "VN"); 
             
-            // 4. Nội dung chuyển khoản
+            // Nội dung
             if (content) {
                 const safeContent = this.cleanText(content);
-                if (safeContent.length > 0) qrStr += field("62", field("08", safeContent));
+                if (safeContent.length > 0) {
+                    qrStr += field("62", field("08", safeContent));
+                }
             }
             
-            // 5. CRC
             qrStr += "6304"; 
             qrStr += this.crc16(qrStr);
-            
             return qrStr;
         },
 
         parseRawData: function(rawString) {
             if (!rawString) return null;
-            // Tách chuỗi bằng dấu gạch đứng |
             const parts = rawString.split('|');
-            
+            // Tách dữ liệu từ chuỗi AppSheet
             if (parts.length >= 2) {
-                const bin = parts[0].trim();
-                const stk = parts[1].trim();
-                const amount = parts[2] ? parts[2].trim() : "0";
-                const content = parts[3] ? parts[3].trim() : "";
-                
-                // Debug: Kiểm tra xem dữ liệu tách ra có đúng không
-                console.log("Dữ liệu QR tách được:", { bin, stk, amount, content });
-                
-                return this.generatePayload(bin, stk, amount, content);
+                return this.generatePayload(
+                    parts[0].trim(), // BIN
+                    parts[1].trim(), // STK (Chỉ trim khoảng trắng 2 đầu)
+                    parts[2] || "0", // Amount
+                    parts[3] || ""   // Content
+                );
             }
             return null;
         }
@@ -248,7 +245,7 @@
         infoPanel.style.display = 'block';
 
         if (typeof QRCode === 'undefined') {
-            statusMessage.textContent = 'Lỗi: Không tải được thư viện QRCode.js. Kiểm tra mạng.';
+            statusMessage.textContent = 'Lỗi: Không tải được thư viện QRCode.js';
             return;
         }
 
@@ -256,17 +253,13 @@
             const encodedData = window.location.hash.substring(1);
             if (!encodedData) { statusMessage.textContent = 'Không tìm thấy dữ liệu.'; return; }
             const jsonData = decodeURIComponent(encodedData);
-            
-            // In dữ liệu gốc ra console để kiểm tra
-            console.log("Dữ liệu nhận từ AppSheet:", jsonData);
-            
             generateBills(jsonData);
 
             statusMessage.style.display = 'none';
             downloadZipBtn.style.display = 'inline-block';
             downloadZipBtn.addEventListener('click', downloadAllAsZip);
         } catch (error) {
-            statusMessage.textContent = 'Lỗi xử lý dữ liệu.';
+            statusMessage.textContent = 'Lỗi dữ liệu bill.';
             console.error(error);
         }
     };
@@ -349,11 +342,10 @@
                 q('[data-field="final_amount"]').textContent = formatCurrency(amount); 
                 q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; 
                 
-                // --- PHẦN TẠO QR VÀ KIỂM TRA LỖI ---
+                // --- TẠO MÃ QR ---
                 const qrRawData = kh.qr_bill_url; 
                 if (qrRawData) {
                     const qrPayload = VietQR.parseRawData(qrRawData);
-                    
                     if (qrPayload) {
                         new QRCode(qrContainer, {
                             text: qrPayload,
@@ -361,14 +353,7 @@
                             correctLevel: QRCode.CorrectLevel.L
                         });
                     } else {
-                        // Nếu dữ liệu thiếu BIN hoặc STK
-                        qrContainer.innerHTML = "<div style='color:red;font-size:12px;text-align:center;padding-top:60px;'>Thiếu BIN<br>hoặc STK</div>";
-                        
-                        // DEBUG: Hiện thông báo để bạn biết tại sao lỗi
-                        const parts = qrRawData.split('|');
-                        console.warn(`Lỗi tạo QR cho ${kh.hoi_vien}:`, parts);
-                        // Bỏ dòng alert dưới đây nếu thấy phiền
-                        // alert(`Lỗi dữ liệu QR của ${kh.hoi_vien}.\nBIN: ${parts[0]}\nSTK: ${parts[1]}`);
+                        qrContainer.innerHTML = "<div style='color:red;font-size:12px;text-align:center;padding-top:60px;font-weight:bold'>Lỗi: Thiếu BIN<br>hoặc STK</div>";
                     }
                 }
 
@@ -405,6 +390,7 @@
         }
     }
     
+    // --- GIỮ NGUYÊN CÁC HÀM TIỆN ÍCH ---
     function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { canvas.toBlob(blob => { try { window.focus(); navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); } catch (e) { alert("Trình duyệt không hỗ trợ"); } }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
     function downloadBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien.replace(/\s+/g, '_')}`) + '.png'; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error(err); alert('Lỗi tạo ảnh.'); c.style.display = 'flex'; }); }
     async function shareBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png'; const shareBtn = element.querySelector('.share-btn'); const originalText = shareBtn.textContent; shareBtn.textContent = "⏳ Đang xử lý..."; shareBtn.disabled = true; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const tryShare = async (scale) => { const canvas = await html2canvas(element, { scale: scale, useCORS: true, logging: false }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], filename, { type: 'image/png' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); } else { throw new Error('No Share API'); } }; try { await tryShare(1.5); } catch (e) { console.log("Thử lại chất lượng thấp"); await tryShare(1.0); } } catch (error) { if(!error.message.includes('No Share API')) alert('Lỗi gửi bill. Hãy thử Tải Bill.'); else alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } finally { c.style.display = 'flex'; shareBtn.textContent = originalText; shareBtn.disabled = false; } }
