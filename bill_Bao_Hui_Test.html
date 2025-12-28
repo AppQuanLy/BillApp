@@ -16,7 +16,7 @@
         .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px; }
         .info-panel h1 { width: 100%; margin: 0 0 15px 0; }
         
-        /* --- CSS MỚI CHO DASHBOARD 2 CỘT --- */
+        /* --- CSS DASHBOARD --- */
         .dashboard-panel { 
             max-width: 1200px; margin: 0 auto 20px auto; padding: 15px; 
             background: #fff; border: 2px solid #ddd; border-radius: 8px; 
@@ -95,6 +95,7 @@
             <div class="dashboard-col" style="border-bottom: 4px solid #00b050;">
                 <div class="label-text">TỔNG PHẢI GIAO (Trả khách):</div>
                 <div id="total-payable" class="total-box text-green">0</div> 
+                <button id="copy-payable-btn" style="background-color: #00b050; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; margin-top: 10px; cursor: pointer;">📋 Copy danh sách giao</button>
             </div>
 
             <div class="dashboard-col" style="border-bottom: 4px solid #d90000;">
@@ -216,9 +217,7 @@
             },
             parseRawData: function(rawString) {
                 if (!rawString) return null;
-                // Tính năng: Xóa dấu | thừa ở đầu nếu có
                 while (rawString.startsWith('|')) { rawString = rawString.substring(1); }
-                
                 const parts = rawString.split('|');
                 if (parts.length >= 2) {
                     return this.generatePayload(parts[0].trim(), parts[1].trim(), parts[2] || "0", parts[3] || "");
@@ -227,7 +226,9 @@
             }
         };
 
-        let globalSummaryText = "";
+        // Biến lưu trữ nội dung copy
+        let globalSummaryTextReceivable = ""; // Danh sách thu
+        let globalSummaryTextPayable = "";    // Danh sách giao
 
         window.onload = function() {
             const infoPanel = document.getElementById('info-panel');
@@ -258,9 +259,10 @@
             const billTemplate = document.getElementById('bill-template');
             
             // BIẾN TÍNH TỔNG CHO DASHBOARD
-            let grandTotalReceivable = 0; // Phải Thu (Red)
-            let grandTotalPayable = 0;    // Phải Giao (Green)
-            let summaryTextForClipboard = "DANH SÁCH PHẢI THU:\n";
+            let grandTotalReceivable = 0; // Phải Thu
+            let grandTotalPayable = 0;    // Phải Giao
+            let summaryTextReceivable = "DANH SÁCH PHẢI THU (KHÁCH ĐÓNG):\n";
+            let summaryTextPayable = "DANH SÁCH PHẢI GIAO (TRẢ KHÁCH):\n";
             
             data.forEach((kh, index) => {
                 const billNode = document.importNode(billTemplate.content, true);
@@ -330,7 +332,6 @@
                     q('[data-field="final_amount"]').textContent = formatCurrency(amount); 
                     q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; 
                     
-                    // Tạo QR
                     const qrRawData = kh.qr_bill_url; 
                     if (qrRawData) {
                         const qrPayload = VietQR.parseRawData(qrRawData);
@@ -341,7 +342,7 @@
 
                     // Cộng dồn Tổng Thu
                     grandTotalReceivable += amount;
-                    summaryTextForClipboard += `${index+1}. ${kh.hoi_vien}: ${formatCurrency(amount)}\n`;
+                    summaryTextReceivable += `${index+1}. ${kh.hoi_vien}: ${formatCurrency(amount)}\n`;
 
                 } else { 
                     // === TRƯỜNG HỢP PHẢI GIAO (TRẢ) ===
@@ -353,8 +354,9 @@
                     q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; 
                     qrContainer.style.display = 'none';
 
-                    // Cộng dồn Tổng Giao (Trả)
+                    // Cộng dồn Tổng Giao
                     grandTotalPayable += amountPayable;
+                    summaryTextPayable += `${index+1}. ${kh.hoi_vien}: ${formatCurrency(amountPayable)}\n`;
                 }
                 
                 const billElement = billNode.querySelector('.bill-page');
@@ -367,19 +369,30 @@
                 billsContainer.appendChild(billNode);
             });
 
-            // HIỂN THỊ DASHBOARD NẾU CÓ SỐ LIỆU
+            // HIỂN THỊ DASHBOARD
             if (grandTotalReceivable > 0 || grandTotalPayable > 0) {
                 document.getElementById('dashboard-panel').style.display = 'block';
                 
-                // Cập nhật số liệu lên giao diện
-                document.getElementById('total-payable').textContent = formatCurrency(grandTotalPayable);
+                // 1. Xử lý bên PHẢI THU (Đỏ)
                 document.getElementById('total-receivable').textContent = formatCurrency(grandTotalReceivable);
+                summaryTextReceivable += `--------------------\nTỔNG CỘNG THU: ${formatCurrency(grandTotalReceivable)}`;
+                globalSummaryTextReceivable = summaryTextReceivable;
                 
-                summaryTextForClipboard += `--------------------\nTỔNG PHẢI THU: ${formatCurrency(grandTotalReceivable)}`;
-                globalSummaryText = summaryTextForClipboard;
                 document.getElementById('copy-summary-btn').onclick = function() {
-                    navigator.clipboard.writeText(globalSummaryText).then(() => alert('Đã copy danh sách!'));
+                    navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!'));
                 };
+
+                // 2. Xử lý bên PHẢI GIAO (Xanh) - Mới
+                document.getElementById('total-payable').textContent = formatCurrency(grandTotalPayable);
+                summaryTextPayable += `--------------------\nTỔNG CỘNG GIAO: ${formatCurrency(grandTotalPayable)}`;
+                globalSummaryTextPayable = summaryTextPayable;
+
+                const btnCopyPayable = document.getElementById('copy-payable-btn');
+                if (btnCopyPayable) {
+                    btnCopyPayable.onclick = function() {
+                        navigator.clipboard.writeText(globalSummaryTextPayable).then(() => alert('Đã copy danh sách phải GIAO!'));
+                    }
+                }
             }
         }
         
