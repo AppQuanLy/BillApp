@@ -16,10 +16,27 @@
         .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px; }
         .info-panel h1 { width: 100%; margin: 0 0 15px 0; }
         
-        /* Dashboard tổng hợp */
-        .dashboard-panel { max-width: 1200px; margin: 0 auto 20px auto; padding: 15px; background: #fff3cd; border: 2px solid #ffecb5; border-radius: 8px; color: #856404; display: none; }
-        .dashboard-title { font-size: 18pt; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #d3bd7e; padding-bottom: 5px; }
-        .total-box { font-size: 24pt; font-weight: bold; color: #d90000; margin: 10px 0; }
+        /* --- CSS DASHBOARD --- */
+        .dashboard-panel { 
+            max-width: 1200px; margin: 0 auto 20px auto; padding: 15px; 
+            background: #fff; border: 2px solid #ddd; border-radius: 8px; 
+            color: #333; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .dashboard-title { 
+            font-size: 20pt; font-weight: bold; margin-bottom: 20px; 
+            text-align: center; text-transform: uppercase; color: #444; border-bottom: 2px solid #eee; padding-bottom: 10px;
+        }
+        .dashboard-grid { 
+            display: flex; gap: 30px; justify-content: space-between; 
+        }
+        .dashboard-col { 
+            flex: 1; text-align: center; padding: 15px; border-radius: 8px; 
+            background-color: #f9f9f9; border: 1px solid #eee;
+        }
+        .total-box { font-size: 28pt; font-weight: bold; margin: 10px 0; }
+        .text-red { color: #d90000; }
+        .text-green { color: #00b050; }
+        .label-text { font-size: 14pt; font-weight: bold; color: #555; }
         
         .bill-page { background-color: white; max-width: 1200px; min-width: 1200px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: Arial, sans-serif; font-size: 16pt; }
         .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
@@ -32,15 +49,7 @@
         .header-title-date { position: absolute; left: 50%; top: 50px; transform: translateX(-50%); text-align: center; width: 60%; }
         
         /* QR Code Container */
-        .qr-code {
-            width: 200px;
-            height: 200px;
-            position: absolute;
-            right: 0;
-            top: 0;
-            background-color: white;
-            padding: 5px;
-        }
+        .qr-code { width: 200px; height: 200px; position: absolute; right: 0; top: 0; background-color: white; padding: 5px; }
         .qr-code img { width: 100%; height: 100%; display: block; }
 
         .info-panel button { padding: 10px 20px; font-size: 14px; font-weight: bold; }
@@ -53,7 +62,6 @@
         th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
         .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; }
         .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
-        .text-red { color: #d90000; } .text-green { color: #00b050; }
         .summary-table th { background-color: #d9e1f2; }
         .summary-table .highlight { background-color: #fff2cc; } 
         .details-table th { background-color: #d9e1f2; }
@@ -83,9 +91,19 @@
 
     <div id="dashboard-panel" class="dashboard-panel">
         <div class="dashboard-title">BẢNG TỔNG HỢP NHANH</div>
-        <div>TỔNG PHẢI THU (Các bill dương):</div>
-        <div id="total-receivable" class="total-box">0</div>
-        <button id="copy-summary-btn" style="background-color: #ffc107; color: #000; border: none; padding: 5px 10px; font-weight: bold; border-radius: 4px; margin-top: 10px;">📋 Copy danh sách thu</button>
+        <div class="dashboard-grid">
+            <div class="dashboard-col" style="border-bottom: 4px solid #00b050;">
+                <div class="label-text">TỔNG PHẢI GIAO (Bill Hốt):</div>
+                <div id="total-payable" class="total-box text-green">0</div> 
+                <button id="copy-payable-btn" style="background-color: #00b050; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; margin-top: 10px; cursor: pointer;">📋 Copy danh sách giao</button>
+            </div>
+
+            <div class="dashboard-col" style="border-bottom: 4px solid #d90000;">
+                <div class="label-text">TỔNG PHẢI THU (Bill Đóng):</div>
+                <div id="total-receivable" class="total-box text-red">0</div>
+                <button id="copy-summary-btn" style="background-color: #d90000; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; margin-top: 10px; cursor: pointer;">📋 Copy danh sách thu</button>
+            </div>
+        </div>
     </div>
     
     <div id="bills-container"></div>
@@ -142,259 +160,246 @@
         </div>
     </template>
     
-<script>
-    // --- 1. BỘ XỬ LÝ VIETQR (BẢN TRUNG TÍNH - INPUT SAO OUTPUT VẬY) ---
-    const VietQR = {
-        // Hàm xóa dấu tiếng Việt (Dùng cho Tên & Nội dung)
-        cleanText: function(str) {
-            if (!str) return "";
-            return str.normalize('NFD')
-                      .replace(/[\u0300-\u036f]/g, '')
-                      .replace(/đ/g, 'd').replace(/Đ/g, 'D')
-                      .replace(/[^a-zA-Z0-9 ]/g, '') 
-                      .trim();
-        },
-        
-        // Tính Checksum CRC16
-        crc16: function(data) {
-            let crc = 0xFFFF;
-            for (let i = 0; i < data.length; i++) {
-                crc ^= data.charCodeAt(i) << 8;
-                for (let j = 0; j < 8; j++) {
-                    if ((crc & 0x8000) != 0) crc = (crc << 1) ^ 0x1021;
-                    else crc = crc << 1;
-                }
-                crc = crc & 0xFFFF;
-            }
-            let hex = crc.toString(16).toUpperCase();
-            return "0000".substring(0, 4 - hex.length) + hex;
-        },
-
-        generatePayload: function(bankBin, bankNumber, amount, content) {
-            const field = (id, value) => {
-                const valStr = String(value);
-                const len = valStr.length;
-                return id + (len < 10 ? "0" + len : len) + valStr;
-            };
-            
-            // --- XỬ LÝ DỮ LIỆU ĐẦU VÀO ---
-            
-            // 1. BIN Ngân hàng: Chỉ lấy số
-            const cleanBin = String(bankBin).replace(/\D/g, ''); 
-            
-            // 2. Số Tài Khoản: GIỮ NGUYÊN (Chỉ xóa khoảng trắng hoặc ký tự đặc biệt như - . nếu có)
-            // Không can thiệp thêm/bớt số 0
-            const cleanAccount = String(bankNumber).replace(/[^a-zA-Z0-9]/g, ''); 
-            
-            // Kiểm tra tối thiểu
-            if (cleanBin.length < 4 || cleanAccount.length < 1) return null;
-
-            // --- TẠO CHUỖI QR ---
-            const merchantInfo = field("00", "A000000727") + 
-                                 field("01", field("00", cleanBin) + field("01", cleanAccount)) + 
-                                 field("02", "QRIBFTTA");
-
-            let qrStr = field("00", "01") + 
-                        field("01", "12") + 
-                        field("38", merchantInfo) + 
-                        field("53", "704"); 
-            
-            // Số tiền (Nếu > 0)
-            if (amount) {
-                const cleanAmount = String(amount).replace(/\D/g, '');
-                if (parseInt(cleanAmount) > 0) qrStr += field("54", cleanAmount);
-            }
-            
-            qrStr += field("58", "VN"); 
-            
-            // Nội dung
-            if (content) {
-                const safeContent = this.cleanText(content);
-                if (safeContent.length > 0) {
-                    qrStr += field("62", field("08", safeContent));
-                }
-            }
-            
-            qrStr += "6304"; 
-            qrStr += this.crc16(qrStr);
-            return qrStr;
-        },
-
-        parseRawData: function(rawString) {
-            if (!rawString) return null;
-            const parts = rawString.split('|');
-            // Tách dữ liệu từ chuỗi AppSheet
-            if (parts.length >= 2) {
-                return this.generatePayload(
-                    parts[0].trim(), // BIN
-                    parts[1].trim(), // STK (Chỉ trim khoảng trắng 2 đầu)
-                    parts[2] || "0", // Amount
-                    parts[3] || ""   // Content
-                );
-            }
-            return null;
-        }
-    };
-
-    let globalSummaryText = "";
-
-    window.onload = function() {
-        const infoPanel = document.getElementById('info-panel');
-        const statusMessage = document.getElementById('status-message');
-        const downloadZipBtn = document.getElementById('download-zip-btn');
-        infoPanel.style.display = 'block';
-
-        if (typeof QRCode === 'undefined') {
-            statusMessage.textContent = 'Lỗi: Không tải được thư viện QRCode.js';
-            return;
-        }
-
-        try {
-            const encodedData = window.location.hash.substring(1);
-            if (!encodedData) { statusMessage.textContent = 'Không tìm thấy dữ liệu.'; return; }
-            const jsonData = decodeURIComponent(encodedData);
-            generateBills(jsonData);
-
-            statusMessage.style.display = 'none';
-            downloadZipBtn.style.display = 'inline-block';
-            downloadZipBtn.addEventListener('click', downloadAllAsZip);
-        } catch (error) {
-            statusMessage.textContent = 'Lỗi dữ liệu bill.';
-            console.error(error);
-        }
-    };
-
-    function formatCurrency(num) { if (typeof num !== 'number' || num === null) return '0'; return num.toLocaleString('vi-VN'); }
-
-    function generateBills(jsonInput) {
-        const billsContainer = document.getElementById('bills-container');
-        billsContainer.innerHTML = '';
-        const data = JSON.parse(jsonInput);
-        const billTemplate = document.getElementById('bill-template');
-        let grandTotalReceivable = 0;
-        let summaryTextForClipboard = "DANH SÁCH PHẢI THU:\n";
-        
-        data.forEach((kh, index) => {
-            const billNode = document.importNode(billTemplate.content, true);
-            const q = (selector) => billNode.querySelector(selector);
-            
-            // --- ĐIỀN DỮ LIỆU ---
-            q('[data-field="chu_hui"]').textContent = kh.chu_hui || ''; 
-            q('[data-field="sdt"]').textContent = kh.sdt || ''; 
-            q('[data-field="bank_info"]').textContent = kh.bank_info || ''; 
-            q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; 
-            q('[data-field="dia_chi"]').textContent = kh.dia_chi || ''; 
-            q('[data-field="ghi_chu_1"]').textContent = kh.ghi_chu_1 || ''; 
-            q('[data-field="ghi_chu_2"]').textContent = kh.ghi_chu_2 || ''; 
-
-            q('[data-field="summary_title_hui_vien"]').textContent = `Hụi Viên | ${kh.tong_so_day || 0} Dây, ${kh.tong_so_chan || 0} C`; 
-            q('[data-field="summary_title_hui_chet"]').textContent = `Hụi Chết | ${kh.tong_so_chan_chet || 0} C`; 
-            q('[data-field="summary_title_hui_song"]').textContent = `Hụi Sống | ${kh.tong_so_chan_song || 0} C`;
-            q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; 
-            q('[data-field="tong_hui_chet"]').textContent = formatCurrency(kh.tong_hui_chet); 
-            q('[data-field="tong_hui_song"]').textContent = formatCurrency(kh.tong_hui_song); 
-            
-            const amDuongCell = q('[data-field="am_duong"]'); 
-            const amDuongValue = kh.am_duong || 0; 
-            amDuongCell.textContent = formatCurrency(amDuongValue); 
-            if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } 
-            
-            const loiNhuanCell = q('[data-field="loi_nhuan"]'); 
-            const loiNhuanValue = kh.loi_nhuan || 0; 
-            loiNhuanCell.textContent = formatCurrency(loiNhuanValue); 
-            if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
-            
-            const detailsBody = q('[data-field="details_tbody"]');
-            const allDetails = [].concat(kh.chan_hui_details || []).concat(kh.hui_1_1_details || []).concat(kh.ghi_no_details || []).concat(kh.tien_gop_details || []);
-            
-            if (allDetails.length > 0) {
-                let sttCounter = 1;
-                allDetails.forEach(d => {
-                    const row = document.createElement('tr');
-                    if ((d.khui || '').toLowerCase().includes('nợ')) {
-                        row.style.backgroundColor = '#fff0f0';
-                        row.innerHTML = `<td colspan="8" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
-                    } else {
-                        row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
-                        sttCounter++;
+    <script>
+        // --- 1. BỘ XỬ LÝ VIETQR CHUẨN (BẢN TRUNG TÍNH) ---
+        const VietQR = {
+            cleanText: function(str) {
+                if (!str) return "";
+                return str.normalize('NFD')
+                          .replace(/[\u0300-\u036f]/g, '')
+                          .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+                          .replace(/[^a-zA-Z0-9 ]/g, '') 
+                          .trim();
+            },
+            crc16: function(data) {
+                let crc = 0xFFFF;
+                for (let i = 0; i < data.length; i++) {
+                    crc ^= data.charCodeAt(i) << 8;
+                    for (let j = 0; j < 8; j++) {
+                        if ((crc & 0x8000) != 0) crc = (crc << 1) ^ 0x1021;
+                        else crc = crc << 1;
                     }
-                    detailsBody.appendChild(row);
-                });
-            }
-            
-            q('[data-field="footer_hoi_vien"]').textContent = kh.hoi_vien || ''; 
-            q('[data-field="bill_tong_dong"]').textContent = formatCurrency(kh.bill_tong_dong); 
-            q('[data-field="bill_tong_hot"]').textContent = formatCurrency(kh.bill_tong_hot); 
-            q('[data-field="tong_tham"]').textContent = `Tổng Thăm: ${formatCurrency(kh.tong_tham)}`; 
-            q('[data-field="tong_thao"]').textContent = `Tổng Thảo: ${formatCurrency(kh.tong_thao)}`;
-            
-            const banner = q('[data-field="footer_banner"]'); 
-            const tongDong = kh.bill_tong_dong || 0; 
-            const tongHot = kh.bill_tong_hot || 0;
-            const qrContainer = q('[data-field="qr_container"]');
-            qrContainer.innerHTML = "";
-
-            if (tongDong > tongHot) { 
-                banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; 
-                banner.style.backgroundColor = '#d90000'; 
-                q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; 
-                const amount = tongDong - tongHot;
-                q('[data-field="final_amount"]').textContent = formatCurrency(amount); 
-                q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; 
+                    crc = crc & 0xFFFF;
+                }
+                let hex = crc.toString(16).toUpperCase();
+                return "0000".substring(0, 4 - hex.length) + hex;
+            },
+            generatePayload: function(bankBin, bankNumber, amount, content) {
+                const field = (id, value) => {
+                    const valStr = String(value);
+                    const len = valStr.length;
+                    return id + (len < 10 ? "0" + len : len) + valStr;
+                };
+                const cleanBin = String(bankBin).replace(/\D/g, ''); 
+                const cleanAccount = String(bankNumber).replace(/[^a-zA-Z0-9]/g, ''); 
                 
-                // --- TẠO MÃ QR ---
-                const qrRawData = kh.qr_bill_url; 
-                if (qrRawData) {
-                    const qrPayload = VietQR.parseRawData(qrRawData);
-                    if (qrPayload) {
-                        new QRCode(qrContainer, {
-                            text: qrPayload,
-                            width: 170, height: 170,
-                            correctLevel: QRCode.CorrectLevel.L
-                        });
-                    } else {
-                        qrContainer.innerHTML = "<div style='color:red;font-size:12px;text-align:center;padding-top:60px;font-weight:bold'>Lỗi: Thiếu BIN<br>hoặc STK</div>";
+                if (cleanBin.length < 4 || cleanAccount.length < 1) return null;
+
+                const merchantInfo = field("00", "A000000727") + 
+                                     field("01", field("00", cleanBin) + field("01", cleanAccount)) + 
+                                     field("02", "QRIBFTTA");
+
+                let qrStr = field("00", "01") + field("01", "12") + field("38", merchantInfo) + field("53", "704"); 
+                
+                if (amount) {
+                    const cleanAmount = String(amount).replace(/\D/g, '');
+                    if (parseInt(cleanAmount) > 0) qrStr += field("54", cleanAmount);
+                }
+                
+                qrStr += field("58", "VN"); 
+                if (content) {
+                    const safeContent = this.cleanText(content);
+                    if (safeContent.length > 0) qrStr += field("62", field("08", safeContent));
+                }
+                qrStr += "6304"; 
+                qrStr += this.crc16(qrStr);
+                return qrStr;
+            },
+            parseRawData: function(rawString) {
+                if (!rawString) return null;
+                while (rawString.startsWith('|')) { rawString = rawString.substring(1); }
+                const parts = rawString.split('|');
+                if (parts.length >= 2) {
+                    return this.generatePayload(parts[0].trim(), parts[1].trim(), parts[2] || "0", parts[3] || "");
+                }
+                return null;
+            }
+        };
+
+        // Biến lưu trữ nội dung copy
+        let globalSummaryTextReceivable = ""; // Danh sách thu
+        let globalSummaryTextPayable = "";    // Danh sách giao
+
+        window.onload = function() {
+            const infoPanel = document.getElementById('info-panel');
+            const statusMessage = document.getElementById('status-message');
+            const downloadZipBtn = document.getElementById('download-zip-btn');
+            infoPanel.style.display = 'block';
+
+            if (typeof QRCode === 'undefined') { statusMessage.textContent = 'Lỗi: Không tải được thư viện QRCode.js'; return; }
+
+            try {
+                const encodedData = window.location.hash.substring(1);
+                if (!encodedData) { statusMessage.textContent = 'Không tìm thấy dữ liệu.'; return; }
+                const jsonData = decodeURIComponent(encodedData);
+                generateBills(jsonData);
+
+                statusMessage.style.display = 'none';
+                downloadZipBtn.style.display = 'inline-block';
+                downloadZipBtn.addEventListener('click', downloadAllAsZip);
+            } catch (error) { statusMessage.textContent = 'Lỗi dữ liệu bill.'; console.error(error); }
+        };
+
+        function formatCurrency(num) { if (typeof num !== 'number' || num === null) return '0'; return num.toLocaleString('vi-VN'); }
+
+        function generateBills(jsonInput) {
+            const billsContainer = document.getElementById('bills-container');
+            billsContainer.innerHTML = '';
+            const data = JSON.parse(jsonInput);
+            const billTemplate = document.getElementById('bill-template');
+            
+            // BIẾN TÍNH TỔNG CHO DASHBOARD
+            let grandTotalReceivable = 0; // Phải Thu
+            let grandTotalPayable = 0;    // Phải Giao
+            let summaryTextReceivable = "DANH SÁCH PHẢI THU (KHÁCH ĐÓNG):\n";
+            let summaryTextPayable = "DANH SÁCH PHẢI GIAO (TRẢ KHÁCH):\n";
+            
+            data.forEach((kh, index) => {
+                const billNode = document.importNode(billTemplate.content, true);
+                const q = (selector) => billNode.querySelector(selector);
+                
+                q('[data-field="chu_hui"]').textContent = kh.chu_hui || ''; 
+                q('[data-field="sdt"]').textContent = kh.sdt || ''; 
+                q('[data-field="bank_info"]').textContent = kh.bank_info || ''; 
+                q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; 
+                q('[data-field="dia_chi"]').textContent = kh.dia_chi || ''; 
+                q('[data-field="ghi_chu_1"]').textContent = kh.ghi_chu_1 || ''; 
+                q('[data-field="ghi_chu_2"]').textContent = kh.ghi_chu_2 || ''; 
+
+                q('[data-field="summary_title_hui_vien"]').textContent = `Hụi Viên | ${kh.tong_so_day || 0} Dây, ${kh.tong_so_chan || 0} C`; 
+                q('[data-field="summary_title_hui_chet"]').textContent = `Hụi Chết | ${kh.tong_so_chan_chet || 0} C`; 
+                q('[data-field="summary_title_hui_song"]').textContent = `Hụi Sống | ${kh.tong_so_chan_song || 0} C`;
+                q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; 
+                q('[data-field="tong_hui_chet"]').textContent = formatCurrency(kh.tong_hui_chet); 
+                q('[data-field="tong_hui_song"]').textContent = formatCurrency(kh.tong_hui_song); 
+                
+                const amDuongCell = q('[data-field="am_duong"]'); 
+                const amDuongValue = kh.am_duong || 0; 
+                amDuongCell.textContent = formatCurrency(amDuongValue); 
+                if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } 
+                
+                const loiNhuanCell = q('[data-field="loi_nhuan"]'); 
+                const loiNhuanValue = kh.loi_nhuan || 0; 
+                loiNhuanCell.textContent = formatCurrency(loiNhuanValue); 
+                if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
+                
+                const detailsBody = q('[data-field="details_tbody"]');
+                const allDetails = [].concat(kh.chan_hui_details || []).concat(kh.hui_1_1_details || []).concat(kh.ghi_no_details || []).concat(kh.tien_gop_details || []);
+                
+                if (allDetails.length > 0) {
+                    let sttCounter = 1;
+                    allDetails.forEach(d => {
+                        const row = document.createElement('tr');
+                        if ((d.khui || '').toLowerCase().includes('nợ')) {
+                            row.style.backgroundColor = '#fff0f0';
+                            row.innerHTML = `<td colspan="8" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
+                        } else {
+                            row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
+                            sttCounter++;
+                        }
+                        detailsBody.appendChild(row);
+                    });
+                }
+                
+                q('[data-field="footer_hoi_vien"]').textContent = kh.hoi_vien || ''; 
+                q('[data-field="bill_tong_dong"]').textContent = formatCurrency(kh.bill_tong_dong); 
+                q('[data-field="bill_tong_hot"]').textContent = formatCurrency(kh.bill_tong_hot); 
+                q('[data-field="tong_tham"]').textContent = `Tổng Thăm: ${formatCurrency(kh.tong_tham)}`; 
+                q('[data-field="tong_thao"]').textContent = `Tổng Thảo: ${formatCurrency(kh.tong_thao)}`;
+                
+                const banner = q('[data-field="footer_banner"]'); 
+                const tongDong = kh.bill_tong_dong || 0; 
+                const tongHot = kh.bill_tong_hot || 0;
+                const qrContainer = q('[data-field="qr_container"]');
+                qrContainer.innerHTML = "";
+
+                if (tongDong > tongHot) { 
+                    // === TRƯỜNG HỢP PHẢI THU ===
+                    banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; 
+                    banner.style.backgroundColor = '#d90000'; 
+                    q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; 
+                    const amount = tongDong - tongHot;
+                    q('[data-field="final_amount"]').textContent = formatCurrency(amount); 
+                    q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; 
+                    
+                    const qrRawData = kh.qr_bill_url; 
+                    if (qrRawData) {
+                        const qrPayload = VietQR.parseRawData(qrRawData);
+                        if (qrPayload) {
+                            new QRCode(qrContainer, { text: qrPayload, width: 170, height: 170, correctLevel: QRCode.CorrectLevel.L });
+                        } else { qrContainer.innerHTML = "<div style='color:red;font-size:12px;text-align:center;padding-top:60px;font-weight:bold'>Lỗi: Thiếu BIN<br>hoặc STK</div>"; }
+                    }
+
+                    // Cộng dồn Tổng Thu
+                    grandTotalReceivable += amount;
+                    summaryTextReceivable += `${index+1}. ${kh.hoi_vien}: ${formatCurrency(amount)}\n`;
+
+                } else { 
+                    // === TRƯỜNG HỢP PHẢI GIAO (TRẢ) ===
+                    banner.textContent = 'Hụi Viên được nhận tiền'; 
+                    banner.style.backgroundColor = '#00b050'; 
+                    q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; 
+                    const amountPayable = tongHot - tongDong;
+                    q('[data-field="final_amount"]').textContent = formatCurrency(amountPayable); 
+                    q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; 
+                    qrContainer.style.display = 'none';
+
+                    // Cộng dồn Tổng Giao
+                    grandTotalPayable += amountPayable;
+                    summaryTextPayable += `${index+1}. ${kh.hoi_vien}: ${formatCurrency(amountPayable)}\n`;
+                }
+                
+                const billElement = billNode.querySelector('.bill-page');
+                billElement.dataset.sdt = kh.sdt_kh || '';
+                billElement.dataset.hoivien = kh.hoi_vien || 'bill';
+                
+                billNode.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
+                billNode.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+                billNode.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+                billsContainer.appendChild(billNode);
+            });
+
+            // HIỂN THỊ DASHBOARD
+            if (grandTotalReceivable > 0 || grandTotalPayable > 0) {
+                document.getElementById('dashboard-panel').style.display = 'block';
+                
+                // 1. Xử lý bên PHẢI THU (Đỏ)
+                document.getElementById('total-receivable').textContent = formatCurrency(grandTotalReceivable);
+                summaryTextReceivable += `--------------------\nTỔNG CỘNG THU: ${formatCurrency(grandTotalReceivable)}`;
+                globalSummaryTextReceivable = summaryTextReceivable;
+                
+                document.getElementById('copy-summary-btn').onclick = function() {
+                    navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!'));
+                };
+
+                // 2. Xử lý bên PHẢI GIAO (Xanh) - Mới
+                document.getElementById('total-payable').textContent = formatCurrency(grandTotalPayable);
+                summaryTextPayable += `--------------------\nTỔNG CỘNG GIAO: ${formatCurrency(grandTotalPayable)}`;
+                globalSummaryTextPayable = summaryTextPayable;
+
+                const btnCopyPayable = document.getElementById('copy-payable-btn');
+                if (btnCopyPayable) {
+                    btnCopyPayable.onclick = function() {
+                        navigator.clipboard.writeText(globalSummaryTextPayable).then(() => alert('Đã copy danh sách phải GIAO!'));
                     }
                 }
-
-                grandTotalReceivable += amount;
-                summaryTextForClipboard += `${index+1}. ${kh.hoi_vien}: ${formatCurrency(amount)}\n`;
-
-            } else { 
-                banner.textContent = 'Hụi Viên được nhận tiền'; 
-                banner.style.backgroundColor = '#00b050'; 
-                q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; 
-                q('[data-field="final_amount"]').textContent = formatCurrency(tongHot - tongDong); 
-                q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; 
-                qrContainer.style.display = 'none';
             }
-            
-            const billElement = billNode.querySelector('.bill-page');
-            billElement.dataset.sdt = kh.sdt_kh || '';
-            billElement.dataset.hoivien = kh.hoi_vien || 'bill';
-            
-            billNode.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
-            billNode.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
-            billNode.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
-            billsContainer.appendChild(billNode);
-        });
-
-        if (grandTotalReceivable > 0) {
-            document.getElementById('dashboard-panel').style.display = 'block';
-            document.getElementById('total-receivable').textContent = formatCurrency(grandTotalReceivable);
-            summaryTextForClipboard += `--------------------\nTỔNG CỘNG: ${formatCurrency(grandTotalReceivable)}`;
-            globalSummaryText = summaryTextForClipboard;
-            document.getElementById('copy-summary-btn').onclick = function() {
-                navigator.clipboard.writeText(globalSummaryText).then(() => alert('Đã copy danh sách!'));
-            };
         }
-    }
-    
-    // --- GIỮ NGUYÊN CÁC HÀM TIỆN ÍCH ---
-    function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { canvas.toBlob(blob => { try { window.focus(); navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); } catch (e) { alert("Trình duyệt không hỗ trợ"); } }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
-    function downloadBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien.replace(/\s+/g, '_')}`) + '.png'; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error(err); alert('Lỗi tạo ảnh.'); c.style.display = 'flex'; }); }
-    async function shareBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png'; const shareBtn = element.querySelector('.share-btn'); const originalText = shareBtn.textContent; shareBtn.textContent = "⏳ Đang xử lý..."; shareBtn.disabled = true; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const tryShare = async (scale) => { const canvas = await html2canvas(element, { scale: scale, useCORS: true, logging: false }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], filename, { type: 'image/png' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); } else { throw new Error('No Share API'); } }; try { await tryShare(1.5); } catch (e) { console.log("Thử lại chất lượng thấp"); await tryShare(1.0); } } catch (error) { if(!error.message.includes('No Share API')) alert('Lỗi gửi bill. Hãy thử Tải Bill.'); else alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } finally { c.style.display = 'flex'; shareBtn.textContent = originalText; shareBtn.disabled = false; } }
-    async function downloadAllAsZip() { const bills = document.querySelectorAll('.bill-page'); const total = bills.length; if (total === 0) { alert('Không có bill nào để tải.'); return; } const button = document.getElementById('download-zip-btn'); const originalText = button.innerHTML; button.disabled = true; const zip = new JSZip(); let successCount = 0; for (let i = 0; i < total; i++) { const bill = bills[i]; button.innerHTML = `⏳ Đang xử lý ${i + 1}/${total}...`; const controls = bill.querySelector('.bill-controls'); if (controls) controls.style.display = 'none'; try { const capturePromise = html2canvas(bill, { scale: 1.5, useCORS: true, logging: false }); const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 8000)); const canvas = await Promise.race([capturePromise, timeoutPromise]); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const sdt = bill.dataset.sdt; const hoivien = bill.dataset.hoivien; const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png'; zip.file(fileName, blob); successCount++; } catch (error) { console.error(`Lỗi bill ${i}:`, error); } finally { if (controls) controls.style.display = 'flex'; } await new Promise(r => setTimeout(r, 100)); } if (successCount > 0) { button.innerHTML = '📦 Đang nén...'; const content = await zip.generateAsync({ type: "blob" }); const link = document.createElement('a'); link.href = URL.createObjectURL(content); const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-'); link.download = `Tat_ca_bill_${today}.zip`; document.body.appendChild(link); link.click(); document.body.removeChild(link); } button.innerHTML = originalText; button.disabled = false; }
-</script>
+        
+        function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { canvas.toBlob(blob => { try { window.focus(); navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); } catch (e) { alert("Trình duyệt không hỗ trợ"); } }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
+        function downloadBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien.replace(/\s+/g, '_')}`) + '.png'; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error(err); alert('Lỗi tạo ảnh.'); c.style.display = 'flex'; }); }
+        async function shareBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png'; const shareBtn = element.querySelector('.share-btn'); const originalText = shareBtn.textContent; shareBtn.textContent = "⏳ Đang xử lý..."; shareBtn.disabled = true; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const tryShare = async (scale) => { const canvas = await html2canvas(element, { scale: scale, useCORS: true, logging: false }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], filename, { type: 'image/png' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); } else { throw new Error('No Share API'); } }; try { await tryShare(1.5); } catch (e) { console.log("Thử lại chất lượng thấp"); await tryShare(1.0); } } catch (error) { if(!error.message.includes('No Share API')) alert('Lỗi gửi bill. Hãy thử Tải Bill.'); else alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } finally { c.style.display = 'flex'; shareBtn.textContent = originalText; shareBtn.disabled = false; } }
+        async function downloadAllAsZip() { const bills = document.querySelectorAll('.bill-page'); const total = bills.length; if (total === 0) { alert('Không có bill nào để tải.'); return; } const button = document.getElementById('download-zip-btn'); const originalText = button.innerHTML; button.disabled = true; const zip = new JSZip(); let successCount = 0; for (let i = 0; i < total; i++) { const bill = bills[i]; button.innerHTML = `⏳ Đang xử lý ${i + 1}/${total}...`; const controls = bill.querySelector('.bill-controls'); if (controls) controls.style.display = 'none'; try { const capturePromise = html2canvas(bill, { scale: 1.5, useCORS: true, logging: false }); const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 8000)); const canvas = await Promise.race([capturePromise, timeoutPromise]); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const sdt = bill.dataset.sdt; const hoivien = bill.dataset.hoivien; const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png'; zip.file(fileName, blob); successCount++; } catch (error) { console.error(`Lỗi bill ${i}:`, error); } finally { if (controls) controls.style.display = 'flex'; } await new Promise(r => setTimeout(r, 100)); } if (successCount > 0) { button.innerHTML = '📦 Đang nén...'; const content = await zip.generateAsync({ type: "blob" }); const link = document.createElement('a'); link.href = URL.createObjectURL(content); const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-'); link.download = `Tat_ca_bill_${today}.zip`; document.body.appendChild(link); link.click(); document.body.removeChild(link); } button.innerHTML = originalText; button.disabled = false; }
+    </script>
 </body>
 </html>
