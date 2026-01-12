@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bill Báo Hụi - Tết</title>
+    <title>Bill Báo Hụi - Tết Rực Rỡ (Full Chức Năng)</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -14,7 +14,16 @@
         @page { size: A3 landscape; margin: 1.5cm; }
         body { font-family: 'Roboto', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         
+        /* PANEL ĐIỀU KHIỂN */
         .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        
+        /* DASHBOARD TỔNG HỢP (ĐÃ KHÔI PHỤC) */
+        .dashboard-panel { max-width: 1200px; margin: 0 auto 20px auto; padding: 15px; background: #fff; border: 2px solid #ddd; border-radius: 8px; color: #333; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .dashboard-title { font-size: 20pt; font-weight: bold; margin-bottom: 20px; text-align: center; text-transform: uppercase; color: #b71c1c; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .dashboard-grid { display: flex; gap: 30px; justify-content: space-between; }
+        .dashboard-col { flex: 1; text-align: center; padding: 15px; border-radius: 8px; background-color: #f9f9f9; border: 1px solid #eee; }
+        .total-box { font-size: 28pt; font-weight: bold; margin: 10px 0; }
+        .label-text { font-size: 14pt; font-weight: bold; color: #555; }
         
         /* --- CSS BILL TẾT --- */
         .bill-page { 
@@ -32,44 +41,26 @@
         }
 
         /* SVG Họa tiết */
-        .decor-svg {
-            position: absolute;
-            z-index: 0;
-            pointer-events: none;
-        }
+        .decor-svg { position: absolute; z-index: 0; pointer-events: none; }
 
-        /* Hoa Mai phong phú hơn */
-        .apricot-flower {
-            width: 220px;
-            height: 220px;
-            opacity: 0.9;
-        }
-        .tl { top: -20px; left: -20px; }
-        .tr { top: -20px; right: -20px; transform: scaleX(-1); }
-        .bl { bottom: -20px; left: -20px; transform: scaleY(-1); }
-        .br { bottom: -20px; right: -20px; transform: rotate(180deg); }
+        /* Hoa Mai (Nhiều hoa) */
+        .apricot-flower { width: 250px; height: 250px; opacity: 0.9; }
+        .tl { top: -30px; left: -30px; }
+        .tr { top: -30px; right: -30px; transform: scaleX(-1); }
+        .bl { bottom: -30px; left: -30px; transform: scaleY(-1); }
+        .br { bottom: -30px; right: -30px; transform: rotate(180deg); }
 
         /* Dây Pháo */
-        .firecracker {
-            width: 60px;
-            height: auto;
-            top: 0;
-            opacity: 0.9;
-        }
-        .fc-left { left: 180px; }
-        .fc-right { right: 180px; }
+        .firecracker { width: 70px; height: auto; top: -10px; opacity: 1; z-index: 1; }
+        .fc-left { left: 220px; }
+        .fc-right { right: 220px; }
 
         /* Pháo Hoa */
-        .fireworks {
-            width: 150px;
-            height: 150px;
-            top: 10px;
-            opacity: 0.7;
-            mix-blend-mode: multiply;
-        }
-        .fw-left { left: 30px; }
-        .fw-right { right: 30px; transform: scaleX(-1); }
+        .fireworks { width: 180px; height: 180px; top: 20px; opacity: 0.6; mix-blend-mode: multiply; }
+        .fw-left { left: 50px; }
+        .fw-right { right: 50px; transform: scaleX(-1); }
 
+        /* 3 NÚT CHỨC NĂNG (ĐÃ KHÔI PHỤC VỊ TRÍ) */
         .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 100; }
         .bill-controls button { padding: 5px 10px; font-size: 12px; cursor: pointer; color: white; border: none; border-radius: 4px; font-weight: bold; }
         
@@ -78,13 +69,7 @@
         .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.5; max-width: 30%; color: #b71c1c; }
         
         .header-title-date { position: absolute; left: 50%; top: 50px; transform: translateX(-50%); text-align: center; width: 60%; }
-        .header-title-date h2 { 
-            margin: 5px 0 0 0; font-size: 32pt; 
-            color: #d32f2f; 
-            text-transform: uppercase; 
-            text-shadow: 2px 2px 0px #ffecb3;
-            letter-spacing: 2px;
-        }
+        .header-title-date h2 { margin: 5px 0 0 0; font-size: 32pt; color: #d32f2f; text-transform: uppercase; text-shadow: 2px 2px 0px #ffecb3; letter-spacing: 2px; }
         
         .qr-code { width: 170px; height: 170px; position: absolute; right: 0; top: 0; background-color: white; padding: 5px; border: 2px solid #b71c1c; }
         
@@ -94,19 +79,13 @@
         
         th { 
             background: linear-gradient(180deg, #e53935 0%, #b71c1c 100%);
-            color: #fff;
-            font-weight: bold; 
-            text-transform: uppercase; 
-            border-color: #ef9a9a;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            letter-spacing: 0.5px;
+            color: #fff; font-weight: bold; text-transform: uppercase; 
+            border-color: #ef9a9a; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
         
         .summary-table th { 
             background: linear-gradient(180deg, #fdd835 0%, #f9a825 100%);
-            color: #b71c1c;
-            text-shadow: none;
-            border-color: #fbc02d;
+            color: #b71c1c; text-shadow: none; border-color: #fbc02d;
         }
         
         .highlight { background-color: #fffde7; } 
@@ -118,6 +97,7 @@
         .footer-right { width: 60%; }
         .totals-table td { padding: 5px 7px; font-size: 16pt; }
         
+        /* Utility */
         .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; }
         .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
         .text-red { color: #d90000; } .text-green { color: #00b050; } .text-blue { color: #0068ff; }
@@ -127,7 +107,7 @@
         .copy-btn { background-color: #fbc02d; color: black; }
 
         @media print {
-            .info-panel, .bill-controls { display: none !important; }
+            .info-panel, .bill-controls, .dashboard-panel { display: none !important; }
             .bill-page { border: none; margin: 0; width: 100%; box-shadow: none; }
         }
     </style>
@@ -138,6 +118,22 @@
         <h1 style="color:#b71c1c;">🧧 BILL BÁO HỤI (TẾT RỰC RỠ) 🧧</h1>
         <button id="download-zip-btn" style="display: none; background-color: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">💾 Tải tất cả Bill (ZIP)</button>
     </div>
+
+    <div id="dashboard-panel" class="dashboard-panel">
+        <div class="dashboard-title">BẢNG TỔNG HỢP NHANH (TẾT)</div>
+        <div class="dashboard-grid">
+            <div class="dashboard-col" style="border-bottom: 4px solid #00b050;">
+                <div class="label-text">TỔNG PHẢI GIAO (Bill Hốt):</div>
+                <div id="total-payable" class="total-box text-green">0</div> 
+                <button id="copy-payable-btn" style="background-color: #00b050; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; margin-top: 10px; cursor: pointer;">📋 Copy danh sách giao</button>
+            </div>
+            <div class="dashboard-col" style="border-bottom: 4px solid #d90000;">
+                <div class="label-text">TỔNG PHẢI THU (Bill Đóng):</div>
+                <div id="total-receivable" class="total-box text-red">0</div>
+                <button id="copy-summary-btn" style="background-color: #d90000; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; margin-top: 10px; cursor: pointer;">📋 Copy danh sách thu</button>
+            </div>
+        </div>
+    </div>
     
     <div id="bills-container"></div>
 
@@ -145,7 +141,7 @@
          <div class="bill-page">
             <svg class="decor-svg apricot-flower tl" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
                 <defs><radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%"><stop offset="0%" style="stop-color:rgb(255,245,157);stop-opacity:1" /><stop offset="100%" style="stop-color:rgb(253,216,53);stop-opacity:1" /></radialGradient></defs>
-                <path d="M-20 -20 Q80 80 180 60 Q240 50 280 100 M80 80 Q120 140 160 180 M180 60 Q220 20 260 40" stroke="#5d4037" stroke-width="4" fill="none"/>
+                <path d="M-20 -20 Q80 80 180 60 Q240 50 280 100 M80 80 Q120 140 160 180 M180 60 Q220 20 260 40 M20 20 Q60 100 100 120" stroke="#5d4037" stroke-width="4" fill="none"/>
                 <g fill="url(#grad1)" stroke="#fbc02d" stroke-width="1">
                     <circle cx="180" cy="60" r="25"/><circle cx="180" cy="60" r="8" fill="#fff9c4" stroke="none"/>
                     <circle cx="80" cy="80" r="20"/><circle cx="80" cy="80" r="6" fill="#fff9c4" stroke="none"/>
@@ -153,6 +149,7 @@
                     <circle cx="160" cy="180" r="18"/><circle cx="160" cy="180" r="5" fill="#fff9c4" stroke="none"/>
                     <circle cx="260" cy="40" r="15"/><circle cx="260" cy="40" r="4" fill="#fff9c4" stroke="none"/>
                     <circle cx="120" cy="120" r="12"/><circle cx="120" cy="120" r="3" fill="#fff9c4" stroke="none"/>
+                    <circle cx="100" cy="120" r="14"/><circle cx="100" cy="120" r="4" fill="#fff9c4" stroke="none"/>
                 </g>
                 <g fill="#c62828">
                     <circle cx="100" cy="40" r="6"/><circle cx="220" cy="80" r="5"/><circle cx="140" cy="150" r="5"/><circle cx="200" cy="130" r="4"/>
@@ -172,61 +169,49 @@
                     <circle cx="100" cy="40" r="6"/><circle cx="220" cy="80" r="5"/><circle cx="140" cy="150" r="5"/><circle cx="200" cy="130" r="4"/>
                 </g>
             </svg>
-            <svg class="decor-svg apricot-flower bl" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><use href=".tl use"></use>
-                <path d="M-20 -20 Q80 80 180 60 Q240 50 280 100 M80 80 Q120 140 160 180 M180 60 Q220 20 260 40" stroke="#5d4037" stroke-width="4" fill="none"/>
-                <g fill="url(#grad1)" stroke="#fbc02d" stroke-width="1">
-                    <circle cx="180" cy="60" r="25"/><circle cx="180" cy="60" r="8" fill="#fff9c4" stroke="none"/>
-                    <circle cx="80" cy="80" r="20"/><circle cx="80" cy="80" r="6" fill="#fff9c4" stroke="none"/>
+            <svg class="decor-svg apricot-flower bl" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><use href=".tl use"></use></svg>
+            <svg class="decor-svg apricot-flower br" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><use href=".tl use"></use></svg>
+
+            <svg class="decor-svg firecracker fc-left" viewBox="0 0 60 300" xmlns="http://www.w3.org/2000/svg">
+                <line x1="30" y1="0" x2="30" y2="280" stroke="#d84315" stroke-width="2"/>
+                <g fill="#d32f2f" stroke="#b71c1c" stroke-width="1">
+                    <rect x="10" y="20" width="40" height="20" rx="2" transform="rotate(-5 30 30)"/><rect x="10" y="50" width="40" height="20" rx="2" transform="rotate(5 30 60)"/>
+                    <rect x="10" y="80" width="40" height="20" rx="2" transform="rotate(-5 30 90)"/><rect x="10" y="110" width="40" height="20" rx="2" transform="rotate(5 30 120)"/>
+                    <rect x="10" y="140" width="40" height="20" rx="2" transform="rotate(-5 30 150)"/><rect x="10" y="170" width="40" height="20" rx="2" transform="rotate(5 30 180)"/>
+                    <rect x="10" y="200" width="40" height="20" rx="2" transform="rotate(-5 30 210)"/>
                 </g>
+                <circle cx="30" cy="270" r="10" fill="#ffd700"/>
+                <path d="M20 270 Q30 300 40 270" stroke="#ffd700" stroke-width="2" fill="none"/>
             </svg>
-            <svg class="decor-svg apricot-flower br" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><use href=".tl use"></use>
-                <path d="M-20 -20 Q80 80 180 60 Q240 50 280 100 M80 80 Q120 140 160 180 M180 60 Q220 20 260 40" stroke="#5d4037" stroke-width="4" fill="none"/>
-                <g fill="url(#grad1)" stroke="#fbc02d" stroke-width="1">
-                    <circle cx="180" cy="60" r="25"/><circle cx="180" cy="60" r="8" fill="#fff9c4" stroke="none"/>
-                    <circle cx="80" cy="80" r="20"/><circle cx="80" cy="80" r="6" fill="#fff9c4" stroke="none"/>
-                    <circle cx="280" cy="100" r="22"/><circle cx="280" cy="100" r="7" fill="#fff9c4" stroke="none"/>
-                    <circle cx="160" cy="180" r="18"/><circle cx="160" cy="180" r="5" fill="#fff9c4" stroke="none"/>
+            <svg class="decor-svg firecracker fc-right" viewBox="0 0 60 300" xmlns="http://www.w3.org/2000/svg">
+                 <line x1="30" y1="0" x2="30" y2="280" stroke="#d84315" stroke-width="2"/>
+                <g fill="#d32f2f" stroke="#b71c1c" stroke-width="1">
+                    <rect x="10" y="20" width="40" height="20" rx="2" transform="rotate(5 30 30)"/><rect x="10" y="50" width="40" height="20" rx="2" transform="rotate(-5 30 60)"/>
+                    <rect x="10" y="80" width="40" height="20" rx="2" transform="rotate(5 30 90)"/><rect x="10" y="110" width="40" height="20" rx="2" transform="rotate(-5 30 120)"/>
+                    <rect x="10" y="140" width="40" height="20" rx="2" transform="rotate(5 30 150)"/><rect x="10" y="170" width="40" height="20" rx="2" transform="rotate(-5 30 180)"/>
+                    <rect x="10" y="200" width="40" height="20" rx="2" transform="rotate(5 30 210)"/>
                 </g>
+                <circle cx="30" cy="270" r="10" fill="#ffd700"/>
+                <path d="M20 270 Q30 300 40 270" stroke="#ffd700" stroke-width="2" fill="none"/>
             </svg>
 
-            <svg class="decor-svg firecracker fc-left" viewBox="0 0 60 200" xmlns="http://www.w3.org/2000/svg">
-                <line x1="30" y1="0" x2="30" y2="200" stroke="#d84315" stroke-width="2"/>
-                <g fill="#e64a19" stroke="#bf360c" stroke-width="1">
-                    <rect x="10" y="10" width="40" height="15" rx="2"/><rect x="10" y="30" width="40" height="15" rx="2"/>
-                    <rect x="10" y="50" width="40" height="15" rx="2"/><rect x="10" y="70" width="40" height="15" rx="2"/>
-                    <rect x="10" y="90" width="40" height="15" rx="2"/><rect x="10" y="110" width="40" height="15" rx="2"/>
-                    <rect x="10" y="130" width="40" height="15" rx="2"/><rect x="10" y="150" width="40" height="15" rx="2"/>
-                </g>
-                <circle cx="30" cy="190" r="8" fill="#ffd54f"/>
-            </svg>
-            <svg class="decor-svg firecracker fc-right" viewBox="0 0 60 200" xmlns="http://www.w3.org/2000/svg">
-                 <line x1="30" y1="0" x2="30" y2="200" stroke="#d84315" stroke-width="2"/>
-                <g fill="#e64a19" stroke="#bf360c" stroke-width="1">
-                    <rect x="10" y="10" width="40" height="15" rx="2"/><rect x="10" y="30" width="40" height="15" rx="2"/>
-                    <rect x="10" y="50" width="40" height="15" rx="2"/><rect x="10" y="70" width="40" height="15" rx="2"/>
-                    <rect x="10" y="90" width="40" height="15" rx="2"/><rect x="10" y="110" width="40" height="15" rx="2"/>
-                    <rect x="10" y="130" width="40" height="15" rx="2"/><rect x="10" y="150" width="40" height="15" rx="2"/>
-                </g>
-                <circle cx="30" cy="190" r="8" fill="#ffd54f"/>
-            </svg>
-
-            <svg class="decor-svg fireworks fw-left" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+            <svg class="decor-svg fireworks fw-left" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <g stroke="#fdd835" stroke-width="2" stroke-linecap="round">
-                    <line x1="75" y1="75" x2="75" y2="20"/><line x1="75" y1="75" x2="130" y2="75"/>
-                    <line x1="75" y1="75" x2="75" y2="130"/><line x1="75" y1="75" x2="20" y2="75"/>
-                    <line x1="75" y1="75" x2="35" y2="35"/><line x1="75" y1="75" x2="115" y2="35"/>
-                    <line x1="75" y1="75" x2="115" y2="115"/><line x1="75" y1="75" x2="35" y2="115"/>
+                    <line x1="100" y1="100" x2="100" y2="20"/><line x1="100" y1="100" x2="180" y2="100"/>
+                    <line x1="100" y1="100" x2="100" y2="180"/><line x1="100" y1="100" x2="20" y2="100"/>
+                    <line x1="100" y1="100" x2="40" y2="40"/><line x1="100" y1="100" x2="160" y2="40"/>
+                    <line x1="100" y1="100" x2="160" y2="160"/><line x1="100" y1="100" x2="40" y2="160"/>
                 </g>
-                <circle cx="75" cy="75" r="5" fill="#e64a19"/>
+                <circle cx="100" cy="100" r="5" fill="#e64a19"/>
             </svg>
-             <svg class="decor-svg fireworks fw-right" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+             <svg class="decor-svg fireworks fw-right" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <g stroke="#fdd835" stroke-width="2" stroke-linecap="round">
-                    <line x1="75" y1="75" x2="75" y2="20"/><line x1="75" y1="75" x2="130" y2="75"/>
-                    <line x1="75" y1="75" x2="75" y2="130"/><line x1="75" y1="75" x2="20" y2="75"/>
-                    <line x1="75" y1="75" x2="35" y2="35"/><line x1="75" y1="75" x2="115" y2="35"/>
-                    <line x1="75" y1="75" x2="115" y2="115"/><line x1="75" y1="75" x2="35" y2="115"/>
+                    <line x1="100" y1="100" x2="100" y2="20"/><line x1="100" y1="100" x2="180" y2="100"/>
+                    <line x1="100" y1="100" x2="100" y2="180"/><line x1="100" y1="100" x2="20" y2="100"/>
+                    <line x1="100" y1="100" x2="40" y2="40"/><line x1="100" y1="100" x2="160" y2="40"/>
+                    <line x1="100" y1="100" x2="160" y2="160"/><line x1="100" y1="100" x2="40" y2="160"/>
                 </g>
-                <circle cx="75" cy="75" r="5" fill="#e64a19"/>
+                <circle cx="100" cy="100" r="5" fill="#e64a19"/>
             </svg>
 
             <div class="bill-controls">
@@ -264,7 +249,6 @@
                     <div class="footer-banner" data-field="footer_banner"></div>
                     <span data-field="footer_hoi_vien" style="color: #b71c1c;"></span>
                     <div style="font-size: 14pt; margin-top: 10px; color: #d32f2f; font-weight: bold;">
-                        <p>🌸 Chúc Mừng Năm Mới - Vạn Sự Như Ý 🌸</p>
                         <p data-field="ghi_chu_1"></p>
                         <p data-field="ghi_chu_2"></p>
                     </div>
@@ -281,18 +265,6 @@
     </template>
     
     <script>
-        // DỮ LIỆU MẪU ĐỂ TEST
-        const SAMPLE_DATA = [{
-            "chu_hui": "Chị Tư Hụi", "sdt": "0909.123.456", "dia_chi": "Chợ Lớn", "bank_info": "VCB: 9999", "ngay_tao_bill": "15/01/2026",
-            "hoi_vien": "Nguyễn Thị Mười", "tong_so_day": 3, "tong_so_chan": 5, "tong_so_chan_chet": 2, "tong_so_chan_song": 3,
-            "tong_hui_chet": 10000000, "tong_hui_song": 5000000, "am_duong": -5000000, "loi_nhuan": 200000,
-            "bill_tong_dong": 15200000, "bill_tong_hot": 0, "tong_tham": 200000, "tong_thao": 0, "ghi_chu_1": "Đóng trước 20 Tết",
-            "chan_hui_details": [
-                { "ngay_mo": "01/01", "day_hui": "Dây 2tr", "ky": "1/10", "khui": "Nở", "song": 1, "chet": 0, "tien_hot": 0, "tien_dong": 2000000, "tham": 0, "thao": 0 },
-                { "ngay_mo": "05/01", "day_hui": "Dây 5tr", "ky": "5/12", "khui": "Lan", "song": 0, "chet": 1, "tien_hot": 0, "tien_dong": 5200000, "tham": 200000, "thao": 0 }
-            ]
-        }];
-
         const VietQR = {
             cleanText: function(str) { if (!str) return ""; return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^a-zA-Z0-9 ]/g, '').trim(); },
             crc16: function(data) { let crc = 0xFFFF; for (let i = 0; i < data.length; i++) { crc ^= data.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) { if ((crc & 0x8000) != 0) crc = (crc << 1) ^ 0x1021; else crc = crc << 1; } crc = crc & 0xFFFF; } let hex = crc.toString(16).toUpperCase(); return "0000".substring(0, 4 - hex.length) + hex; },
@@ -300,9 +272,13 @@
             parseRawData: function(rawString) { if (!rawString) return null; while (rawString.startsWith('|')) { rawString = rawString.substring(1); } const parts = rawString.split('|'); if (parts.length >= 2) { return this.generatePayload(parts[0].trim(), parts[1].trim(), parts[2] || "0", parts[3] || ""); } return null; }
         };
 
+        let globalSummaryTextReceivable = "";
+        let globalSummaryTextPayable = "";
+
         window.onload = function() {
             const infoPanel = document.getElementById('info-panel');
             const downloadZipBtn = document.getElementById('download-zip-btn');
+            infoPanel.style.display = 'block';
             
             try {
                 const encodedData = window.location.hash.substring(1);
@@ -311,8 +287,6 @@
                     generateBills(jsonData);
                     downloadZipBtn.style.display = 'inline-block';
                     downloadZipBtn.addEventListener('click', downloadAllAsZip);
-                } else {
-                    // generateBills(JSON.stringify(SAMPLE_DATA)); // Uncomment để test local
                 }
             } catch (error) { console.error(error); }
         };
@@ -326,6 +300,8 @@
             const billTemplate = document.getElementById('bill-template');
             
             let grandTotalReceivable = 0; let grandTotalPayable = 0; 
+            let summaryTextReceivable = "DANH SÁCH PHẢI THU (KHÁCH ĐÓNG):\n";
+            let summaryTextPayable = "DANH SÁCH PHẢI GIAO (TRẢ KHÁCH):\n";
             
             data.forEach((kh, index) => {
                 const billNode = document.importNode(billTemplate.content, true);
@@ -389,6 +365,7 @@
                         else qrContainer.innerHTML = "<div style='color:red;font-size:12px;text-align:center;padding-top:60px;font-weight:bold'>Lỗi QR</div>"; 
                     }
                     grandTotalReceivable += amount;
+                    summaryTextReceivable += `${index+1}. ${kh.hoi_vien}: ${formatCurrency(amount)}\n`;
                 } else { 
                     banner.textContent = 'Hụi Viên được nhận tiền'; 
                     banner.style.backgroundColor = '#00b050'; 
@@ -398,6 +375,7 @@
                     q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; 
                     qrContainer.style.display = 'none';
                     grandTotalPayable += amountPayable;
+                    summaryTextPayable += `${index+1}. ${kh.hoi_vien}: ${formatCurrency(amountPayable)}\n`;
                 }
                 
                 const billElement = billNode.querySelector('.bill-page');
@@ -410,8 +388,32 @@
                 
                 billsContainer.appendChild(billNode);
             });
+
+            // LOGIC DASHBOARD (ĐÃ KHÔI PHỤC)
+            if (grandTotalReceivable > 0 || grandTotalPayable > 0) {
+                document.getElementById('dashboard-panel').style.display = 'block';
+                document.getElementById('total-receivable').textContent = formatCurrency(grandTotalReceivable);
+                summaryTextReceivable += `--------------------\nTỔNG CỘNG THU: ${formatCurrency(grandTotalReceivable)}`;
+                globalSummaryTextReceivable = summaryTextReceivable;
+                
+                document.getElementById('copy-summary-btn').onclick = function() {
+                    navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!'));
+                };
+
+                document.getElementById('total-payable').textContent = formatCurrency(grandTotalPayable);
+                summaryTextPayable += `--------------------\nTỔNG CỘNG GIAO: ${formatCurrency(grandTotalPayable)}`;
+                globalSummaryTextPayable = summaryTextPayable;
+
+                const btnCopyPayable = document.getElementById('copy-payable-btn');
+                if (btnCopyPayable) {
+                    btnCopyPayable.onclick = function() {
+                        navigator.clipboard.writeText(globalSummaryTextPayable).then(() => alert('Đã copy danh sách phải GIAO!'));
+                    }
+                }
+            }
         }
         
+        // --- 3 CHỨC NĂNG CỐT LÕI (ĐÃ KHÔI PHỤC) ---
         function sendToZalo(element) {
             let sdt = element.dataset.sdt;
             if (!sdt || sdt.length < 9) { alert("Lỗi: Không tìm thấy số điện thoại Zalo!"); return; }
@@ -432,35 +434,81 @@
             });
         }
 
-        function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { canvas.toBlob(blob => { try { window.focus(); navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill!')).catch(err => { alert('Lỗi copy: ' + err); }); } catch (e) { alert("Trình duyệt không hỗ trợ"); } }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
+        function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { canvas.toBlob(blob => { try { window.focus(); navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); } catch (e) { alert("Trình duyệt không hỗ trợ"); } }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
         
         function downloadBillAsImage(element) { 
-            const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; 
-            let nameForFile = (sdt && sdt.length > 5) ? sdt.trim().replace(/[^a-zA-Z0-9_]/g, '') : hoivien.trim().replace(/[^a-zA-Z0-9_]/g, '_');
+            const sdt = element.dataset.sdt; 
+            const hoivien = element.dataset.hoivien; 
+            
+            // LOGIC ĐẶT TÊN ZALO_
+            let nameForFile = "";
+            if (sdt && sdt.length > 5) {
+                nameForFile = sdt.trim().replace(/[^a-zA-Z0-9_]/g, '');
+            } else {
+                nameForFile = hoivien.trim().replace(/[^a-zA-Z0-9_]/g, '_');
+            }
             const filename = 'zalo_' + nameForFile + '.png'; 
-            const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { alert('Lỗi tạo ảnh.'); c.style.display = 'flex'; }); 
+            
+            const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error(err); alert('Lỗi tạo ảnh.'); c.style.display = 'flex'; }); 
         }
         
+        // --- CHỨC NĂNG ZIP (ĐÃ KHÔI PHỤC BỘ ĐẾM & TÊN FILE ZALO_) ---
         async function downloadAllAsZip() { 
-            const bills = document.querySelectorAll('.bill-page'); const total = bills.length; if (total === 0) { alert('Không có bill nào.'); return; } 
+            const bills = document.querySelectorAll('.bill-page'); 
+            const total = bills.length; 
+            if (total === 0) { alert('Không có bill nào để tải.'); return; } 
+            
             const button = document.getElementById('download-zip-btn'); 
-            const originalText = button.innerHTML;
-            button.innerHTML = `⏳ Đang xử lý...`; button.disabled = true; 
+            const originalText = button.innerHTML; 
+            
+            // KHÔI PHỤC BỘ ĐẾM
+            button.innerHTML = `⏳ Đang xử lý 1/${total}...`; 
+            button.disabled = true; 
+            
             const zip = new JSZip(); 
+            let successCount = 0; 
+            
             for (let i = 0; i < total; i++) { 
-                const bill = bills[i]; const controls = bill.querySelector('.bill-controls'); 
+                // Cập nhật tiến độ
+                button.innerHTML = `⏳ Đang xử lý ${i + 1}/${total}...`;
+                
+                const bill = bills[i]; 
+                const controls = bill.querySelector('.bill-controls'); 
                 if (controls) controls.style.display = 'none'; 
                 try { 
-                    const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true }); 
+                    const capturePromise = html2canvas(bill, { scale: 1.5, useCORS: true, logging: false }); 
+                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 8000)); 
+                    const canvas = await Promise.race([capturePromise, timeoutPromise]); 
                     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
-                    const sdt = bill.dataset.sdt; const hoivien = bill.dataset.hoivien; 
-                    let nameForFile = (sdt && sdt.length > 5) ? sdt.trim().replace(/[^a-zA-Z0-9_]/g, '') : hoivien.trim().replace(/[^a-zA-Z0-9_]/g, '_');
-                    zip.file('zalo_' + nameForFile + '.png', blob); 
-                } catch (error) { console.error(error); } 
-                if (controls) controls.style.display = 'flex'; 
+                    
+                    const sdt = bill.dataset.sdt; 
+                    const hoivien = bill.dataset.hoivien; 
+                    
+                    // KHÔI PHỤC LOGIC TÊN FILE ZALO_
+                    let nameForFile = "";
+                    if (sdt && sdt.length > 5) {
+                        nameForFile = sdt.trim().replace(/[^a-zA-Z0-9_]/g, '');
+                    } else {
+                        nameForFile = hoivien.trim().replace(/[^a-zA-Z0-9_]/g, '_');
+                    }
+                    const fileName = 'zalo_' + nameForFile + '.png'; 
+                    
+                    zip.file(fileName, blob); 
+                    successCount++; 
+                } catch (error) { console.error(`Lỗi bill ${i}:`, error); } 
+                finally { if (controls) controls.style.display = 'flex'; } 
+                await new Promise(r => setTimeout(r, 100)); 
             } 
-            const content = await zip.generateAsync({ type: "blob" }); 
-            const link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = `Bill_Tet_2026.zip`; link.click(); 
+            
+            if (successCount > 0) { 
+                button.innerHTML = '📦 Đang nén...'; 
+                const content = await zip.generateAsync({ type: "blob" }); 
+                const link = document.createElement('a'); 
+                link.href = URL.createObjectURL(content); 
+                const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-'); 
+                link.download = `Tat_ca_bill_TET_${today}.zip`; 
+                document.body.appendChild(link); link.click(); document.body.removeChild(link); 
+            } 
             button.innerHTML = originalText; button.disabled = false; 
         }
     </script>
