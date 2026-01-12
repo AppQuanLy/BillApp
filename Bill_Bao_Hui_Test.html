@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bill Báo Hụi - Tết Rực Rỡ (Full Chức Năng)</title>
+    <title>Bill Báo Hụi - Tết Truyền Thống (Final)</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 
     <style>
         @page { size: A3 landscape; margin: 1.5cm; }
         body { font-family: 'Roboto', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         
-        /* PANEL ĐIỀU KHIỂN */
         .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
         
-        /* DASHBOARD TỔNG HỢP (ĐÃ KHÔI PHỤC) */
+        /* DASHBOARD */
         .dashboard-panel { max-width: 1200px; margin: 0 auto 20px auto; padding: 15px; background: #fff; border: 2px solid #ddd; border-radius: 8px; color: #333; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .dashboard-title { font-size: 20pt; font-weight: bold; margin-bottom: 20px; text-align: center; text-transform: uppercase; color: #b71c1c; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .dashboard-grid { display: flex; gap: 30px; justify-content: space-between; }
@@ -27,71 +26,80 @@
         
         /* --- CSS BILL TẾT --- */
         .bill-page { 
-            background-color: #fffdf0;
+            background-color: #fffdf0; /* Màu kem giấy gió */
             max-width: 1200px; min-width: 1200px; 
-            margin: 20px auto; padding: 25px; 
-            border: 3px solid #b71c1c; 
-            outline: 2px solid #ffd700;
-            outline-offset: -8px;
-            border-radius: 12px;
+            margin: 20px auto; padding: 30px; 
+            /* Viền hoa văn Tết */
+            border: 4px solid #b71c1c; 
+            border-radius: 16px;
             box-shadow: 0 10px 25px rgba(183, 28, 28, 0.2); 
             position: relative; 
             font-family: Arial, sans-serif; font-size: 16pt; 
             overflow: hidden;
         }
+        /* Viền vàng bên trong */
+        .bill-page::after {
+            content: ''; position: absolute;
+            top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 2px solid #ffca28; border-radius: 10px; pointer-events: none;
+        }
 
-        /* SVG Họa tiết */
+        /* SVG Họa tiết Chân thật hơn */
         .decor-svg { position: absolute; z-index: 0; pointer-events: none; }
 
-        /* Hoa Mai (Nhiều hoa) */
-        .apricot-flower { width: 250px; height: 250px; opacity: 0.9; }
-        .tl { top: -30px; left: -30px; }
-        .tr { top: -30px; right: -30px; transform: scaleX(-1); }
-        .bl { bottom: -30px; left: -30px; transform: scaleY(-1); }
-        .br { bottom: -30px; right: -30px; transform: rotate(180deg); }
+        /* Cành Mai Đào (Vẽ chi tiết) */
+        .flower-branch { width: 300px; height: auto; opacity: 0.95; }
+        .tl { top: -20px; left: -20px; }
+        .tr { top: -20px; right: -20px; transform: scaleX(-1); }
+        .bl { bottom: -20px; left: -20px; transform: scaleY(-1); }
+        .br { bottom: -20px; right: -20px; transform: scale(-1); }
 
-        /* Dây Pháo */
-        .firecracker { width: 70px; height: auto; top: -10px; opacity: 1; z-index: 1; }
-        .fc-left { left: 220px; }
-        .fc-right { right: 220px; }
+        /* Dây Pháo & Lồng Đèn */
+        .hanging-decor { width: 100px; height: auto; top: -10px; z-index: 1; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); }
+        .hd-left { left: 250px; }
+        .hd-right { right: 250px; }
 
-        /* Pháo Hoa */
-        .fireworks { width: 180px; height: 180px; top: 20px; opacity: 0.6; mix-blend-mode: multiply; }
-        .fw-left { left: 50px; }
-        .fw-right { right: 50px; transform: scaleX(-1); }
+        /* Pháo Hoa Nổ */
+        .fireworks { width: 180px; height: 180px; top: 30px; opacity: 0.6; mix-blend-mode: multiply; }
+        .fw-left { left: 80px; }
+        .fw-right { right: 80px; transform: scaleX(-1); }
 
-        /* 3 NÚT CHỨC NĂNG (ĐÃ KHÔI PHỤC VỊ TRÍ) */
+        /* 3 NÚT CHỨC NĂNG */
         .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 100; }
-        .bill-controls button { padding: 5px 10px; font-size: 12px; cursor: pointer; color: white; border: none; border-radius: 4px; font-weight: bold; }
+        .bill-controls button { padding: 6px 12px; font-size: 12px; cursor: pointer; color: white; border: none; border-radius: 4px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         
         /* HEADER */
-        .bill-header { position: relative; min-height: 210px; border-bottom: 2px solid #b71c1c; margin-bottom: 15px; z-index: 1; }
-        .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.5; max-width: 30%; color: #b71c1c; }
+        .bill-header { position: relative; min-height: 220px; border-bottom: 2px solid #b71c1c; margin-bottom: 15px; z-index: 1; padding-bottom: 10px; }
+        .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.6; max-width: 30%; color: #b71c1c; }
         
-        .header-title-date { position: absolute; left: 50%; top: 50px; transform: translateX(-50%); text-align: center; width: 60%; }
-        .header-title-date h2 { margin: 5px 0 0 0; font-size: 32pt; color: #d32f2f; text-transform: uppercase; text-shadow: 2px 2px 0px #ffecb3; letter-spacing: 2px; }
+        .header-title-date { position: absolute; left: 50%; top: 40px; transform: translateX(-50%); text-align: center; width: 60%; }
+        .header-title-date h2 { margin: 0; font-size: 38pt; color: #d32f2f; text-transform: uppercase; font-weight: 900; text-shadow: 2px 2px 0px #ffecb3; }
+        .header-title-date p { margin-top: 5px; font-size: 14pt; color: #555; font-weight: bold; }
         
-        .qr-code { width: 170px; height: 170px; position: absolute; right: 0; top: 0; background-color: white; padding: 5px; border: 2px solid #b71c1c; }
+        .qr-code { width: 160px; height: 160px; position: absolute; right: 0; top: 10px; background-color: white; padding: 5px; border: 3px double #b71c1c; }
         
         /* BẢNG DỮ LIỆU */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #000; position: relative; z-index: 1; }
-        th, td { border: 1px solid #d32f2f; padding: 4px 6px; vertical-align: middle; }
+        th, td { border: 1px solid #d32f2f; padding: 5px 8px; vertical-align: middle; }
         
+        /* Header bảng chi tiết (Đỏ + Hoa văn mờ) */
         th { 
-            background: linear-gradient(180deg, #e53935 0%, #b71c1c 100%);
+            background-color: #b71c1c;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px);
             color: #fff; font-weight: bold; text-transform: uppercase; 
-            border-color: #ef9a9a; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            border-color: #ffcdd2; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
         
+        /* Header bảng tổng hợp (Vàng Kim) */
         .summary-table th { 
-            background: linear-gradient(180deg, #fdd835 0%, #f9a825 100%);
-            color: #b71c1c; text-shadow: none; border-color: #fbc02d;
+            background: linear-gradient(180deg, #ffeb3b 0%, #fbc02d 100%);
+            color: #b71c1c; text-shadow: none; border-color: #f9a825;
         }
         
         .highlight { background-color: #fffde7; } 
 
         /* FOOTER */
-        .footer-banner { padding: 5px; text-align: left; font-size: 14pt; color: white; margin-bottom: 5px; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
+        .footer-banner { padding: 8px; text-align: left; font-size: 14pt; color: white; margin-bottom: 5px; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); font-weight: bold; }
         .footer-container { display: flex; align-items: flex-start; gap: 10px; position: relative; z-index: 1;}
         .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; color: #b71c1c; }
         .footer-right { width: 60%; }
@@ -116,11 +124,11 @@
 
     <div id="info-panel" class="info-panel">
         <h1 style="color:#b71c1c;">🧧 BILL BÁO HỤI (TẾT RỰC RỠ) 🧧</h1>
-        <button id="download-zip-btn" style="display: none; background-color: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">💾 Tải tất cả Bill (ZIP)</button>
+        <button id="download-zip-btn" style="display: none; background-color: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px;">💾 Tải tất cả Bill (ZIP)</button>
     </div>
 
     <div id="dashboard-panel" class="dashboard-panel">
-        <div class="dashboard-title">BẢNG TỔNG HỢP NHANH (TẾT)</div>
+        <div class="dashboard-title">BẢNG TỔNG HỢP NHANH</div>
         <div class="dashboard-grid">
             <div class="dashboard-col" style="border-bottom: 4px solid #00b050;">
                 <div class="label-text">TỔNG PHẢI GIAO (Bill Hốt):</div>
@@ -139,80 +147,58 @@
 
     <template id="bill-template">
          <div class="bill-page">
-            <svg class="decor-svg apricot-flower tl" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-                <defs><radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%"><stop offset="0%" style="stop-color:rgb(255,245,157);stop-opacity:1" /><stop offset="100%" style="stop-color:rgb(253,216,53);stop-opacity:1" /></radialGradient></defs>
-                <path d="M-20 -20 Q80 80 180 60 Q240 50 280 100 M80 80 Q120 140 160 180 M180 60 Q220 20 260 40 M20 20 Q60 100 100 120" stroke="#5d4037" stroke-width="4" fill="none"/>
-                <g fill="url(#grad1)" stroke="#fbc02d" stroke-width="1">
-                    <circle cx="180" cy="60" r="25"/><circle cx="180" cy="60" r="8" fill="#fff9c4" stroke="none"/>
-                    <circle cx="80" cy="80" r="20"/><circle cx="80" cy="80" r="6" fill="#fff9c4" stroke="none"/>
-                    <circle cx="280" cy="100" r="22"/><circle cx="280" cy="100" r="7" fill="#fff9c4" stroke="none"/>
-                    <circle cx="160" cy="180" r="18"/><circle cx="160" cy="180" r="5" fill="#fff9c4" stroke="none"/>
-                    <circle cx="260" cy="40" r="15"/><circle cx="260" cy="40" r="4" fill="#fff9c4" stroke="none"/>
-                    <circle cx="120" cy="120" r="12"/><circle cx="120" cy="120" r="3" fill="#fff9c4" stroke="none"/>
-                    <circle cx="100" cy="120" r="14"/><circle cx="100" cy="120" r="4" fill="#fff9c4" stroke="none"/>
+            <svg class="decor-svg flower-branch tl" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 0 Q100 100 200 80 Q300 50 350 150 M150 90 Q180 180 250 250" stroke="#5d4037" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <g transform="translate(180, 70)">
+                    <path d="M0 -25 Q15 -45 30 -25 Q45 0 20 15 Q0 30 -20 15 Q-45 0 -30 -25 Q-15 -45 0 -25" fill="#fdd835" stroke="#fbc02d" stroke-width="2"/>
+                    <circle r="6" fill="#fff176"/>
+                    <circle r="2" fill="#e65100"/>
                 </g>
-                <g fill="#c62828">
-                    <circle cx="100" cy="40" r="6"/><circle cx="220" cy="80" r="5"/><circle cx="140" cy="150" r="5"/><circle cx="200" cy="130" r="4"/>
+                <g transform="translate(280, 140) scale(0.8)">
+                    <path d="M0 -25 Q15 -45 30 -25 Q45 0 20 15 Q0 30 -20 15 Q-45 0 -30 -25 Q-15 -45 0 -25" fill="#fdd835" stroke="#fbc02d" stroke-width="2"/>
+                    <circle r="6" fill="#fff176"/>
                 </g>
+                <g transform="translate(100, 100) scale(0.6)">
+                    <path d="M0 -25 Q15 -45 30 -25 Q45 0 20 15 Q0 30 -20 15 Q-45 0 -30 -25 Q-15 -45 0 -25" fill="#fdd835" stroke="#fbc02d" stroke-width="2"/>
+                    <circle r="6" fill="#fff176"/>
+                </g>
+                <circle cx="220" cy="200" r="5" fill="#d32f2f"/>
+                <circle cx="320" cy="80" r="5" fill="#d32f2f"/>
+                <circle cx="140" cy="180" r="4" fill="#d32f2f"/>
             </svg>
-            <svg class="decor-svg apricot-flower tr" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><use href=".tl use"></use>
-                <path d="M-20 -20 Q80 80 180 60 Q240 50 280 100 M80 80 Q120 140 160 180 M180 60 Q220 20 260 40" stroke="#5d4037" stroke-width="4" fill="none"/>
-                <g fill="url(#grad1)" stroke="#fbc02d" stroke-width="1">
-                    <circle cx="180" cy="60" r="25"/><circle cx="180" cy="60" r="8" fill="#fff9c4" stroke="none"/>
-                    <circle cx="80" cy="80" r="20"/><circle cx="80" cy="80" r="6" fill="#fff9c4" stroke="none"/>
-                    <circle cx="280" cy="100" r="22"/><circle cx="280" cy="100" r="7" fill="#fff9c4" stroke="none"/>
-                    <circle cx="160" cy="180" r="18"/><circle cx="160" cy="180" r="5" fill="#fff9c4" stroke="none"/>
-                    <circle cx="260" cy="40" r="15"/><circle cx="260" cy="40" r="4" fill="#fff9c4" stroke="none"/>
-                    <circle cx="120" cy="120" r="12"/><circle cx="120" cy="120" r="3" fill="#fff9c4" stroke="none"/>
-                </g>
-                 <g fill="#c62828">
-                    <circle cx="100" cy="40" r="6"/><circle cx="220" cy="80" r="5"/><circle cx="140" cy="150" r="5"/><circle cx="200" cy="130" r="4"/>
-                </g>
-            </svg>
-            <svg class="decor-svg apricot-flower bl" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><use href=".tl use"></use></svg>
-            <svg class="decor-svg apricot-flower br" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"><use href=".tl use"></use></svg>
+            
+            <svg class="decor-svg flower-branch tr" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><use href=".tl path"/><use href=".tl g:nth-of-type(1)"/><use href=".tl g:nth-of-type(2)"/><use href=".tl g:nth-of-type(3)"/><use href=".tl circle:nth-of-type(1)"/></svg>
+            <svg class="decor-svg flower-branch bl" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><use href=".tl path"/><use href=".tl g:nth-of-type(1)"/><use href=".tl g:nth-of-type(2)"/></svg>
+            <svg class="decor-svg flower-branch br" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><use href=".tl path"/><use href=".tl g:nth-of-type(1)"/><use href=".tl g:nth-of-type(2)"/></svg>
 
-            <svg class="decor-svg firecracker fc-left" viewBox="0 0 60 300" xmlns="http://www.w3.org/2000/svg">
-                <line x1="30" y1="0" x2="30" y2="280" stroke="#d84315" stroke-width="2"/>
-                <g fill="#d32f2f" stroke="#b71c1c" stroke-width="1">
-                    <rect x="10" y="20" width="40" height="20" rx="2" transform="rotate(-5 30 30)"/><rect x="10" y="50" width="40" height="20" rx="2" transform="rotate(5 30 60)"/>
-                    <rect x="10" y="80" width="40" height="20" rx="2" transform="rotate(-5 30 90)"/><rect x="10" y="110" width="40" height="20" rx="2" transform="rotate(5 30 120)"/>
-                    <rect x="10" y="140" width="40" height="20" rx="2" transform="rotate(-5 30 150)"/><rect x="10" y="170" width="40" height="20" rx="2" transform="rotate(5 30 180)"/>
-                    <rect x="10" y="200" width="40" height="20" rx="2" transform="rotate(-5 30 210)"/>
+            <svg class="decor-svg hanging-decor hd-left" viewBox="0 0 100 300" xmlns="http://www.w3.org/2000/svg">
+                <line x1="50" y1="0" x2="50" y2="250" stroke="#b71c1c" stroke-width="2"/>
+                <g transform="translate(50, 250)">
+                    <rect x="-20" y="-30" width="40" height="35" rx="5" fill="#d32f2f" stroke="#b71c1c" stroke-width="2"/>
+                    <path d="M-20 -30 L-10 -45 L10 -45 L20 -30" fill="#fbc02d"/>
+                    <rect x="-15" y="-25" width="30" height="25" fill="#ffeb3b" opacity="0.3"/> <line x1="0" y1="5" x2="0" y2="35" stroke="#d32f2f" stroke-width="2"/>
+                    <line x1="-5" y1="5" x2="-8" y2="30" stroke="#d32f2f" stroke-width="2"/>
+                    <line x1="5" y1="5" x2="8" y2="30" stroke="#d32f2f" stroke-width="2"/>
                 </g>
-                <circle cx="30" cy="270" r="10" fill="#ffd700"/>
-                <path d="M20 270 Q30 300 40 270" stroke="#ffd700" stroke-width="2" fill="none"/>
-            </svg>
-            <svg class="decor-svg firecracker fc-right" viewBox="0 0 60 300" xmlns="http://www.w3.org/2000/svg">
-                 <line x1="30" y1="0" x2="30" y2="280" stroke="#d84315" stroke-width="2"/>
-                <g fill="#d32f2f" stroke="#b71c1c" stroke-width="1">
-                    <rect x="10" y="20" width="40" height="20" rx="2" transform="rotate(5 30 30)"/><rect x="10" y="50" width="40" height="20" rx="2" transform="rotate(-5 30 60)"/>
-                    <rect x="10" y="80" width="40" height="20" rx="2" transform="rotate(5 30 90)"/><rect x="10" y="110" width="40" height="20" rx="2" transform="rotate(-5 30 120)"/>
-                    <rect x="10" y="140" width="40" height="20" rx="2" transform="rotate(5 30 150)"/><rect x="10" y="170" width="40" height="20" rx="2" transform="rotate(-5 30 180)"/>
-                    <rect x="10" y="200" width="40" height="20" rx="2" transform="rotate(5 30 210)"/>
+                <g transform="translate(50, 50)">
+                    <rect x="-15" y="0" width="30" height="12" fill="#ef5350" stroke="#b71c1c" rx="2" transform="rotate(-10)"/>
+                    <rect x="-15" y="20" width="30" height="12" fill="#ef5350" stroke="#b71c1c" rx="2" transform="rotate(10)"/>
+                    <rect x="-15" y="40" width="30" height="12" fill="#ef5350" stroke="#b71c1c" rx="2" transform="rotate(-10)"/>
+                    <rect x="-15" y="60" width="30" height="12" fill="#ef5350" stroke="#b71c1c" rx="2" transform="rotate(10)"/>
                 </g>
-                <circle cx="30" cy="270" r="10" fill="#ffd700"/>
-                <path d="M20 270 Q30 300 40 270" stroke="#ffd700" stroke-width="2" fill="none"/>
             </svg>
+            <svg class="decor-svg hanging-decor hd-right" viewBox="0 0 100 300" xmlns="http://www.w3.org/2000/svg"><use href=".hd-left line"/><use href=".hd-left g:nth-of-type(1)"/><use href=".hd-left g:nth-of-type(2)"/></svg>
 
             <svg class="decor-svg fireworks fw-left" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                 <g stroke="#fdd835" stroke-width="2" stroke-linecap="round">
-                    <line x1="100" y1="100" x2="100" y2="20"/><line x1="100" y1="100" x2="180" y2="100"/>
-                    <line x1="100" y1="100" x2="100" y2="180"/><line x1="100" y1="100" x2="20" y2="100"/>
-                    <line x1="100" y1="100" x2="40" y2="40"/><line x1="100" y1="100" x2="160" y2="40"/>
-                    <line x1="100" y1="100" x2="160" y2="160"/><line x1="100" y1="100" x2="40" y2="160"/>
+                    <line x1="100" y1="100" x2="100" y2="30"/><line x1="100" y1="100" x2="170" y2="100"/>
+                    <line x1="100" y1="100" x2="100" y2="170"/><line x1="100" y1="100" x2="30" y2="100"/>
+                    <line x1="100" y1="100" x2="50" y2="50"/><line x1="100" y1="100" x2="150" y2="50"/>
+                    <line x1="100" y1="100" x2="150" y2="150"/><line x1="100" y1="100" x2="50" y2="150"/>
                 </g>
-                <circle cx="100" cy="100" r="5" fill="#e64a19"/>
+                <circle cx="100" cy="100" r="4" fill="#ff5722"/>
             </svg>
-             <svg class="decor-svg fireworks fw-right" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <g stroke="#fdd835" stroke-width="2" stroke-linecap="round">
-                    <line x1="100" y1="100" x2="100" y2="20"/><line x1="100" y1="100" x2="180" y2="100"/>
-                    <line x1="100" y1="100" x2="100" y2="180"/><line x1="100" y1="100" x2="20" y2="100"/>
-                    <line x1="100" y1="100" x2="40" y2="40"/><line x1="100" y1="100" x2="160" y2="40"/>
-                    <line x1="100" y1="100" x2="160" y2="160"/><line x1="100" y1="100" x2="40" y2="160"/>
-                </g>
-                <circle cx="100" cy="100" r="5" fill="#e64a19"/>
-            </svg>
+             <svg class="decor-svg fireworks fw-right" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><use href=".fw-left g"/><use href=".fw-left circle"/></svg>
 
             <div class="bill-controls">
                 <button class="zalo-btn">Gửi Zalo</button>
@@ -247,8 +233,9 @@
             <div class="footer-container">
                 <div class="footer-left">
                     <div class="footer-banner" data-field="footer_banner"></div>
-                    <span data-field="footer_hoi_vien" style="color: #b71c1c;"></span>
+                    <span data-field="footer_hoi_vien" style="color: #b71c1c; font-family: 'Dancing Script', cursive; font-size: 28pt;"></span>
                     <div style="font-size: 14pt; margin-top: 10px; color: #d32f2f; font-weight: bold;">
+                        <p>🌸 Chúc Mừng Năm Mới - Vạn Sự Như Ý 🌸</p>
                         <p data-field="ghi_chu_1"></p>
                         <p data-field="ghi_chu_2"></p>
                     </div>
@@ -277,6 +264,7 @@
 
         window.onload = function() {
             const infoPanel = document.getElementById('info-panel');
+            const statusMessage = document.getElementById('status-message');
             const downloadZipBtn = document.getElementById('download-zip-btn');
             infoPanel.style.display = 'block';
             
@@ -379,6 +367,7 @@
                 }
                 
                 const billElement = billNode.querySelector('.bill-page');
+                // GẮN DATASET CHUẨN ĐỂ NÚT COPY/ZALO ĐỌC
                 billElement.dataset.sdt = kh.sdt_kh || ''; 
                 billElement.dataset.hoivien = kh.hoi_vien || 'bill';
                 
@@ -389,7 +378,7 @@
                 billsContainer.appendChild(billNode);
             });
 
-            // LOGIC DASHBOARD (ĐÃ KHÔI PHỤC)
+            // DASHBOARD LOGIC (ĐÃ KHÔI PHỤC)
             if (grandTotalReceivable > 0 || grandTotalPayable > 0) {
                 document.getElementById('dashboard-panel').style.display = 'block';
                 document.getElementById('total-receivable').textContent = formatCurrency(grandTotalReceivable);
@@ -413,7 +402,6 @@
             }
         }
         
-        // --- 3 CHỨC NĂNG CỐT LÕI (ĐÃ KHÔI PHỤC) ---
         function sendToZalo(element) {
             let sdt = element.dataset.sdt;
             if (!sdt || sdt.length < 9) { alert("Lỗi: Không tìm thấy số điện thoại Zalo!"); return; }
@@ -436,40 +424,38 @@
 
         function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { canvas.toBlob(blob => { try { window.focus(); navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); } catch (e) { alert("Trình duyệt không hỗ trợ"); } }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
         
+        // --- HÀM TẢI ẢNH LẺ (KHÔI PHỤC TÊN FILE GỐC) ---
         function downloadBillAsImage(element) { 
             const sdt = element.dataset.sdt; 
             const hoivien = element.dataset.hoivien; 
-            
-            // LOGIC ĐẶT TÊN ZALO_
             let nameForFile = "";
             if (sdt && sdt.length > 5) {
+                // Giữ nguyên logic cũ: xóa ký tự đặc biệt, giữ số
                 nameForFile = sdt.trim().replace(/[^a-zA-Z0-9_]/g, '');
             } else {
                 nameForFile = hoivien.trim().replace(/[^a-zA-Z0-9_]/g, '_');
             }
+            // Đặt tên zalo_ để tool auto chạy
             const filename = 'zalo_' + nameForFile + '.png'; 
             
             const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error(err); alert('Lỗi tạo ảnh.'); c.style.display = 'flex'; }); 
         }
         
-        // --- CHỨC NĂNG ZIP (ĐÃ KHÔI PHỤC BỘ ĐẾM & TÊN FILE ZALO_) ---
+        // --- HÀM TẢI ZIP (KHÔI PHỤC BỘ ĐẾM & TÊN FILE) ---
         async function downloadAllAsZip() { 
             const bills = document.querySelectorAll('.bill-page'); 
             const total = bills.length; 
             if (total === 0) { alert('Không có bill nào để tải.'); return; } 
             
             const button = document.getElementById('download-zip-btn'); 
-            const originalText = button.innerHTML; 
-            
-            // KHÔI PHỤC BỘ ĐẾM
-            button.innerHTML = `⏳ Đang xử lý 1/${total}...`; 
+            const originalText = "💾 Tải tất cả Bill (ZIP)"; 
             button.disabled = true; 
             
             const zip = new JSZip(); 
             let successCount = 0; 
             
             for (let i = 0; i < total; i++) { 
-                // Cập nhật tiến độ
+                // CẬP NHẬT BỘ ĐẾM TRÊN NÚT
                 button.innerHTML = `⏳ Đang xử lý ${i + 1}/${total}...`;
                 
                 const bill = bills[i]; 
@@ -484,7 +470,7 @@
                     const sdt = bill.dataset.sdt; 
                     const hoivien = bill.dataset.hoivien; 
                     
-                    // KHÔI PHỤC LOGIC TÊN FILE ZALO_
+                    // QUY TẮC TÊN FILE CHUẨN CHO TOOL AUTO
                     let nameForFile = "";
                     if (sdt && sdt.length > 5) {
                         nameForFile = sdt.trim().replace(/[^a-zA-Z0-9_]/g, '');
@@ -497,6 +483,7 @@
                     successCount++; 
                 } catch (error) { console.error(`Lỗi bill ${i}:`, error); } 
                 finally { if (controls) controls.style.display = 'flex'; } 
+                // Delay nhẹ để tránh treo trình duyệt
                 await new Promise(r => setTimeout(r, 100)); 
             } 
             
@@ -509,6 +496,7 @@
                 link.download = `Tat_ca_bill_TET_${today}.zip`; 
                 document.body.appendChild(link); link.click(); document.body.removeChild(link); 
             } 
+            // Trả lại trạng thái nút
             button.innerHTML = originalText; button.disabled = false; 
         }
     </script>
