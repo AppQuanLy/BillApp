@@ -184,7 +184,7 @@
                     <table class="totals-table no-border">
                         <tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham" style="color: #fff;"></td></tr>
                         <tr><td class="font-bold">Tổng Tiền Hốt:</td><td class="text-right font-large font-bold" data-field="bill_tong_hot"></td><td class="text-center">(2)</td><td class="text-blue font-bold" data-field="tong_thao" style="color: #fff;"></td></tr>
-                        <tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-center font-bold"></td><td class="text-center font-bold" data-field="final_formula_text"></td></tr>
+                        <tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-left font-bold"></td><td class="text-left font-bold" data-field="final_formula_text"></td></tr>
                     </table>
                 </div>
             </div>
@@ -336,7 +336,7 @@
                             row.style.backgroundColor = '#fff0f0';
                             row.innerHTML = `<td colspan="8" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
                         } else {
-                            row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td>${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td>${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
+                            row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td style="color: #fff;">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td>${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
                             sttCounter++;
                         }
                         detailsBody.appendChild(row);
