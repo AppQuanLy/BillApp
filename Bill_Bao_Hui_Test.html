@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bill Báo Hụi - Tết Phú Quý</title>
+    <title>Bill Báo Hụi - Tết Phú Quý Chân Thực</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Roboto:wght@400;500;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Roboto:wght@400;500;700;900&family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
 
     <style>
         @page { size: A3 landscape; margin: 1.5cm; }
@@ -27,105 +27,108 @@
         .text-red { color: #d90000; } .text-green { color: #00b050; }
         .label-text { font-size: 13pt; font-weight: bold; color: #555; }
         
-        /* --- BILL PAGE (TRANG TRÍ MỚI) --- */
+        /* --- BILL PAGE (NỀN GIẤY GẤM) --- */
         .bill-page { 
-            background-color: #fffdf0; /* Màu giấy điệp vàng nhạt */
-            background-image: radial-gradient(#fdfbf7 20%, transparent 20%), radial-gradient(#fdfbf7 20%, transparent 20%);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
+            background-color: #fffbea; /* Màu kem vàng sáng */
+            /* Tạo vân giấy gấm mờ */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             
             max-width: 1200px; min-width: 1200px; 
             margin: 20px auto; padding: 35px; 
             
-            /* Viền kép đỏ - vàng sang trọng */
-            border: 5px solid #b71c1c;
-            outline: 3px solid #ffb300;
-            outline-offset: -10px;
-            border-radius: 12px;
-            
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15); 
+            /* Viền khung tranh vàng son */
+            border: 6px solid #8e0000;
+            box-shadow: 
+                inset 0 0 0 4px #ffc107, /* Viền vàng trong */
+                0 10px 25px rgba(0,0,0,0.3); /* Bóng đổ sâu */
+            border-radius: 4px;
             position: relative; 
             font-family: Arial, sans-serif; font-size: 16pt; 
             overflow: hidden; 
         }
 
-        /* --- SVG VECTOR DECORATION --- */
+        /* --- SVG VECTOR DECORATION (REALISTIC) --- */
         .decor-svg { position: absolute; z-index: 0; pointer-events: none; }
 
-        /* 1. Dây Pháo (Hông trái/phải) */
-        .firecracker { top: -20px; width: 80px; height: auto; z-index: 2; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3)); }
-        .fc-left { left: -10px; }
-        .fc-right { right: -10px; transform: scaleX(-1); }
+        /* 1. Dây Pháo 3D (Treo 2 bên) */
+        .firecracker { top: -15px; width: 90px; height: auto; z-index: 2; filter: drop-shadow(3px 3px 4px rgba(0,0,0,0.4)); }
+        .fc-left { left: -5px; }
+        .fc-right { right: -5px; transform: scaleX(-1); }
 
-        /* 2. Cành Mai (Góc trên) */
-        .apricot { top: -30px; width: 320px; height: auto; opacity: 0.95; }
-        .ap-left { left: -30px; }
-        .ap-right { right: -30px; transform: scaleX(-1); }
+        /* 2. Cành Mai Cổ Thụ 3D (Góc trên) */
+        .apricot { top: -40px; width: 380px; height: auto; }
+        .ap-left { left: -40px; filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.2)); }
+        .ap-right { right: -40px; transform: scaleX(-1); filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.2)); }
 
-        /* 3. Lồng Đèn (Treo góc) */
-        .lantern { top: 0px; width: 90px; height: auto; z-index: 1; transform-origin: top center; animation: swing 3s infinite ease-in-out alternate; }
-        .lt-left { left: 200px; }
-        .lt-right { right: 200px; }
-        @keyframes swing { from { transform: rotate(-2deg); } to { transform: rotate(2deg); } }
+        /* 3. Lồng Đèn Phát Sáng (Treo góc) */
+        .lantern { top: -10px; width: 100px; height: auto; z-index: 1; transform-origin: top center; animation: swing 3.5s infinite ease-in-out alternate; }
+        .lt-left { left: 220px; }
+        .lt-right { right: 220px; }
+        @keyframes swing { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
 
-        /* 4. Thỏi Vàng & Tiền (Góc dưới) */
-        .gold-ingot { bottom: -10px; width: 150px; height: auto; z-index: 2; }
-        .gold-left { left: -10px; }
-        .gold-right { right: -10px; transform: scaleX(-1); }
+        /* 4. Thỏi Vàng & Tiền Xu 3D (Góc dưới) */
+        .gold-ingot { bottom: -20px; width: 180px; height: auto; z-index: 2; filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.3)); }
+        .gold-left { left: -20px; }
+        .gold-right { right: -20px; transform: scaleX(-1); }
 
-        /* Nút điều khiển (Vị trí cũ) */
-        .bill-controls { position: absolute; bottom: 25px; left: 160px; display: flex; gap: 10px; z-index: 100; }
-        .bill-controls button, .info-panel button { padding: 8px 15px; font-size: 13px; cursor: pointer; color: white; border: none; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s; }
-        .download-btn { background-color: #d32f2f; } .download-btn:hover { background-color: #b71c1c; transform: translateY(-2px); }
-        .copy-btn { background-color: #fbc02d; color: #333 !important; } .copy-btn:hover { background-color: #f9a825; transform: translateY(-2px); }
-        .share-btn { background-color: #0068ff; } .share-btn:hover { background-color: #0056b3; transform: translateY(-2px); }
+        /* Nút điều khiển */
+        .bill-controls { position: absolute; bottom: 25px; left: 180px; display: flex; gap: 12px; z-index: 100; }
+        .bill-controls button, .info-panel button { padding: 10px 18px; font-size: 13px; cursor: pointer; color: white; border: none; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: all 0.2s; border: 2px solid white; }
+        .download-btn { background: linear-gradient(to bottom, #d32f2f, #b71c1c); } .download-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(183, 28, 28, 0.4); }
+        .copy-btn { background: linear-gradient(to bottom, #fbc02d, #f57f17); color: #333 !important; } .copy-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(249, 168, 37, 0.4); }
+        .share-btn { background: linear-gradient(to bottom, #0288d1, #01579b); } .share-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 10px rgba(2, 136, 209, 0.4); }
 
         /* HEADER */
-        .bill-header { position: relative; min-height: 220px; border-bottom: 2px dashed #d32f2f; margin-bottom: 15px; z-index: 1; }
-        .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.6; max-width: 30%; color: #b71c1c; }
+        .bill-header { position: relative; min-height: 230px; border-bottom: 3px double #d32f2f; margin-bottom: 20px; z-index: 1; }
+        .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.6; max-width: 30%; color: #8e0000; text-shadow: 1px 1px 0px #fff; }
         
         .header-title-date { position: absolute; left: 50%; top: 40px; transform: translateX(-50%); text-align: center; width: 60%; }
-        /* Chữ Bill Báo Hụi hiệu ứng mạ vàng */
+        /* Hiệu ứng chữ Vàng Đúc Nổi 3D chân thực */
         .header-title-date h2 { 
-            margin: 0; font-family: 'Playfair Display', serif; font-size: 42pt; 
-            background: linear-gradient(to bottom, #d32f2f 0%, #b71c1c 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 2px 2px 0px rgba(255, 215, 0, 0.4);
-            text-transform: uppercase; letter-spacing: 2px;
+            margin: 0; font-family: 'Playfair Display', serif; font-size: 45pt; 
+            color: #ffd700; /* Màu vàng kim */
+            text-transform: uppercase; letter-spacing: 3px; font-weight: 900;
+            text-shadow: 
+                0px 1px 0px #c49a00, 
+                0px 2px 0px #a88400, 
+                0px 3px 0px #8c6e00, 
+                0px 4px 0px #705800, 
+                0px 5px 10px rgba(0,0,0,0.4); /* Bóng đổ 3D */
         }
-        .header-title-date p { font-weight: bold; color: #555; margin-top: 5px; font-size: 14pt; }
+        .header-title-date p { font-weight: bold; color: #555; margin-top: 10px; font-size: 14pt; }
         
-        .qr-code { width: 170px; height: 170px; position: absolute; right: 0; top: 10px; background-color: white; padding: 5px; border: 2px solid #b71c1c; border-radius: 8px; }
+        .qr-code { width: 170px; height: 170px; position: absolute; right: 0; top: 10px; background-color: white; padding: 6px; border: 3px solid #8e0000; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         .qr-code img { width: 100%; height: 100%; display: block; }
 
         /* BẢNG DỮ LIỆU */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #000; position: relative; z-index: 1; }
-        th, td { border: 1px solid #d32f2f; padding: 6px 8px; vertical-align: middle; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; color: #000; position: relative; z-index: 1; border: 2px solid #8e0000; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #b71c1c; padding: 8px 10px; vertical-align: middle; }
         
-        /* Header bảng với Gradient Tết */
-        th { font-weight: bold; text-transform: uppercase; color: #fff; }
+        /* Header bảng Gradient 3D */
+        th { font-weight: bold; text-transform: uppercase; color: #fff; text-shadow: 1px 1px 1px rgba(0,0,0,0.3); }
         .summary-table th { 
-            background: linear-gradient(180deg, #ffa000 0%, #ff6f00 100%); /* Cam vàng */
-            border-color: #ffca28;
+            background: linear-gradient(to bottom, #ffc107 0%, #ff8f00 100%); /* Vàng cam 3D */
+            border-bottom: 2px solid #c79100; color: #4e342e; text-shadow: none;
         }
         .details-table th {
-            background: linear-gradient(180deg, #ef5350 0%, #c62828 100%); /* Đỏ đậm */
-            border-color: #ef9a9a;
+            background: linear-gradient(to bottom, #d32f2f 0%, #8e0000 100%); /* Đỏ đô 3D */
+            border-bottom: 2px solid #640000;
         }
-        .highlight { background-color: #fffde7; } /* Nền vàng nhạt cho dòng tổng hợp */
-        .details-table { margin-bottom: 10px; font-size: 14pt; }
+        .highlight { background-color: #fff8e1; font-weight: bold; } 
+        .details-table { margin-bottom: 15px; font-size: 14pt; }
+        .details-table tr:nth-child(even) { background-color: #fefefe; }
 
         /* Footer */
-        .footer-banner { padding: 8px; text-align: left; font-size: 14pt; color: white; margin-bottom: 5px; border-radius: 4px; font-weight: bold; box-shadow: 2px 2px 4px rgba(0,0,0,0.2);}
-        .footer-container { display: flex; align-items: flex-start; gap: 10px; position: relative; z-index: 1;}
-        .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; color: #b71c1c; }
+        .footer-banner { padding: 10px 15px; text-align: left; font-size: 14pt; color: white; margin-bottom: 10px; border-radius: 4px; font-weight: bold; box-shadow: 2px 2px 4px rgba(0,0,0,0.2); background: linear-gradient(to right, #d32f2f, #b71c1c); border: 1px solid #8e0000;}
+        .footer-container { display: flex; align-items: flex-start; gap: 15px; position: relative; z-index: 1;}
+        .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; color: #8e0000; }
         .footer-right { width: 60%; }
-        .totals-table td { padding: 5px 7px; font-size: 16pt; }
+        .totals-table td { padding: 8px 10px; font-size: 16pt; }
         
-        /* Chữ ký thư pháp */
-        .signature-font { font-family: 'Dancing Script', cursive; font-size: 26pt !important; color: #b71c1c; }
-        .footer-notes { font-size: 14pt; font-weight: bold; text-align: center; margin-top: 10px; color: #d32f2f; }
+        /* Chữ ký thư pháp & Lời chúc */
+        .signature-font { font-family: 'Dancing Script', cursive; font-size: 30pt !important; color: #d32f2f; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .footer-notes { margin-top: 15px; }
+        .tet-wishes { font-family: 'Playfair Display', serif; font-size: 22pt; color: #d32f2f; font-weight: bold; text-shadow: 1px 1px 0 #ffc107; }
 
         .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; }
         .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
@@ -133,7 +136,7 @@
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .info-panel, .bill-controls, .dashboard-panel { display: none !important; }
-            .bill-page { page-break-after: always; margin: 0; padding: 0; box-shadow: none; border: none; width: 100%; max-width: none; min-width: 0; }
+            .bill-page { page-break-after: always; margin: 0; padding: 0; box-shadow: none; border: none; width: 100%; max-width: none; min-width: 0; background-image: none; background-color: #fff;}
             body { background-color: #fff; padding: 0; margin: 0; }
         }
     </style>
@@ -141,8 +144,8 @@
 <body>
 
     <div id="info-panel" class="info-panel">
-        <h1 id="status-message">🌸 Đang tải dữ liệu Bill Tết...</h1>
-        <button id="download-zip-btn" style="display: none; background-color: #d32f2f;">💾 Tải tất cả Bill (ZIP)</button>
+        <h1 id="status-message">🌸 Đang tải dữ liệu Bill Tết Phú Quý...</h1>
+        <button id="download-zip-btn" style="display: none; background: linear-gradient(to bottom, #d32f2f, #b71c1c); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">💾 Tải tất cả Bill (ZIP)</button>
     </div>
 
     <div id="dashboard-panel" class="dashboard-panel">
@@ -166,55 +169,113 @@
     <template id="bill-template">
          <div class="bill-page">
             
-            <svg class="decor-svg apricot ap-left" viewBox="0 0 350 250" xmlns="http://www.w3.org/2000/svg">
-                <path d="M-10 -10 Q50 80 120 60 Q200 40 250 100 M80 60 Q100 120 150 150" stroke="#5d4037" stroke-width="5" fill="none" stroke-linecap="round"/>
-                <circle cx="120" cy="60" r="15" fill="#fdd835" stroke="#fbc02d" stroke-width="2"/>
-                <circle cx="120" cy="60" r="5" fill="#fff9c4" stroke="none"/>
-                <circle cx="250" cy="100" r="18" fill="#fdd835" stroke="#fbc02d" stroke-width="2"/>
-                <circle cx="250" cy="100" r="6" fill="#fff9c4" stroke="none"/>
-                <circle cx="150" cy="150" r="12" fill="#fdd835" stroke="#fbc02d" stroke-width="2"/>
-                <circle cx="200" cy="50" r="4" fill="#d32f2f"/>
-                <circle cx="100" cy="100" r="4" fill="#d32f2f"/>
-            </svg>
-            <svg class="decor-svg apricot ap-right" viewBox="0 0 350 250" xmlns="http://www.w3.org/2000/svg"><use href=".ap-left path"/><use href=".ap-left circle:nth-of-type(1)"/><use href=".ap-left circle:nth-of-type(2)"/><use href=".ap-left circle:nth-of-type(3)"/><use href=".ap-left circle:nth-of-type(4)"/><use href=".ap-left circle:nth-of-type(5)"/><use href=".ap-left circle:nth-of-type(6)"/></svg>
+            <svg class="decor-svg" width="0" height="0">
+                <defs>
+                    <radialGradient id="petalGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                        <stop offset="0%" style="stop-color:#fff59d;stop-opacity:1" /><stop offset="80%" style="stop-color:#fbc02d;stop-opacity:1" /><stop offset="100%" style="stop-color:#f57f17;stop-opacity:1" />
+                    </radialGradient>
+                    <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#e65100;stop-opacity:1" /><stop offset="100%" style="stop-color:#ff9800;stop-opacity:1" />
+                    </radialGradient>
+                    <linearGradient id="firecrackerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#b71c1c" /><stop offset="30%" style="stop-color:#e53935" /><stop offset="50%" style="stop-color:#ffcdd2" /><stop offset="70%" style="stop-color:#e53935" /><stop offset="100%" style="stop-color:#b71c1c" />
+                    </linearGradient>
+                    <linearGradient id="ropeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#5d4037" /><stop offset="50%" style="stop-color:#a1887f" /><stop offset="100%" style="stop-color:#5d4037" />
+                    </linearGradient>
+                    <radialGradient id="lanternGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="40%" style="stop-color:#ffeb3b; stop-opacity:1" /><stop offset="90%" style="stop-color:#d50000; stop-opacity:1" /><stop offset="100%" style="stop-color:#8e0000; stop-opacity:1" />
+                    </radialGradient>
+                     <linearGradient id="goldFrame" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#fff59d" /><stop offset="50%" style="stop-color:#fbc02d" /><stop offset="100%" style="stop-color:#f57f17" />
+                    </linearGradient>
+                    <linearGradient id="goldIngotGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#fff9c4" /><stop offset="20%" style="stop-color:#ffd54f" /><stop offset="50%" style="stop-color:#ffc107" /><stop offset="100%" style="stop-color:#ff6f00" />
+                    </linearGradient>
+                    <linearGradient id="goldSideGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                         <stop offset="0%" style="stop-color:#ff6f00" /><stop offset="50%" style="stop-color:#ffca28" /><stop offset="100%" style="stop-color:#ff6f00" />
+                    </linearGradient>
 
-            <svg class="decor-svg firecracker fc-left" viewBox="0 0 80 300" xmlns="http://www.w3.org/2000/svg">
-                <line x1="40" y1="0" x2="40" y2="250" stroke="#d84315" stroke-width="3"/>
-                <g fill="#d32f2f" stroke="#b71c1c">
-                    <rect x="20" y="20" width="40" height="25" rx="3" transform="rotate(-5 40 32)"/>
-                    <rect x="20" y="50" width="40" height="25" rx="3" transform="rotate(5 40 62)"/>
-                    <rect x="20" y="80" width="40" height="25" rx="3" transform="rotate(-5 40 92)"/>
-                    <rect x="20" y="110" width="40" height="25" rx="3" transform="rotate(5 40 122)"/>
-                    <rect x="20" y="140" width="40" height="25" rx="3" transform="rotate(-5 40 152)"/>
-                    <rect x="20" y="170" width="40" height="25" rx="3" transform="rotate(5 40 182)"/>
+                    <g id="realisticFlower">
+                        <path d="M0 -20 C5 -30 15 -30 20 -20 C25 -10 25 0 20 10 C15 20 5 20 0 10 C-5 20 -15 20 -20 10 C-25 0 -25 -10 -20 -20 C-15 -30 -5 -30 0 -20 Z" fill="url(#petalGrad)" stroke="#e65100" stroke-width="0.5"/>
+                        <path d="M0 -20 C5 -30 15 -30 20 -20" fill="url(#petalGrad)" opacity="0.8"/>
+                        <circle r="5" fill="url(#centerGrad)" />
+                        <g fill="#3e2723"> <circle cx="-2" cy="-2" r="0.8"/><circle cx="2" cy="-2" r="0.8"/><circle cx="0" cy="3" r="0.8"/><circle cx="-3" cy="1" r="0.8"/><circle cx="3" cy="1" r="0.8"/>
+                        </g>
+                    </g>
+                </defs>
+            </svg>
+
+            <svg class="decor-svg apricot ap-left" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                <path d="M-20 20 Q30 100 100 80 Q180 60 250 120 Q300 160 350 140" stroke="#4e342e" stroke-width="12" fill="none" stroke-linecap="round"/>
+                <path d="M-20 20 Q30 100 100 80 Q180 60 250 120 Q300 160 350 140" stroke="#795548" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.7" stroke-dasharray="20,10"/>
+                <path d="M100 80 Q130 150 180 180" stroke="#4e342e" stroke-width="8" fill="none" stroke-linecap="round"/>
+                <path d="M250 120 Q280 50 320 30" stroke="#4e342e" stroke-width="6" fill="none" stroke-linecap="round"/>
+                
+                <use href="#realisticFlower" x="100" y="80" transform="scale(1.2) rotate(20)"/>
+                <use href="#realisticFlower" x="250" y="120" transform="scale(1.5) rotate(-10)"/>
+                <use href="#realisticFlower" x="180" y="180" transform="scale(1.1) rotate(45)"/>
+                <use href="#realisticFlower" x="320" y="30" transform="scale(1) rotate(-30)"/>
+                <use href="#realisticFlower" x="50" y="120" transform="scale(0.8) rotate(10)"/>
+                
+                <g fill="url(#petalGrad)" stroke="#e65100">
+                    <ellipse cx="150" cy="130" rx="6" ry="8" transform="rotate(30)"/><ellipse cx="200" cy="100" rx="5" ry="7" transform="rotate(-20)"/>
+                    <ellipse cx="290" cy="80" rx="6" ry="8" transform="rotate(10)"/>
                 </g>
-                <circle cx="40" cy="200" r="15" fill="#ffd700" stroke="#f57f17"/>
-                <text x="40" y="205" font-size="16" text-anchor="middle" fill="#d32f2f" font-weight="bold" font-family="Arial">Tết</text>
             </svg>
-            <svg class="decor-svg firecracker fc-right" viewBox="0 0 80 300" xmlns="http://www.w3.org/2000/svg"><use href=".fc-left line"/><use href=".fc-left g"/><use href=".fc-left circle"/><use href=".fc-left text"/></svg>
+            <svg class="decor-svg apricot ap-right" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><use href=".ap-left path:nth-child(1)"/><use href=".ap-left path:nth-child(2)"/><use href=".ap-left path:nth-child(3)"/><use href=".ap-left path:nth-child(4)"/><use href=".ap-left use:nth-child(5)"/><use href=".ap-left use:nth-child(6)"/><use href=".ap-left use:nth-child(7)"/><use href=".ap-left use:nth-child(8)"/><use href=".ap-left use:nth-child(9)"/><use href=".ap-left g"/></svg>
 
-            <svg class="decor-svg lantern lt-left" viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
-                <line x1="50" y1="0" x2="50" y2="50" stroke="#b71c1c" stroke-width="2"/>
-                <g transform="translate(50, 80)">
-                    <ellipse cx="0" cy="0" rx="35" ry="30" fill="#d32f2f" stroke="#880e4f" stroke-width="2"/>
-                    <path d="M-20 -28 Q-35 0 -20 28" fill="none" stroke="#ffeb3b" opacity="0.6"/>
-                    <path d="M20 -28 Q35 0 20 28" fill="none" stroke="#ffeb3b" opacity="0.6"/>
-                    <path d="M0 -30 V30" fill="none" stroke="#ffeb3b" opacity="0.6"/>
-                    <rect x="-15" y="-32" width="30" height="6" fill="#fbc02d" rx="2"/>
-                    <rect x="-15" y="26" width="30" height="6" fill="#fbc02d" rx="2"/>
-                    <line x1="0" y1="32" x2="0" y2="80" stroke="#d32f2f" stroke-width="3"/>
+            <svg class="decor-svg firecracker fc-left" viewBox="0 0 80 320" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40 0 Q35 10 40 20 Q45 30 40 40 Q35 50 40 60 Q45 70 40 80 Q35 90 40 100 Q45 110 40 120 Q35 130 40 140 Q45 150 40 160 Q35 170 40 180 Q45 190 40 200 Q35 210 40 220 Q45 230 40 240" stroke="url(#ropeGrad)" stroke-width="6" fill="none"/>
+                <g>
+                    <rect x="15" y="25" width="50" height="30" rx="4" fill="url(#firecrackerGrad)" transform="rotate(-8 40 40)"/>
+                    <rect x="15" y="65" width="50" height="30" rx="4" fill="url(#firecrackerGrad)" transform="rotate(8 40 80)"/>
+                    <rect x="15" y="105" width="50" height="30" rx="4" fill="url(#firecrackerGrad)" transform="rotate(-8 40 120)"/>
+                    <rect x="15" y="145" width="50" height="30" rx="4" fill="url(#firecrackerGrad)" transform="rotate(8 40 160)"/>
+                    <rect x="15" y="185" width="50" height="30" rx="4" fill="url(#firecrackerGrad)" transform="rotate(-8 40 200)"/>
+                    
+                    <rect x="25" y="35" width="30" height="5" fill="#ffd700" transform="rotate(-8 40 40)" opacity="0.8"/>
+                    <rect x="25" y="75" width="30" height="5" fill="#ffd700" transform="rotate(8 40 80)" opacity="0.8"/>
+                    <rect x="25" y="115" width="30" height="5" fill="#ffd700" transform="rotate(-8 40 120)" opacity="0.8"/>
+                </g>
+                <circle cx="40" cy="250" r="12" fill="url(#ropeGrad)"/>
+                <circle cx="40" cy="285" r="18" fill="#d32f2f" stroke="#ffd700" stroke-width="2"/>
+                <path d="M35 280 h10 M40 275 v15 M30 295 h20" stroke="#ffd700" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <svg class="decor-svg firecracker fc-right" viewBox="0 0 80 320" xmlns="http://www.w3.org/2000/svg"><use href=".fc-left path"/><use href=".fc-left g"/><use href=".fc-left circle:nth-child(3)"/><use href=".fc-left circle:nth-child(4)"/><use href=".fc-left path:nth-child(5)"/></svg>
+
+            <svg class="decor-svg lantern lt-left" viewBox="0 0 100 220" xmlns="http://www.w3.org/2000/svg">
+                <line x1="50" y1="0" x2="50" y2="60" stroke="#8e0000" stroke-width="3"/>
+                <g transform="translate(50, 90)">
+                    <ellipse cx="0" cy="0" rx="40" ry="35" fill="url(#lanternGlow)"/>
+                    <path d="M-25 -30 Q-45 0 -25 30 M25 -30 Q45 0 25 30 M0 -35 V35" fill="none" stroke="url(#goldFrame)" stroke-width="2"/>
+                    <rect x="-20" y="-38" width="40" height="10" fill="url(#goldFrame)" rx="3"/>
+                    <rect x="-20" y="30" width="40" height="10" fill="url(#goldFrame)" rx="3"/>
+                    <g transform="translate(0, 40)">
+                         <path d="M0 0 Q-5 20 -10 50 M0 0 Q5 20 10 50 M0 0 V60" stroke="#d32f2f" stroke-width="4" fill="none"/>
+                         <path d="M0 0 Q-8 20 -15 45 M0 0 Q8 20 15 45" stroke="#b71c1c" stroke-width="3" fill="none"/>
+                    </g>
                 </g>
             </svg>
-            <svg class="decor-svg lantern lt-right" viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg"><use href=".lt-left line"/><use href=".lt-left g"/></svg>
+            <svg class="decor-svg lantern lt-right" viewBox="0 0 100 220" xmlns="http://www.w3.org/2000/svg"><use href=".lt-left line"/><use href=".lt-left g"/></svg>
 
-            <svg class="decor-svg gold-ingot gold-left" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 50 Q10 20 50 20 L150 20 Q190 20 180 50 Q170 80 100 80 Q30 80 20 50" fill="#ffca28" stroke="#f57f17" stroke-width="2"/>
-                <ellipse cx="100" cy="20" rx="50" ry="10" fill="#fff176" stroke="#f57f17" stroke-width="1"/>
-                <path d="M60 50 Q100 65 140 50" stroke="#f57f17" stroke-width="2" fill="none" opacity="0.5"/>
-                <circle cx="160" cy="70" r="15" fill="#ffd700" stroke="#f9a825"/>
-                <rect x="155" y="65" width="10" height="10" fill="none" stroke="#f9a825"/>
+            <svg class="decor-svg gold-ingot gold-left" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+                <g transform="translate(100, 60)">
+                    <path d="M-70 -20 L-50 30 L50 30 L70 -20 Z" fill="url(#goldSideGrad)"/>
+                    <path d="M-70 -20 Q0 -50 70 -20 Q50 10 -70 -20" fill="url(#goldIngotGrad)"/>
+                    <path d="M-50 30 Q0 50 50 30" fill="none" stroke="#e65100" stroke-width="1" opacity="0.5"/>
+                    <ellipse cx="0" cy="-25" rx="30" ry="5" fill="#fff" opacity="0.6"/>
+                </g>
+                <g transform="translate(30, 80) rotate(-20)">
+                    <circle r="18" fill="url(#goldIngotGrad)" stroke="#f57f17" stroke-width="2"/>
+                    <rect x="-8" y="-8" width="16" height="16" fill="none" stroke="#f57f17" stroke-width="2"/>
+                </g>
+                 <g transform="translate(170, 70) rotate(30)">
+                    <circle r="15" fill="url(#goldIngotGrad)" stroke="#f57f17" stroke-width="2"/>
+                    <rect x="-6" y="-6" width="12" height="12" fill="none" stroke="#f57f17" stroke-width="2"/>
+                </g>
             </svg>
-            <svg class="decor-svg gold-ingot gold-right" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg"><use href=".gold-left path"/><use href=".gold-left ellipse"/><use href=".gold-left circle"/><use href=".gold-left rect"/></svg>
+            <svg class="decor-svg gold-ingot gold-right" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg"><use href=".gold-left g:nth-child(1)"/><use href=".gold-left g:nth-child(2)"/><use href=".gold-left g:nth-child(3)"/></svg>
 
             <div class="bill-controls">
                 <button class="download-btn">Tải Bill</button>
@@ -251,9 +312,9 @@
                     <div class="footer-banner" data-field="footer_banner"></div>
                     <span data-field="footer_hoi_vien" class="signature-font"></span>
                     <div class="footer-notes">
-                        <div style="font-family: 'Dancing Script', cursive; font-size: 20pt; color: #d32f2f;">Chúc Mừng Năm Mới - Vạn Sự Như Ý</div>
-                        <p data-field="ghi_chu_1" style="font-family: Arial; font-size: 13pt; color: #333; margin-top: 5px;"></p>
-                        <p data-field="ghi_chu_2" style="font-family: Arial; font-size: 13pt; color: #333;"></p>
+                        <div class="tet-wishes">Vạn Sự Như Ý - Tấn Tài Tấn Lộc</div>
+                        <p data-field="ghi_chu_1" style="font-family: Arial; font-size: 13pt; color: #333; margin-top: 10px; font-style: italic;"></p>
+                        <p data-field="ghi_chu_2" style="font-family: Arial; font-size: 13pt; color: #333; font-weight: bold;"></p>
                     </div>
                 </div>
                 <div class="footer-right">
