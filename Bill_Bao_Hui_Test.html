@@ -3,125 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bill Báo Hụi</title>
+    <title>Bill Báo Hụi - Tết Phú Quý</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Roboto:wght@400;500;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
     <style>
         @page { size: A3 landscape; margin: 1.5cm; }
         body { font-family: 'Roboto', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         
-        .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px; }
-        .info-panel h1 { width: 100%; margin: 0 0 15px 0; color: #b71c1c; }
+        /* --- PANEL ĐIỀU KHIỂN (GIỮ NGUYÊN) --- */
+        .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
+        .info-panel h1 { margin: 0 0 10px; color: #b71c1c; font-family: 'Playfair Display', serif; }
         
-        /* --- CSS DASHBOARD (GIỮ NGUYÊN) --- */
-        .dashboard-panel { 
-            max-width: 1200px; margin: 0 auto 20px auto; padding: 15px; 
-            background: #fff; border: 2px solid #ddd; border-radius: 8px; 
-            color: #333; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .dashboard-title { 
-            font-size: 20pt; font-weight: bold; margin-bottom: 20px; 
-            text-align: center; text-transform: uppercase; color: #b71c1c; border-bottom: 2px solid #eee; padding-bottom: 10px;
-        }
+        /* --- DASHBOARD (GIỮ NGUYÊN) --- */
+        .dashboard-panel { max-width: 1200px; margin: 0 auto 20px auto; padding: 15px; background: #fff; border: 2px solid #ddd; border-radius: 8px; color: #333; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .dashboard-title { font-size: 18pt; font-weight: bold; margin-bottom: 15px; text-align: center; text-transform: uppercase; color: #444; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .dashboard-grid { display: flex; gap: 30px; justify-content: space-between; }
-        .dashboard-col { 
-            flex: 1; text-align: center; padding: 15px; border-radius: 8px; 
-            background-color: #f9f9f9; border: 1px solid #eee;
-        }
-        .total-box { font-size: 28pt; font-weight: bold; margin: 10px 0; }
-        .text-red { color: #d90000; }
-        .text-green { color: #00b050; }
-        .label-text { font-size: 14pt; font-weight: bold; color: #555; }
+        .dashboard-col { flex: 1; text-align: center; padding: 15px; border-radius: 8px; background-color: #f9f9f9; border: 1px solid #eee; }
+        .total-box { font-size: 24pt; font-weight: bold; margin: 10px 0; }
+        .text-red { color: #d90000; } .text-green { color: #00b050; }
+        .label-text { font-size: 13pt; font-weight: bold; color: #555; }
         
-        /* --- CSS BILL TẾT (NÂNG CẤP GIAO DIỆN) --- */
+        /* --- BILL PAGE (TRANG TRÍ MỚI) --- */
         .bill-page { 
-            background-color: #fffdf0; /* Màu giấy điệp */
+            background-color: #fffdf0; /* Màu giấy điệp vàng nhạt */
+            background-image: radial-gradient(#fdfbf7 20%, transparent 20%), radial-gradient(#fdfbf7 20%, transparent 20%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            
             max-width: 1200px; min-width: 1200px; 
-            margin: 20px auto; padding: 30px; 
-            /* Viền đỏ vàng đặc trưng */
-            border: 4px solid #b71c1c;
-            outline: 2px solid #ffd700;
-            outline-offset: -8px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+            margin: 20px auto; padding: 35px; 
+            
+            /* Viền kép đỏ - vàng sang trọng */
+            border: 5px solid #b71c1c;
+            outline: 3px solid #ffb300;
+            outline-offset: -10px;
+            border-radius: 12px;
+            
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15); 
             position: relative; 
             font-family: Arial, sans-serif; font-size: 16pt; 
             overflow: hidden; 
         }
 
-        /* --- SVG VECTOR DECORATION (VẼ HÌNH TRỰC TIẾP) --- */
+        /* --- SVG VECTOR DECORATION --- */
         .decor-svg { position: absolute; z-index: 0; pointer-events: none; }
-        
-        /* Cành Mai Già (Góc Trái Trên) */
-        .apricot-branch-tl { top: -20px; left: -20px; width: 350px; height: auto; opacity: 0.95; }
-        
-        /* Cành Đào/Mai (Góc Phải Trên - Lật) */
-        .apricot-branch-tr { top: -20px; right: -20px; width: 350px; height: auto; transform: scaleX(-1); opacity: 0.95; }
-        
-        /* Hoa Góc Dưới */
-        .flower-corner-bl { bottom: -10px; left: -10px; width: 200px; height: auto; transform: scaleY(-1); }
-        .flower-corner-br { bottom: -10px; right: -10px; width: 200px; height: auto; transform: rotate(180deg); }
 
-        /* Lồng Đèn Đỏ (Treo 2 bên) */
-        .lantern-left { top: -5px; left: 280px; width: 90px; height: auto; z-index: 1; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); }
-        .lantern-right { top: -5px; right: 280px; width: 90px; height: auto; z-index: 1; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); }
+        /* 1. Dây Pháo (Hông trái/phải) */
+        .firecracker { top: -20px; width: 80px; height: auto; z-index: 2; filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3)); }
+        .fc-left { left: -10px; }
+        .fc-right { right: -10px; transform: scaleX(-1); }
+
+        /* 2. Cành Mai (Góc trên) */
+        .apricot { top: -30px; width: 320px; height: auto; opacity: 0.95; }
+        .ap-left { left: -30px; }
+        .ap-right { right: -30px; transform: scaleX(-1); }
+
+        /* 3. Lồng Đèn (Treo góc) */
+        .lantern { top: 0px; width: 90px; height: auto; z-index: 1; transform-origin: top center; animation: swing 3s infinite ease-in-out alternate; }
+        .lt-left { left: 200px; }
+        .lt-right { right: 200px; }
+        @keyframes swing { from { transform: rotate(-2deg); } to { transform: rotate(2deg); } }
+
+        /* 4. Thỏi Vàng & Tiền (Góc dưới) */
+        .gold-ingot { bottom: -10px; width: 150px; height: auto; z-index: 2; }
+        .gold-left { left: -10px; }
+        .gold-right { right: -10px; transform: scaleX(-1); }
 
         /* Nút điều khiển (Vị trí cũ) */
-        .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 100; }
-        .bill-controls button, .info-panel button { padding: 8px 15px; font-size: 13px; cursor: pointer; color: white; border: none; border-radius: 4px; transition: background-color 0.2s; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        
-        /* Header Bill */
-        .bill-header { position: relative; min-height: 220px; border-bottom: 2px solid #b71c1c; margin-bottom: 15px; z-index: 1; }
+        .bill-controls { position: absolute; bottom: 25px; left: 160px; display: flex; gap: 10px; z-index: 100; }
+        .bill-controls button, .info-panel button { padding: 8px 15px; font-size: 13px; cursor: pointer; color: white; border: none; border-radius: 20px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s; }
+        .download-btn { background-color: #d32f2f; } .download-btn:hover { background-color: #b71c1c; transform: translateY(-2px); }
+        .copy-btn { background-color: #fbc02d; color: #333 !important; } .copy-btn:hover { background-color: #f9a825; transform: translateY(-2px); }
+        .share-btn { background-color: #0068ff; } .share-btn:hover { background-color: #0056b3; transform: translateY(-2px); }
+
+        /* HEADER */
+        .bill-header { position: relative; min-height: 220px; border-bottom: 2px dashed #d32f2f; margin-bottom: 15px; z-index: 1; }
         .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.6; max-width: 30%; color: #b71c1c; }
-        .header-left p { margin: 2px 0; }
         
-        .header-title-date { position: absolute; left: 50%; top: 50px; transform: translateX(-50%); text-align: center; width: 60%; }
+        .header-title-date { position: absolute; left: 50%; top: 40px; transform: translateX(-50%); text-align: center; width: 60%; }
+        /* Chữ Bill Báo Hụi hiệu ứng mạ vàng */
         .header-title-date h2 { 
-            margin: 5px 0 0 0; font-size: 38pt; color: #d32f2f; text-transform: uppercase; 
-            text-shadow: 2px 2px 0 #ffeb3b; /* Hiệu ứng chữ nổi vàng */
+            margin: 0; font-family: 'Playfair Display', serif; font-size: 42pt; 
+            background: linear-gradient(to bottom, #d32f2f 0%, #b71c1c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 0px rgba(255, 215, 0, 0.4);
+            text-transform: uppercase; letter-spacing: 2px;
         }
-        .header-title-date p { font-weight: bold; color: #555; margin-top: 5px; }
+        .header-title-date p { font-weight: bold; color: #555; margin-top: 5px; font-size: 14pt; }
         
-        /* QR Code Container */
-        .qr-code { width: 170px; height: 170px; position: absolute; right: 0; top: 10px; background-color: white; padding: 5px; border: 2px solid #b71c1c; }
+        .qr-code { width: 170px; height: 170px; position: absolute; right: 0; top: 10px; background-color: white; padding: 5px; border: 2px solid #b71c1c; border-radius: 8px; }
         .qr-code img { width: 100%; height: 100%; display: block; }
 
-        .download-btn { background-color: #d32f2f; } .download-btn:hover { background-color: #b71c1c; }
-        .copy-btn { background-color: #fbc02d; color: black; } .copy-btn:hover { background-color: #f9a825; }
-        .share-btn { background-color: #0068ff; } .share-btn:hover { background-color: #0056b3; }
-        
         /* BẢNG DỮ LIỆU */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #000; position: relative; z-index: 1; }
         th, td { border: 1px solid #d32f2f; padding: 6px 8px; vertical-align: middle; }
         
-        /* Style Header bảng giống hình mẫu (Gradient Vàng/Đỏ) */
-        th { font-weight: bold; text-transform: uppercase; }
-        
-        /* Bảng tổng hợp (Vàng cam) */
+        /* Header bảng với Gradient Tết */
+        th { font-weight: bold; text-transform: uppercase; color: #fff; }
         .summary-table th { 
-            background: linear-gradient(to bottom, #ffecb3 0%, #ffca28 100%); 
-            color: #b71c1c; border-color: #ffb300;
+            background: linear-gradient(180deg, #ffa000 0%, #ff6f00 100%); /* Cam vàng */
+            border-color: #ffca28;
         }
-        .summary-table .highlight { background-color: #fff9c4; font-weight: bold; } 
-        
-        /* Bảng chi tiết (Đỏ đậm) */
-        .details-table th { 
-            background: linear-gradient(to bottom, #ef5350 0%, #b71c1c 100%); 
-            color: white; border-color: #e57373;
+        .details-table th {
+            background: linear-gradient(180deg, #ef5350 0%, #c62828 100%); /* Đỏ đậm */
+            border-color: #ef9a9a;
         }
+        .highlight { background-color: #fffde7; } /* Nền vàng nhạt cho dòng tổng hợp */
         .details-table { margin-bottom: 10px; font-size: 14pt; }
-        
+
         /* Footer */
-        .footer-banner { padding: 8px; text-align: left; font-size: 14pt; color: white; margin-bottom: 5px; border-radius: 4px; font-weight: bold;}
+        .footer-banner { padding: 8px; text-align: left; font-size: 14pt; color: white; margin-bottom: 5px; border-radius: 4px; font-weight: bold; box-shadow: 2px 2px 4px rgba(0,0,0,0.2);}
         .footer-container { display: flex; align-items: flex-start; gap: 10px; position: relative; z-index: 1;}
         .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; color: #b71c1c; }
         .footer-right { width: 60%; }
         .totals-table td { padding: 5px 7px; font-size: 16pt; }
-        .footer-notes { font-size: 16pt; font-weight: bold; text-align: center; margin-top: 15px; color: #d32f2f; font-family: 'Dancing Script', cursive; }
+        
+        /* Chữ ký thư pháp */
+        .signature-font { font-family: 'Dancing Script', cursive; font-size: 26pt !important; color: #b71c1c; }
+        .footer-notes { font-size: 14pt; font-weight: bold; text-align: center; margin-top: 10px; color: #d32f2f; }
 
         .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; }
         .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
@@ -137,8 +141,7 @@
 <body>
 
     <div id="info-panel" class="info-panel">
-        <h1 style="font-family: 'Dancing Script', cursive; font-size: 30pt;">🌸 Bill Báo Hụi - Xuân Phát Tài 🌸</h1>
-        <h3 id="status-message" style="width: 100%; font-size: 14px; color: #666; font-weight: normal;">Đang chờ dữ liệu...</h3>
+        <h1 id="status-message">🌸 Đang tải dữ liệu Bill Tết...</h1>
         <button id="download-zip-btn" style="display: none; background-color: #d32f2f;">💾 Tải tất cả Bill (ZIP)</button>
     </div>
 
@@ -150,7 +153,6 @@
                 <div id="total-payable" class="total-box text-green">0</div> 
                 <button id="copy-payable-btn" style="background-color: #00b050; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; margin-top: 10px; cursor: pointer;">📋 Copy danh sách giao</button>
             </div>
-
             <div class="dashboard-col" style="border-bottom: 4px solid #d90000;">
                 <div class="label-text">TỔNG PHẢI THU (Bill Đóng):</div>
                 <div id="total-receivable" class="total-box text-red">0</div>
@@ -164,41 +166,55 @@
     <template id="bill-template">
          <div class="bill-page">
             
-            <svg class="decor-svg apricot-branch-tl" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-                <defs><radialGradient id="flowerGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%"><stop offset="0%" style="stop-color:#fff9c4;stop-opacity:1" /><stop offset="100%" style="stop-color:#fbc02d;stop-opacity:1" /></radialGradient></defs>
-                <path d="M-10 -10 Q50 50 150 40 Q250 30 350 100 M100 60 Q120 120 180 160 M200 80 Q250 40 300 60" stroke="#5d4037" stroke-width="5" fill="none" stroke-linecap="round"/>
-                <g fill="url(#flowerGrad)" stroke="#f57f17" stroke-width="1.5">
-                    <path transform="translate(150, 40) scale(1.2)" d="M0 -15 Q10 -25 20 -15 Q30 0 15 10 Q0 20 -15 10 Q-30 0 -20 -15 Q-10 -25 0 -15" />
-                    <circle cx="150" cy="40" r="4" fill="#e65100" stroke="none"/>
-                    
-                    <path transform="translate(250, 80)" d="M0 -15 Q10 -25 20 -15 Q30 0 15 10 Q0 20 -15 10 Q-30 0 -20 -15 Q-10 -25 0 -15" />
-                    <circle cx="250" cy="80" r="3" fill="#e65100" stroke="none"/>
-
-                    <path transform="translate(80, 80) scale(0.8)" d="M0 -15 Q10 -25 20 -15 Q30 0 15 10 Q0 20 -15 10 Q-30 0 -20 -15 Q-10 -25 0 -15" />
-                    <circle cx="80" cy="80" r="3" fill="#e65100" stroke="none"/>
-                    
-                    <path transform="translate(180, 160) scale(0.9)" d="M0 -15 Q10 -25 20 -15 Q30 0 15 10 Q0 20 -15 10 Q-30 0 -20 -15 Q-10 -25 0 -15" />
-                    <circle cx="180" cy="160" r="3" fill="#e65100" stroke="none"/>
-                </g>
-                <g fill="#d32f2f">
-                    <circle cx="320" cy="50" r="4"/><circle cx="120" cy="100" r="4"/><circle cx="220" cy="120" r="3"/>
-                </g>
+            <svg class="decor-svg apricot ap-left" viewBox="0 0 350 250" xmlns="http://www.w3.org/2000/svg">
+                <path d="M-10 -10 Q50 80 120 60 Q200 40 250 100 M80 60 Q100 120 150 150" stroke="#5d4037" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <circle cx="120" cy="60" r="15" fill="#fdd835" stroke="#fbc02d" stroke-width="2"/>
+                <circle cx="120" cy="60" r="5" fill="#fff9c4" stroke="none"/>
+                <circle cx="250" cy="100" r="18" fill="#fdd835" stroke="#fbc02d" stroke-width="2"/>
+                <circle cx="250" cy="100" r="6" fill="#fff9c4" stroke="none"/>
+                <circle cx="150" cy="150" r="12" fill="#fdd835" stroke="#fbc02d" stroke-width="2"/>
+                <circle cx="200" cy="50" r="4" fill="#d32f2f"/>
+                <circle cx="100" cy="100" r="4" fill="#d32f2f"/>
             </svg>
-            <svg class="decor-svg apricot-branch-tr" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><use href=".apricot-branch-tl path"/><use href=".apricot-branch-tl g:nth-of-type(1)"/><use href=".apricot-branch-tl g:nth-of-type(2)"/></svg>
+            <svg class="decor-svg apricot ap-right" viewBox="0 0 350 250" xmlns="http://www.w3.org/2000/svg"><use href=".ap-left path"/><use href=".ap-left circle:nth-of-type(1)"/><use href=".ap-left circle:nth-of-type(2)"/><use href=".ap-left circle:nth-of-type(3)"/><use href=".ap-left circle:nth-of-type(4)"/><use href=".ap-left circle:nth-of-type(5)"/><use href=".ap-left circle:nth-of-type(6)"/></svg>
 
-            <svg class="decor-svg lantern-left" viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
-                <line x1="50" y1="0" x2="50" y2="40" stroke="#b71c1c" stroke-width="2"/>
-                <g transform="translate(50, 70)">
+            <svg class="decor-svg firecracker fc-left" viewBox="0 0 80 300" xmlns="http://www.w3.org/2000/svg">
+                <line x1="40" y1="0" x2="40" y2="250" stroke="#d84315" stroke-width="3"/>
+                <g fill="#d32f2f" stroke="#b71c1c">
+                    <rect x="20" y="20" width="40" height="25" rx="3" transform="rotate(-5 40 32)"/>
+                    <rect x="20" y="50" width="40" height="25" rx="3" transform="rotate(5 40 62)"/>
+                    <rect x="20" y="80" width="40" height="25" rx="3" transform="rotate(-5 40 92)"/>
+                    <rect x="20" y="110" width="40" height="25" rx="3" transform="rotate(5 40 122)"/>
+                    <rect x="20" y="140" width="40" height="25" rx="3" transform="rotate(-5 40 152)"/>
+                    <rect x="20" y="170" width="40" height="25" rx="3" transform="rotate(5 40 182)"/>
+                </g>
+                <circle cx="40" cy="200" r="15" fill="#ffd700" stroke="#f57f17"/>
+                <text x="40" y="205" font-size="16" text-anchor="middle" fill="#d32f2f" font-weight="bold" font-family="Arial">Tết</text>
+            </svg>
+            <svg class="decor-svg firecracker fc-right" viewBox="0 0 80 300" xmlns="http://www.w3.org/2000/svg"><use href=".fc-left line"/><use href=".fc-left g"/><use href=".fc-left circle"/><use href=".fc-left text"/></svg>
+
+            <svg class="decor-svg lantern lt-left" viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+                <line x1="50" y1="0" x2="50" y2="50" stroke="#b71c1c" stroke-width="2"/>
+                <g transform="translate(50, 80)">
                     <ellipse cx="0" cy="0" rx="35" ry="30" fill="#d32f2f" stroke="#880e4f" stroke-width="2"/>
-                    <path d="M-20 -28 Q-30 0 -20 28 M0 -30 Q-10 0 0 30 M20 -28 Q30 0 20 28 M0 -30 Q10 0 0 30" stroke="#ffeb3b" stroke-width="1.5" fill="none" opacity="0.6"/>
+                    <path d="M-20 -28 Q-35 0 -20 28" fill="none" stroke="#ffeb3b" opacity="0.6"/>
+                    <path d="M20 -28 Q35 0 20 28" fill="none" stroke="#ffeb3b" opacity="0.6"/>
+                    <path d="M0 -30 V30" fill="none" stroke="#ffeb3b" opacity="0.6"/>
                     <rect x="-15" y="-32" width="30" height="6" fill="#fbc02d" rx="2"/>
                     <rect x="-15" y="26" width="30" height="6" fill="#fbc02d" rx="2"/>
                     <line x1="0" y1="32" x2="0" y2="80" stroke="#d32f2f" stroke-width="3"/>
-                    <line x1="0" y1="32" x2="-10" y2="70" stroke="#d32f2f" stroke-width="2"/>
-                    <line x1="0" y1="32" x2="10" y2="70" stroke="#d32f2f" stroke-width="2"/>
                 </g>
             </svg>
-            <svg class="decor-svg lantern-right" viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg"><use href=".lantern-left line"/><use href=".lantern-left g"/></svg>
+            <svg class="decor-svg lantern lt-right" viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg"><use href=".lt-left line"/><use href=".lt-left g"/></svg>
+
+            <svg class="decor-svg gold-ingot gold-left" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 50 Q10 20 50 20 L150 20 Q190 20 180 50 Q170 80 100 80 Q30 80 20 50" fill="#ffca28" stroke="#f57f17" stroke-width="2"/>
+                <ellipse cx="100" cy="20" rx="50" ry="10" fill="#fff176" stroke="#f57f17" stroke-width="1"/>
+                <path d="M60 50 Q100 65 140 50" stroke="#f57f17" stroke-width="2" fill="none" opacity="0.5"/>
+                <circle cx="160" cy="70" r="15" fill="#ffd700" stroke="#f9a825"/>
+                <rect x="155" y="65" width="10" height="10" fill="none" stroke="#f9a825"/>
+            </svg>
+            <svg class="decor-svg gold-ingot gold-right" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg"><use href=".gold-left path"/><use href=".gold-left ellipse"/><use href=".gold-left circle"/><use href=".gold-left rect"/></svg>
 
             <div class="bill-controls">
                 <button class="download-btn">Tải Bill</button>
@@ -214,8 +230,8 @@
                     <p data-field="bank_info"></p>
                 </div>
                 <div class="header-title-date">
-                    <h2 style="margin: 5px 0 0 0; font-size: 32pt;">BILL BÁO HỤI</h2>
-                    <p style="margin: 0; color: #555;">Ngày: <span data-field="ngay_tao_bill"></span></p>
+                    <h2>BILL BÁO HỤI</h2>
+                    <p>Ngày: <span data-field="ngay_tao_bill"></span></p>
                 </div>
                 <div class="qr-code" data-field="qr_container"></div>
             </div>
@@ -233,11 +249,11 @@
             <div class="footer-container">
                 <div class="footer-left">
                     <div class="footer-banner" data-field="footer_banner"></div>
-                    <span data-field="footer_hoi_vien" style="font-weight: bold; font-size: 18pt; color: #b71c1c;"></span>
+                    <span data-field="footer_hoi_vien" class="signature-font"></span>
                     <div class="footer-notes">
-                        <p>🌸 Chúc Mừng Năm Mới - Vạn Sự Như Ý 🌸</p>
-                        <p style="font-family: Arial; font-size: 13pt; color: #333; margin-top: 5px;" data-field="ghi_chu_1"></p>
-                        <p style="font-family: Arial; font-size: 13pt; color: #333;" data-field="ghi_chu_2"></p>
+                        <div style="font-family: 'Dancing Script', cursive; font-size: 20pt; color: #d32f2f;">Chúc Mừng Năm Mới - Vạn Sự Như Ý</div>
+                        <p data-field="ghi_chu_1" style="font-family: Arial; font-size: 13pt; color: #333; margin-top: 5px;"></p>
+                        <p data-field="ghi_chu_2" style="font-family: Arial; font-size: 13pt; color: #333;"></p>
                     </div>
                 </div>
                 <div class="footer-right">
@@ -252,30 +268,57 @@
     </template>
     
     <script>
-        // --- 1. BỘ XỬ LÝ VIETQR CHUẨN (BẢN TRUNG TÍNH) ---
+        // --- LOGIC GIỮ NGUYÊN 100% TỪ BẢN GỐC CỦA BẠN ---
         const VietQR = {
             cleanText: function(str) {
                 if (!str) return "";
                 return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^a-zA-Z0-9 ]/g, '').trim();
             },
             crc16: function(data) {
-                let crc = 0xFFFF; for (let i = 0; i < data.length; i++) { crc ^= data.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) { if ((crc & 0x8000) != 0) crc = (crc << 1) ^ 0x1021; else crc = crc << 1; } crc = crc & 0xFFFF; }
-                let hex = crc.toString(16).toUpperCase(); return "0000".substring(0, 4 - hex.length) + hex;
+                let crc = 0xFFFF;
+                for (let i = 0; i < data.length; i++) {
+                    crc ^= data.charCodeAt(i) << 8;
+                    for (let j = 0; j < 8; j++) {
+                        if ((crc & 0x8000) != 0) crc = (crc << 1) ^ 0x1021;
+                        else crc = crc << 1;
+                    }
+                    crc = crc & 0xFFFF;
+                }
+                let hex = crc.toString(16).toUpperCase();
+                return "0000".substring(0, 4 - hex.length) + hex;
             },
             generatePayload: function(bankBin, bankNumber, amount, content) {
-                const field = (id, value) => { const valStr = String(value); const len = valStr.length; return id + (len < 10 ? "0" + len : len) + valStr; };
-                const cleanBin = String(bankBin).replace(/\D/g, ''); const cleanAccount = String(bankNumber).replace(/[^a-zA-Z0-9]/g, '');
+                const field = (id, value) => {
+                    const valStr = String(value);
+                    const len = valStr.length;
+                    return id + (len < 10 ? "0" + len : len) + valStr;
+                };
+                const cleanBin = String(bankBin).replace(/\D/g, ''); 
+                const cleanAccount = String(bankNumber).replace(/[^a-zA-Z0-9]/g, ''); 
                 if (cleanBin.length < 4 || cleanAccount.length < 1) return null;
                 const merchantInfo = field("00", "A000000727") + field("01", field("00", cleanBin) + field("01", cleanAccount)) + field("02", "QRIBFTTA");
                 let qrStr = field("00", "01") + field("01", "12") + field("38", merchantInfo) + field("53", "704"); 
-                if (amount) { const cleanAmount = String(amount).replace(/\D/g, ''); if (parseInt(cleanAmount) > 0) qrStr += field("54", cleanAmount); }
+                if (amount) {
+                    const cleanAmount = String(amount).replace(/\D/g, '');
+                    if (parseInt(cleanAmount) > 0) qrStr += field("54", cleanAmount);
+                }
                 qrStr += field("58", "VN"); 
-                if (content) { const safeContent = this.cleanText(content); if (safeContent.length > 0) qrStr += field("62", field("08", safeContent)); }
-                qrStr += "6304"; qrStr += this.crc16(qrStr); return qrStr;
+                if (content) {
+                    const safeContent = this.cleanText(content);
+                    if (safeContent.length > 0) qrStr += field("62", field("08", safeContent));
+                }
+                qrStr += "6304"; 
+                qrStr += this.crc16(qrStr);
+                return qrStr;
             },
             parseRawData: function(rawString) {
-                if (!rawString) return null; while (rawString.startsWith('|')) { rawString = rawString.substring(1); } const parts = rawString.split('|');
-                if (parts.length >= 2) { return this.generatePayload(parts[0].trim(), parts[1].trim(), parts[2] || "0", parts[3] || ""); } return null;
+                if (!rawString) return null;
+                while (rawString.startsWith('|')) { rawString = rawString.substring(1); }
+                const parts = rawString.split('|');
+                if (parts.length >= 2) {
+                    return this.generatePayload(parts[0].trim(), parts[1].trim(), parts[2] || "0", parts[3] || "");
+                }
+                return null;
             }
         };
 
@@ -374,7 +417,7 @@
 
                 if (tongDong > tongHot) { 
                     banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; 
-                    banner.style.backgroundColor = '#d90000'; // ĐỎ
+                    banner.style.backgroundColor = '#d90000'; 
                     q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; 
                     const amount = tongDong - tongHot;
                     q('[data-field="final_amount"]').textContent = formatCurrency(amount); 
@@ -391,7 +434,7 @@
                     summaryTextReceivable += `${index+1}. ${kh.hoi_vien}: ${formatCurrency(amount)}\n`;
                 } else { 
                     banner.textContent = 'Hụi Viên được nhận tiền'; 
-                    banner.style.backgroundColor = '#00b050'; // XANH
+                    banner.style.backgroundColor = '#00b050'; 
                     q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; 
                     const amountPayable = tongHot - tongDong;
                     q('[data-field="final_amount"]').textContent = formatCurrency(amountPayable); 
@@ -416,20 +459,14 @@
                 document.getElementById('total-receivable').textContent = formatCurrency(grandTotalReceivable);
                 summaryTextReceivable += `--------------------\nTỔNG CỘNG THU: ${formatCurrency(grandTotalReceivable)}`;
                 globalSummaryTextReceivable = summaryTextReceivable;
-                
-                document.getElementById('copy-summary-btn').onclick = function() {
-                    navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!'));
-                };
+                document.getElementById('copy-summary-btn').onclick = function() { navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!')); };
 
                 document.getElementById('total-payable').textContent = formatCurrency(grandTotalPayable);
                 summaryTextPayable += `--------------------\nTỔNG CỘNG GIAO: ${formatCurrency(grandTotalPayable)}`;
                 globalSummaryTextPayable = summaryTextPayable;
-
                 const btnCopyPayable = document.getElementById('copy-payable-btn');
                 if (btnCopyPayable) {
-                    btnCopyPayable.onclick = function() {
-                        navigator.clipboard.writeText(globalSummaryTextPayable).then(() => alert('Đã copy danh sách phải GIAO!'));
-                    }
+                    btnCopyPayable.onclick = function() { navigator.clipboard.writeText(globalSummaryTextPayable).then(() => alert('Đã copy danh sách phải GIAO!')); }
                 }
             }
         }
