@@ -20,7 +20,7 @@
                 radial-gradient(circle at 15% 15%, rgba(255,215,0,0.07) 0%, transparent 30%);
         }
 
-        /* === Khung viền Tết giống bill thứ 2 === */
+        /* Khung viền Tết đỏ-vàng chuẩn */
         .bill-page {
             position: relative;
             background-color: white;
@@ -29,7 +29,7 @@
             margin: 35px auto;
             padding: 50px 45px;
             border: 16px solid transparent;
-            border-image: url('https://img.freepik.com/premium-vector/chinese-new-year-border-red-gold-pattern-with-flowers_788759-148.jpg') 40 round;
+            border-image: url('https://img.lovepik.com/free-png/20220126/lovepik-chinese-new-year-red-golden-border-png-image_401234678_wh1200.png') 40 round;
             border-image-slice: 40;
             border-radius: 12px;
             box-shadow: 
@@ -38,24 +38,24 @@
             overflow: hidden;
         }
 
-        /* 4 góc hoa mai & hoa đào - giống phong cách bill thứ 2 */
+        /* 4 góc hoa mai & hoa đào - chuẩn Tết Việt Nam */
         .corner {
             position: absolute;
-            width: 240px;
-            height: 240px;
+            width: 260px;
+            height: 260px;
             background-size: contain;
             background-repeat: no-repeat;
             z-index: 0;
             pointer-events: none;
-            opacity: 0.9;
+            opacity: 0.92;
         }
 
-        .top-left     { top: -70px; left: -55px; background-image: url('https://img.freepik.com/free-psd/yellow-apricot-flower-branch-isolated_1150-26977.jpg'); transform: rotate(-12deg); }
-        .top-right    { top: -65px; right: -50px; background-image: url('https://img.freepik.com/free-psd/peach-blossom-branch-isolated_1150-26980.jpg'); transform: rotate(10deg); }
-        .bottom-left  { bottom: -75px; left: -55px; background-image: url('https://img.freepik.com/free-psd/yellow-apricot-flower-branch-isolated_1150-26977.jpg'); transform: rotate(14deg); }
-        .bottom-right { bottom: -70px; right: -50px; background-image: url('https://img.freepik.com/free-psd/peach-blossom-branch-isolated_1150-26980.jpg'); transform: rotate(-11deg); }
+        .top-left     { top: -80px; left: -60px; background-image: url('https://png.pngtree.com/png-clipart/20220927/ourmid/pngtree-vietnamese-new-year-apricot-flowers-png-image_6218542.png'); transform: rotate(-10deg); }
+        .top-right    { top: -75px; right: -55px; background-image: url('https://png.pngtree.com/png-clipart/20250104/original/pngtree-vietnamese-new-year-peach-blossom-branch-png-image_18712491.png'); transform: rotate(9deg); }
+        .bottom-left  { bottom: -85px; left: -60px; background-image: url('https://png.pngtree.com/png-clipart/20220927/ourmid/pngtree-vietnamese-new-year-apricot-flowers-png-image_6218542.png'); transform: rotate(12deg); }
+        .bottom-right { bottom: -80px; right: -55px; background-image: url('https://png.pngtree.com/png-clipart/20250104/original/pngtree-vietnamese-new-year-peach-blossom-branch-png-image_18712491.png'); transform: rotate(-10deg); }
 
-        /* Header với dòng chúc mừng Tết */
+        /* Header Tết */
         .bill-header {
             position: relative;
             min-height: 240px;
@@ -90,7 +90,7 @@
             white-space: nowrap;
         }
 
-        /* Các style còn lại giữ nguyên */
+        /* Các phần còn lại giữ nguyên */
         .info-panel { 
             max-width: 900px; margin: 0 auto 25px auto; padding: 20px; 
             background: white; border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,0.1); 
@@ -171,7 +171,7 @@
 
     <template id="bill-template">
         <div class="bill-page">
-            <!-- 4 góc hoa trang trí -->
+            <!-- 4 góc hoa Tết chuẩn Việt Nam -->
             <div class="corner top-left"></div>
             <div class="corner top-right"></div>
             <div class="corner bottom-left"></div>
