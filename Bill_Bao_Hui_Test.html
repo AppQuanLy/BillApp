@@ -1,128 +1,95 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
+<html lang="vi"><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/content/location/location.js" id="eppiocemhmnlbhjplcgkofciiegomcon"></script><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/extend-native-history-api.js"></script><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/requests.js"></script><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bill Báo Hụi</title>
+    <title>Bill Báo Hụi - Tết</title>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script><script bis_use="true" type="text/javascript" charset="utf-8" data-bis-config="[&quot;facebook.com/&quot;,&quot;twitter.com/&quot;,&quot;youtube-nocookie.com/embed/&quot;,&quot;//vk.com/&quot;,&quot;//www.vk.com/&quot;,&quot;linkedin.com/&quot;,&quot;//www.linkedin.com/&quot;,&quot;//instagram.com/&quot;,&quot;//www.instagram.com/&quot;,&quot;//www.google.com/recaptcha/api2/&quot;,&quot;//hangouts.google.com/webchat/&quot;,&quot;//www.google.com/calendar/&quot;,&quot;//www.google.com/maps/embed&quot;,&quot;spotify.com/&quot;,&quot;soundcloud.com/&quot;,&quot;//player.vimeo.com/&quot;,&quot;//disqus.com/&quot;,&quot;//tgwidget.com/&quot;,&quot;//js.driftt.com/&quot;,&quot;friends2follow.com&quot;,&quot;/widget&quot;,&quot;login&quot;,&quot;//video.bigmir.net/&quot;,&quot;blogger.com&quot;,&quot;//smartlock.google.com/&quot;,&quot;//keep.google.com/&quot;,&quot;/web.tolstoycomments.com/&quot;,&quot;moz-extension://&quot;,&quot;chrome-extension://&quot;,&quot;/auth/&quot;,&quot;//analytics.google.com/&quot;,&quot;adclarity.com&quot;,&quot;paddle.com/checkout&quot;,&quot;hcaptcha.com&quot;,&quot;recaptcha.net&quot;,&quot;2captcha.com&quot;,&quot;accounts.google.com&quot;,&quot;www.google.com/shopping/customerreviews&quot;,&quot;buy.tinypass.com&quot;,&quot;gstatic.com&quot;,&quot;secureir.ebaystatic.com&quot;,&quot;docs.google.com&quot;,&quot;contacts.google.com&quot;,&quot;github.com&quot;,&quot;mail.google.com&quot;,&quot;chat.google.com&quot;,&quot;audio.xpleer.com&quot;,&quot;keepa.com&quot;,&quot;static.xx.fbcdn.net&quot;,&quot;sas.selleramp.com&quot;,&quot;1plus1.video&quot;,&quot;console.googletagservices.com&quot;,&quot;//lnkd.demdex.net/&quot;,&quot;//radar.cedexis.com/&quot;,&quot;//li.protechts.net/&quot;,&quot;challenges.cloudflare.com/&quot;,&quot;ogs.google.com&quot;]" data-dynamic-id="7b018928-f313-4b30-aed2-5066b560bede" src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/executors/traffic.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&amp;family=Roboto:wght@400;700&amp;display=swap" rel="stylesheet">
 
     <style>
         @page { size: A3 landscape; margin: 1.5cm; }
-        body { font-family: 'Roboto', sans-serif; background-color: #e0e0e0; margin: 0; padding: 20px; }
+        body { font-family: 'Roboto', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         
-        /* --- PANEL ĐIỀU KHIỂN --- */
         .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
         
-        /* --- DASHBOARD (GIỮ NGUYÊN) --- */
+        /* DASHBOARD */
         .dashboard-panel { max-width: 1200px; margin: 0 auto 20px auto; padding: 15px; background: #fff; border: 2px solid #ddd; border-radius: 8px; color: #333; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .dashboard-title { font-size: 20pt; font-weight: bold; margin-bottom: 20px; text-align: center; text-transform: uppercase; color: #b71c1c; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .dashboard-title { font-size: 20pt; font-weight: bold; margin-bottom: 20px; text-align: center; text-transform: uppercase; color: #444; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .dashboard-grid { display: flex; gap: 30px; justify-content: space-between; }
         .dashboard-col { flex: 1; text-align: center; padding: 15px; border-radius: 8px; background-color: #f9f9f9; border: 1px solid #eee; }
         .total-box { font-size: 28pt; font-weight: bold; margin: 10px 0; }
         .label-text { font-size: 14pt; font-weight: bold; color: #555; }
         
-        /* --- CSS BILL TẾT (STYLE ĐỎ CỦA BẠN) --- */
+        /* --- KHUNG BILL CHÍNH --- */
         .bill-page { 
-            /* NỀN ĐỎ CHỦ ĐẠO */
-            background-color: #8B0000; /* Đỏ đậm */
+            background-color: #fff; 
             max-width: 1200px; min-width: 1200px; 
-            margin: 20px auto; padding: 40px; 
-            
-            /* Viền Vàng */
-            border: 3px solid #ffd700; 
-            outline: 5px solid #8B0000; /* Viền đỏ ngoài cùng */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
-            
+            margin: 20px auto; padding: 30px; 
             position: relative; 
             font-family: Arial, sans-serif; font-size: 16pt; 
-            color: #fff; /* Chữ mặc định màu trắng */
-            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden; /* Để ảnh tràn viền không bị lòi ra */
+            /* Nếu muốn viền màu, bỏ comment dòng dưới */
+            /* border: 2px solid #d32f2f; */
         }
 
-        /* --- CẤU HÌNH ẢNH TRANG TRÍ (4 GÓC) --- */
+        /* --- CLASS CHO HÌNH ẢNH TRANG TRÍ --- */
         .decor-img {
             position: absolute;
-            width: 250px; /* Kích thước ảnh góc */
+            z-index: 1; /* Nằm trên nền trắng, dưới chữ */
+            pointer-events: none; /* Để chuột bấm xuyên qua được */
+            max-width: 300px; /* Giới hạn kích thước ảnh */
             height: auto;
-            z-index: 1; 
-            pointer-events: none;
         }
 
-        /* Vị trí 4 góc */
+        /* VỊ TRÍ 4 GÓC - BẠN CÓ THỂ CHỈNH SỐ PIXEL (px) ĐỂ DỊCH CHUYỂN */
         .img-tl { top: 0; left: 0; }
         .img-tr { top: 0; right: 0; }
         .img-bl { bottom: 0; left: 0; }
         .img-br { bottom: 0; right: 0; }
-
-        /* Nội dung bill nằm đè lên ảnh */
-        .bill-content-wrapper { position: relative; z-index: 2; }
-
-        /* NÚT BẤM (Style lại cho hợp nền đỏ) */
-        .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 100; }
-        .bill-controls button { padding: 8px 15px; font-size: 13px; cursor: pointer; border: 1px solid #fff; border-radius: 4px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .download-btn { background-color: #d32f2f; color: white; } 
-        .copy-btn { background-color: #fbc02d; color: #8B0000; } 
-        .share-btn { background-color: #0288d1; color: white; } 
-
-        /* HEADER */
-        .bill-header { position: relative; min-height: 220px; border-bottom: 2px solid #ffd700; margin-bottom: 15px; padding-bottom: 10px; }
-        .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.6; max-width: 35%; color: #fff; }
         
-        .header-title-date { position: absolute; left: 50%; top: 40px; transform: translateX(-50%); text-align: center; width: 60%; }
-        .header-title-date h2 { 
-            margin: 0; font-size: 40pt; 
-            color: #ffd700; /* Chữ Vàng */
-            text-transform: uppercase; font-weight: 900;
-            text-shadow: 2px 2px 0px #333;
+        /* ẢNH VIỀN (NẾU CÓ) */
+        .img-border {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; object-fit: fill; pointer-events: none;
         }
-        .header-title-date p { margin-top: 5px; font-size: 14pt; color: #ffd700; font-weight: normal; }
+
+        /* ĐẨY NỘI DUNG LÊN TRÊN ẢNH */
+        .bill-content { position: relative; z-index: 2; }
+
+        /* NÚT BẤM */
+        .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 100; }
+        .bill-controls button { padding: 5px 10px; font-size: 12px; cursor: pointer; color: white; border: none; border-radius: 4px; font-weight: bold; }
         
-        /* QR Code: Nền trắng để quét được */
-        .qr-code { width: 170px; height: 170px; position: absolute; right: 0; top: 10px; background-color: white; padding: 5px; border: 3px solid #ffd700; border-radius: 4px; }
+        /* HEADER */
+        .bill-header { position: relative; min-height: 210px; border-bottom: 1px solid #ccc; margin-bottom: 15px; }
+        .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.5; max-width: 30%; }
+        .header-title-date { position: absolute; left: 50%; top: 50px; transform: translateX(-50%); text-align: center; width: 60%; }
+        .qr-code { width: 200px; height: 200px; position: absolute; right: 0; top: 0; background-color: white; padding: 5px; }
         .qr-code img { width: 100%; height: 100%; }
 
-        /* BẢNG DỮ LIỆU (Style Đỏ - Vàng) */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #fff; }
-        th, td { border: 1px solid #ffd700; padding: 6px 8px; vertical-align: middle; }
+        .download-btn { background-color: #0275d8; } 
+        .copy-btn { background-color: #5bc0de; } 
+        .share-btn { background-color: #5cb85c; } 
         
-        /* Header Bảng */
-        th { 
-            background: linear-gradient(to bottom, #ffd700, #ffb300); /* Vàng kim */
-            color: #8B0000; /* Chữ Đỏ */
-            font-weight: bold; text-transform: uppercase; 
-            border-color: #fff;
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #000; }
+        th, td { border: 1px solid #666; padding: 4px 6px; vertical-align: middle; }
+        th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
+        .summary-table th { background-color: #d9e1f2; }
+        .highlight { background-color: #fff2cc; } 
+        .details-table th { background-color: #d9e1f2; }
         
-        /* Bảng Tổng Hợp */
-        .summary-table th { background: linear-gradient(to bottom, #ffd700, #ffca28); color: #8B0000; }
-        
-        /* Màu nền các dòng dữ liệu */
-        .highlight { background-color: #a52a2a; color: #fff; } /* Nâu đỏ nhạt */
-        
-        /* Footer */
-        .footer-banner { 
-            padding: 8px; text-align: left; font-size: 14pt; 
-            color: #fff; background-color: #b71c1c; 
-            border: 1px solid #ffd700; margin-bottom: 5px; font-weight: bold; 
-        }
-        .footer-container { display: flex; align-items: flex-start; gap: 10px; margin-top: 20px;}
-        .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; color: #ffd700; }
+        .footer-banner { padding: 5px; text-align: left; font-size: 14pt; color: white; margin-bottom: 5px;}
+        .footer-container { display: flex; align-items: flex-start; gap: 10px;}
+        .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; }
         .footer-right { width: 60%; }
         .totals-table td { padding: 5px 7px; font-size: 16pt; }
         
-        /* Các màu chữ tiện ích */
         .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; }
         .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
-        .text-red { color: #ffeb3b !important; } /* Trên nền đỏ thì chữ quan trọng chuyển thành Vàng */
-        .text-green { color: #00ff00 !important; } 
-        .text-blue { color: #00ffff !important; } /* Xanh cyan cho dễ đọc trên nền đỏ */
-
-        /* Nút Tải Zip (Đỏ) */
-        #download-zip-btn { background-color: #d32f2f; color: white; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 5px; font-size: 16px; }
+        .text-red { color: #d90000; } .text-green { color: #00b050; } .text-blue { color: #0068ff; }
 
         @media print {
             .info-panel, .bill-controls, .dashboard-panel { display: none !important; }
@@ -130,47 +97,100 @@
         }
     </style>
 </head>
-<body>
+<body bis_register="W3sibWFzdGVyIjp0cnVlLCJleHRlbnNpb25JZCI6ImVwcGlvY2VtaG1ubGJoanBsY2drb2ZjaWllZ29tY29uIiwiYWRibG9ja2VyU3RhdHVzIjp7IkRJU1BMQVkiOiJlbmFibGVkIiwiRkFDRUJPT0siOiJlbmFibGVkIiwiVFdJVFRFUiI6ImVuYWJsZWQiLCJSRURESVQiOiJlbmFibGVkIiwiUElOVEVSRVNUIjoiZW5hYmxlZCIsIklOU1RBR1JBTSI6ImVuYWJsZWQiLCJUSUtUT0siOiJkaXNhYmxlZCIsIkxJTktFRElOIjoiZW5hYmxlZCIsIkNPTkZJRyI6ImRpc2FibGVkIn0sInZlcnNpb24iOiIyLjAuMzgiLCJzY29yZSI6MjAwMzgwfV0=" __processed_60bc3153-040a-4600-b803-70f44af10c80__="true">
 
-    <div id="info-panel" class="info-panel">
-        <h1 style="color:#b71c1c;">🧧 BILL BÁO HỤI 🧧</h1>
-        <button id="download-zip-btn" style="display: none;">💾 Tải tất cả Bill (ZIP)</button>
+    <div id="info-panel" class="info-panel" bis_skin_checked="1" style="display: block;">
+        <h1 id="status-message" style="display: none;">Đang tải và tạo bill...</h1>
+        <button id="download-zip-btn" style="display: inline-block; background-color: rgb(51, 122, 183);">💾 Tải tất cả Bill (ZIP)</button>
     </div>
 
-    <div id="dashboard-panel" class="dashboard-panel">
-        <div class="dashboard-title">BẢNG TỔNG HỢP NHANH</div>
-        <div class="dashboard-grid">
-            <div class="dashboard-col" style="border-bottom: 4px solid #00b050;">
-                <div class="label-text">TỔNG PHẢI GIAO (Bill Hốt):</div>
-                <div id="total-payable" class="total-box" style="color: #00b050;">0</div> 
+    <div id="dashboard-panel" class="dashboard-panel" bis_skin_checked="1" style="display: block;">
+        <div class="dashboard-title" bis_skin_checked="1">BẢNG TỔNG HỢP NHANH</div>
+        <div class="dashboard-grid" bis_skin_checked="1">
+            <div class="dashboard-col" style="border-bottom: 4px solid #00b050;" bis_skin_checked="1">
+                <div class="label-text" bis_skin_checked="1">TỔNG PHẢI GIAO (Bill Hốt):</div>
+                <div id="total-payable" class="total-box text-green" bis_skin_checked="1">0</div> 
                 <button id="copy-payable-btn" style="background-color: #00b050; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; margin-top: 10px; cursor: pointer;">📋 Copy danh sách giao</button>
             </div>
-            <div class="dashboard-col" style="border-bottom: 4px solid #d90000;">
-                <div class="label-text">TỔNG PHẢI THU (Bill Đóng):</div>
-                <div id="total-receivable" class="total-box" style="color: #d90000;">0</div>
+            <div class="dashboard-col" style="border-bottom: 4px solid #d90000;" bis_skin_checked="1">
+                <div class="label-text" bis_skin_checked="1">TỔNG PHẢI THU (Bill Đóng):</div>
+                <div id="total-receivable" class="total-box text-red" bis_skin_checked="1">950.000</div>
                 <button id="copy-summary-btn" style="background-color: #d90000; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; margin-top: 10px; cursor: pointer;">📋 Copy danh sách thu</button>
             </div>
         </div>
     </div>
     
-    <div id="bills-container"></div>
+    <div id="bills-container" bis_skin_checked="1">
+         <div class="bill-page" data-sdt="" data-hoivien="Hà Trần" bis_skin_checked="1">
+            
+            <img class="decor-img img-tl" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
+            
+            <img class="decor-img img-tr" style="transform: scaleX(-1);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
+            
+            <img class="decor-img img-bl" style="transform: scaleY(-1);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
+            
+            <img class="decor-img img-br" style="transform: rotate(180deg);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
+
+            <div class="bill-content" bis_skin_checked="1">
+                
+                
+                <div class="bill-header" bis_skin_checked="1">
+                    <div class="header-left" bis_skin_checked="1">
+                        <p>Chủ hụi: <span data-field="chu_hui">Thành Lê</span></p>
+                        <p>SĐT: <span data-field="sdt">0967112586</span></p>
+                        <p>Địa chỉ: <span data-field="dia_chi">cà Ná</span></p>
+                        <p data-field="bank_info">BIDV: 8835549273</p>
+                    </div>
+                    <div class="header-title-date" bis_skin_checked="1">
+                        <h2 style="margin: 5px 0 0 0;font-size: 30pt;color: #ffe278;">BILL BÁO HỤI</h2>
+                        <p style="margin: 0;color: #ffe278;">Ngày: <span data-field="ngay_tao_bill">13/01/2026</span></p>
+                    </div>
+                    <div class="qr-code" data-field="qr_container" title="00020101021238540010A00000072701240006970418011088355492730208QRIBFTTA530370454069500005802VN62300826Ha Tran CK tien H 1301202663045077" bis_skin_checked="1"><canvas width="200" height="200" style="display: none;"></canvas><img src="data:image/png;base64,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" style="display: block;"></div>
+                </div>
+
+                <table class="summary-table text-center">
+                    <thead><tr><th class="highlight" data-field="summary_title_hui_vien">Hụi Viên | 41 Dây, 43 C</th><th class="highlight" data-field="summary_title_hui_chet">Hụi Chết | 38 C</th><th class="highlight" data-field="summary_title_hui_song">Hụi Sống | 5 C</th><th class="highlight">Âm/Dương *</th><th class="highlight">Lợi Nhuận</th></tr></thead>
+                    <tbody><tr><td class="font-bold" data-field="hoi_vien">Hà Trần</td><td data-field="tong_hui_chet">144.500.000</td><td data-field="tong_hui_song">10.120.000</td><td class="font-bold text-red" data-field="am_duong">-134.380.000</td><td class="font-bold text-red" data-field="loi_nhuan">-46.085.000</td></tr></tbody>
+                </table>
+                
+                <table class="details-table text-center">
+                    <thead><tr><th style="width: 4%;color: #b82220;">STT</th><th style="color: #b82220;">Dây Hụi</th><th style="color: #b82220;">Kỳ</th><th style="color: #b82220;">Khui</th><th style="color: #b82220;">SỐNG</th><th style="color: #b82220;">CHẾT</th><th style="color: #b82220;">Tiền Hốt</th><th style="color: #b82220;">Tiền Đóng</th><th style="color: #b82220;">Thăm</th><th style="color: #b82220;">Thảo</th><th style="color: #b82220;">Đúp</th></tr></thead>
+                    <tbody data-field="details_tbody"><tr><td>1</td><td>700000</td><td>6/11</td><td class="font-bold text-red">B38 Tuần 700k</td><td>0</td><td>1</td><td>0</td><td>700.000</td><td class="font-bold text-red">0</td><td>0</td><td>0</td></tr><tr><td>2</td><td></td><td>2/39</td><td class="font-bold text-red">góp cd27</td><td>0</td><td>1</td><td>0</td><td>250.000</td><td class="font-bold text-red">0</td><td>0</td><td>0</td></tr></tbody>
+                </table>
+
+                <div class="footer-container" bis_skin_checked="1">
+                    <div class="footer-left" bis_skin_checked="1">
+                        <div class="footer-banner" data-field="footer_banner" bis_skin_checked="1" style="background-color: rgb(217, 0, 0);">Chủ Hụi phải thu tiền Hụi Viên</div>
+                        <span data-field="footer_hoi_vien" style="font-family: 'Dancing Script', cursive;font-size: 24pt;color: #ffe278;">Hà Trần</span>
+                        <div class="footer-notes" bis_skin_checked="1">
+                            <p data-field="ghi_chu_1">Hụi đóng trước 5h,  đóng trễ 2 lần sẽ bị phốt trên các trang mạng xã hội, Facebook zalo, hội nhóm</p>
+                            <p data-field="ghi_chu_2">thông tin người nộp tiền</p>
+                        </div>
+                    </div>
+                    <div class="footer-right" bis_skin_checked="1">
+                        <table class="totals-table no-border">
+                            <tbody><tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong">950.000</td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham">Tổng Thăm: 0</td></tr>
+                            <tr><td class="font-bold">Tổng Tiền Hốt:</td><td class="text-right font-large font-bold" data-field="bill_tong_hot">0</td><td class="text-center">(2)</td><td class="text-blue font-bold" data-field="tong_thao">Tổng Thảo: 750.000</td></tr>
+                            <tr><td class="font-bold" data-field="final_text_label">Phải Đóng:</td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount">950.000</td><td class="text-center font-bold"></td><td class="text-center font-bold" data-field="final_formula_text">=(1)-(2)</td></tr>
+                        </tbody></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <template id="bill-template">
          <div class="bill-page">
             
-            <img class="decor-img img-tl" crossorigin="anonymous" 
-                 src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+            <img class="decor-img img-tl" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
             
-            <img class="decor-img img-tr" crossorigin="anonymous" style="transform: scaleX(-1);"
-                 src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+            <img class="decor-img img-tr" style="transform: scaleX(-1);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
             
-            <img class="decor-img img-bl" crossorigin="anonymous" style="transform: scaleY(-1);"
-                 src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+            <img class="decor-img img-bl" style="transform: scaleY(-1);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
             
-            <img class="decor-img img-br" crossorigin="anonymous" style="transform: rotate(180deg);"
-                 src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+            <img class="decor-img img-br" style="transform: rotate(180deg);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
 
-            <div class="bill-content-wrapper">
+            <div class="bill-content">
                 <div class="bill-controls">
                     <button class="download-btn">Tải Bill</button>
                     <button class="copy-btn">Copy Bill</button>
@@ -185,7 +205,7 @@
                         <p data-field="bank_info"></p>
                     </div>
                     <div class="header-title-date">
-                        <h2>BILL BÁO HỤI</h2>
+                        <h2 style="margin: 5px 0 0 0; font-size: 30pt; color: #b71c1c;">BILL BÁO HỤI</h2>
                         <p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p>
                     </div>
                     <div class="qr-code" data-field="qr_container"></div>
@@ -204,18 +224,18 @@
                 <div class="footer-container">
                     <div class="footer-left">
                         <div class="footer-banner" data-field="footer_banner"></div>
-                        <span data-field="footer_hoi_vien" style="font-family: 'Dancing Script', cursive; font-size: 30pt; color: #ffd700;"></span>
-                        <div class="footer-notes" style="margin-top: 10px;">
-                            <p data-field="ghi_chu_1" style="font-weight: bold;"></p>
+                        <span data-field="footer_hoi_vien" style="font-family: 'Dancing Script', cursive; font-size: 24pt; color: #b71c1c;"></span>
+                        <div class="footer-notes">
+                            <p data-field="ghi_chu_1"></p>
                             <p data-field="ghi_chu_2"></p>
                         </div>
                     </div>
                     <div class="footer-right">
                         <table class="totals-table no-border">
-                            <tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham"></td></tr>
+                            <tbody><tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham"></td></tr>
                             <tr><td class="font-bold">Tổng Tiền Hốt:</td><td class="text-right font-large font-bold" data-field="bill_tong_hot"></td><td class="text-center">(2)</td><td class="text-blue font-bold" data-field="tong_thao"></td></tr>
                             <tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-center font-bold"></td><td class="text-center font-bold" data-field="final_formula_text"></td></tr>
-                        </table>
+                        </tbody></table>
                     </div>
                 </div>
             </div>
@@ -223,7 +243,6 @@
     </template>
     
     <script>
-        // --- GIỮ NGUYÊN HOÀN TOÀN CODE JS CỦA BẠN ---
         const VietQR = {
             cleanText: function(str) { if (!str) return ""; return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^a-zA-Z0-9 ]/g, '').trim(); },
             crc16: function(data) { let crc = 0xFFFF; for (let i = 0; i < data.length; i++) { crc ^= data.charCodeAt(i) << 8; for (let j = 0; j < 8; j++) { if ((crc & 0x8000) != 0) crc = (crc << 1) ^ 0x1021; else crc = crc << 1; } crc = crc & 0xFFFF; } let hex = crc.toString(16).toUpperCase(); return "0000".substring(0, 4 - hex.length) + hex; },
@@ -238,18 +257,16 @@
             const statusMessage = document.getElementById('status-message');
             const downloadZipBtn = document.getElementById('download-zip-btn');
             infoPanel.style.display = 'block';
-
-            if (typeof QRCode === 'undefined') { statusMessage.textContent = 'Lỗi: Không tải được thư viện QRCode.js'; return; }
-
+            
             try {
                 const encodedData = window.location.hash.substring(1);
-                if (!encodedData) { statusMessage.textContent = 'Không tìm thấy dữ liệu.'; return; }
-                const jsonData = decodeURIComponent(encodedData);
-                generateBills(jsonData);
-
-                statusMessage.style.display = 'none';
-                downloadZipBtn.style.display = 'inline-block';
-                downloadZipBtn.addEventListener('click', downloadAllAsZip);
+                if (encodedData) {
+                    const jsonData = decodeURIComponent(encodedData);
+                    generateBills(jsonData);
+                    statusMessage.style.display = 'none';
+                    downloadZipBtn.style.display = 'inline-block';
+                    downloadZipBtn.addEventListener('click', downloadAllAsZip);
+                }
             } catch (error) { statusMessage.textContent = 'Lỗi dữ liệu bill.'; console.error(error); }
         };
 
@@ -283,16 +300,15 @@
                 q('[data-field="hoi_vien"]').textContent = kh.hoi_vien || ''; 
                 q('[data-field="tong_hui_chet"]').textContent = formatCurrency(kh.tong_hui_chet); 
                 q('[data-field="tong_hui_song"]').textContent = formatCurrency(kh.tong_hui_song); 
+                q('[data-field="am_duong"]').textContent = formatCurrency(kh.am_duong); 
+                q('[data-field="loi_nhuan"]').textContent = formatCurrency(kh.loi_nhuan); 
                 
                 const amDuongCell = q('[data-field="am_duong"]'); 
                 const amDuongValue = kh.am_duong || 0; 
-                amDuongCell.textContent = formatCurrency(amDuongValue); 
-                // Điều chỉnh màu chữ cho phù hợp nền đỏ
                 if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } 
                 
                 const loiNhuanCell = q('[data-field="loi_nhuan"]'); 
                 const loiNhuanValue = kh.loi_nhuan || 0; 
-                loiNhuanCell.textContent = formatCurrency(loiNhuanValue); 
                 if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
                 
                 const detailsBody = q('[data-field="details_tbody"]');
@@ -303,7 +319,7 @@
                     allDetails.forEach(d => {
                         const row = document.createElement('tr');
                         if ((d.khui || '').toLowerCase().includes('nợ')) {
-                            row.style.backgroundColor = '#800000'; // Màu nền đậm hơn cho dòng nợ
+                            row.style.backgroundColor = '#fff0f0';
                             row.innerHTML = `<td colspan="8" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
                         } else {
                             row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
@@ -327,8 +343,7 @@
 
                 if (tongDong > tongHot) { 
                     banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; 
-                    banner.style.backgroundColor = '#d32f2f'; // Đỏ tươi
-                    banner.style.border = '1px solid #fff';
+                    banner.style.backgroundColor = '#d90000'; 
                     q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; 
                     const amount = tongDong - tongHot;
                     q('[data-field="final_amount"]').textContent = formatCurrency(amount); 
@@ -338,15 +353,14 @@
                     if (qrRawData) {
                         const qrPayload = VietQR.parseRawData(qrRawData);
                         if (qrPayload) {
-                            new QRCode(qrContainer, { text: qrPayload, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.L });
+                            new QRCode(qrContainer, { text: qrPayload, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.L });
                         } else { qrContainer.innerHTML = "<div style='color:red;font-size:12px;text-align:center;padding-top:60px;font-weight:bold'>Lỗi: Thiếu BIN<br>hoặc STK</div>"; }
                     }
                     grandTotalReceivable += amount;
                     summaryTextReceivable += `${index+1}. ${kh.hoi_vien}: ${formatCurrency(amount)}\n`;
                 } else { 
                     banner.textContent = 'Hụi Viên được nhận tiền'; 
-                    banner.style.backgroundColor = '#006400'; // Xanh lá đậm
-                    banner.style.border = '1px solid #fff';
+                    banner.style.backgroundColor = '#00b050'; 
                     q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; 
                     const amountPayable = tongHot - tongDong;
                     q('[data-field="final_amount"]').textContent = formatCurrency(amountPayable); 
@@ -363,6 +377,7 @@
                 billNode.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
                 billNode.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
                 billNode.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+                
                 billsContainer.appendChild(billNode);
             });
 
@@ -371,20 +386,14 @@
                 document.getElementById('total-receivable').textContent = formatCurrency(grandTotalReceivable);
                 summaryTextReceivable += `--------------------\nTỔNG CỘNG THU: ${formatCurrency(grandTotalReceivable)}`;
                 globalSummaryTextReceivable = summaryTextReceivable;
-                
-                document.getElementById('copy-summary-btn').onclick = function() {
-                    navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!'));
-                };
+                document.getElementById('copy-summary-btn').onclick = function() { navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!')); };
 
                 document.getElementById('total-payable').textContent = formatCurrency(grandTotalPayable);
                 summaryTextPayable += `--------------------\nTỔNG CỘNG GIAO: ${formatCurrency(grandTotalPayable)}`;
                 globalSummaryTextPayable = summaryTextPayable;
-
                 const btnCopyPayable = document.getElementById('copy-payable-btn');
                 if (btnCopyPayable) {
-                    btnCopyPayable.onclick = function() {
-                        navigator.clipboard.writeText(globalSummaryTextPayable).then(() => alert('Đã copy danh sách phải GIAO!'));
-                    }
+                    btnCopyPayable.onclick = function() { navigator.clipboard.writeText(globalSummaryTextPayable).then(() => alert('Đã copy danh sách phải GIAO!')); }
                 }
             }
         }
@@ -394,5 +403,6 @@
         async function shareBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png'; const shareBtn = element.querySelector('.share-btn'); const originalText = shareBtn.textContent; shareBtn.textContent = "⏳ Đang xử lý..."; shareBtn.disabled = true; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const tryShare = async (scale) => { const canvas = await html2canvas(element, { scale: scale, useCORS: true, logging: false }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], filename, { type: 'image/png' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); } else { throw new Error('No Share API'); } }; try { await tryShare(1.5); } catch (e) { console.log("Thử lại chất lượng thấp"); await tryShare(1.0); } } catch (error) { if(!error.message.includes('No Share API')) alert('Lỗi gửi bill. Hãy thử Tải Bill.'); else alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } finally { c.style.display = 'flex'; shareBtn.textContent = originalText; shareBtn.disabled = false; } }
         async function downloadAllAsZip() { const bills = document.querySelectorAll('.bill-page'); const total = bills.length; if (total === 0) { alert('Không có bill nào để tải.'); return; } const button = document.getElementById('download-zip-btn'); const originalText = button.innerHTML; button.disabled = true; const zip = new JSZip(); let successCount = 0; for (let i = 0; i < total; i++) { const bill = bills[i]; button.innerHTML = `⏳ Đang xử lý ${i + 1}/${total}...`; const controls = bill.querySelector('.bill-controls'); if (controls) controls.style.display = 'none'; try { const capturePromise = html2canvas(bill, { scale: 1.5, useCORS: true, logging: false }); const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 8000)); const canvas = await Promise.race([capturePromise, timeoutPromise]); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const sdt = bill.dataset.sdt; const hoivien = bill.dataset.hoivien; const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png'; zip.file(fileName, blob); successCount++; } catch (error) { console.error(`Lỗi bill ${i}:`, error); } finally { if (controls) controls.style.display = 'flex'; } await new Promise(r => setTimeout(r, 100)); } if (successCount > 0) { button.innerHTML = '📦 Đang nén...'; const content = await zip.generateAsync({ type: "blob" }); const link = document.createElement('a'); link.href = URL.createObjectURL(content); const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-'); link.download = `Tat_ca_bill_${today}.zip`; document.body.appendChild(link); link.click(); document.body.removeChild(link); } button.innerHTML = originalText; button.disabled = false; }
     </script>
-</body>
-</html>
+
+
+</body></html>
