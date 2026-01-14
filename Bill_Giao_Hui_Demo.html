@@ -121,26 +121,25 @@
         .bill-controls button:hover {
             transform: translateY(-2px); /* Hiệu ứng khi di chuột qua */
         }
-              /* --- CLASS CHO HÌNH ẢNH TRANG TRÍ --- */
-        .decor-img {
-            position: absolute;
-            z-index: 1; /* Nằm trên nền trắng, dưới chữ */
-            pointer-events: none; /* Để chuột bấm xuyên qua được */
-            max-width: 300px; /* Giới hạn kích thước ảnh */
-            height: auto;
-        }
+/* CSS RIÊNG CHO ẢNH GÓC BILL ĐỨNG */
+    .bill-page { position: relative; overflow: hidden; padding: 20px; } /* Quan trọng */
+    
+    .decor-img {
+        position: absolute;
+        width: 120px; /* Nhỏ hơn bill ngang (250px) */
+        height: auto;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    /* Vị trí 4 góc */
+    .img-tl { top: 0; left: 0; }
+    .img-tr { top: 0; right: 0; transform: scaleX(-1); }
+    .img-bl { bottom: 0; left: 0; transform: scaleY(-1); }
+    .img-br { bottom: 0; right: 0; transform: rotate(180deg); }
 
-        /* VỊ TRÍ 4 GÓC - BẠN CÓ THỂ CHỈNH SỐ PIXEL (px) ĐỂ DỊCH CHUYỂN */
-        .img-tl { top: 0; left: 0; }
-        .img-tr { top: 0; right: 0; }
-        .img-bl { bottom: 0; left: 0; }
-        .img-br { bottom: 0; right: 0; }
-        
-        /* ẢNH VIỀN (NẾU CÓ) */
-        .img-border {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; object-fit: fill; pointer-events: none;
-        }
+    /* Đảm bảo nội dung luôn nổi lên trên ảnh */
+    .bill-content-wrapper { position: relative; z-index: 2; }
 
         /* ĐẨY NỘI DUNG LÊN TRÊN ẢNH */
         .bill-content { position: relative; z-index: 2; }
@@ -152,11 +151,16 @@
 <body>
     <div class="container" id="bill-to-capture">
       
-             <img class="decor-img img-tl" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
-             <img class="decor-img img-tr" style="transform: scaleX(-1);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
-             <img class="decor-img img-bl" style="transform: scaleY(-1);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
-             <img class="decor-img img-br" style="transform: rotate(180deg);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png" crossorigin="anonymous">
-<div class="bill-content">
+<div class="bill-page">
+    <img class="decor-img img-tl" crossorigin="anonymous" src="LINK_TOP_LEFT_CUA_BAN">
+    <img class="decor-img img-tr" crossorigin="anonymous" src="LINK_TOP_LEFT_CUA_BAN">
+    <img class="decor-img img-bl" crossorigin="anonymous" src="LINK_TOP_LEFT_CUA_BAN">
+    <img class="decor-img img-br" crossorigin="anonymous" src="LINK_TOP_LEFT_CUA_BAN">
+
+    <div class="bill-content-wrapper">
+        </div>
+</div>
+
         <div class="header">
             <div class="left">
                 <div>Chủ Hụi: <span data-field="chu_hui_ten"></span></div>
@@ -262,7 +266,6 @@
             <button class="share-btn">Gửi Bill</button>
         </div>
     </div>
-      </div>
     
     <script>
         let billData = {};
