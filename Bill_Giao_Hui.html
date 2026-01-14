@@ -14,12 +14,12 @@
             margin: 0;
             padding: 20px;
             font-size: 17pt;
-            color: #000;
+            color: #fff;
         }
         .container {
             width: 21cm;
             min-height: 29.7cm;
-            padding: 1cm;
+            padding: 0;
             margin: auto;
             background: white;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -28,6 +28,7 @@
         .header {
             display: flex;
             justify-content: space-between;
+            margin-top: 15px;
             margin-bottom: 20px;
             font-size: 14pt;
             font-weight: bold;
@@ -43,19 +44,21 @@
         }
         table {
             width: 100%;
-            border-collapse: collapse;
             margin-bottom: 20px;
+            color: #fff;
         }
         th, td {
-            border: 1px solid black;
+            border: 2px solid #ffe278;
             padding: 8px;
             vertical-align: middle;
         }
         th {
-            background-color: #d9e2f3; /* Màu xanh nhạt */
+            background-color: #f7c563; /* Màu xanh nhạt */
+            background-image: linear-gradient(to right, #f7c563, #fee8a1);
             font-weight: bold;
             text-align: left;
             padding-left: 15px;
+            color: #b82220;
         }
         .info-table td:first-child,
         .payment-table td:first-child {
@@ -70,17 +73,17 @@
             font-size: 20pt;
             font-weight: bold;
         }
-        .text-red { color: #ff0000; }
-        .text-orange { color: #ff8a00; }
+        .text-red { color: #fee8a1; }
+        .text-orange { color: #fee8a1; }
         .text-green { color: #00b050; }
         .total-row .value {
             font-size: 20pt;
-            color: #ff0000;
+            color: #00b050;
         }
         .footer-note {
             text-align: center;
             font-weight: bold;
-            color: #ff0000;
+            color: #fee8a1;
             font-size: 20pt;
             margin-bottom: 15px;
         }
@@ -89,7 +92,7 @@
             text-align: left;
             font-size: 18pt;
             margin-bottom: 40px;
-            color: #c00000;
+            color: #fff;
         }
         .signatures {
             display: flex;
@@ -105,9 +108,9 @@
             display: flex;
             justify-content: center; /* Căn giữa các nút */
             gap: 15px;
-            margin-top: 50px; /* Tạo khoảng cách với phần chữ ký ở trên */
+            margin-top: 0px; /* Tạo khoảng cách với phần chữ ký ở trên */
         }
-        .bill-controls button {
+        .bill-controls button {    
             padding: 10px 20px; /* Tăng kích thước */
             font-size: 14px; /* Tăng cỡ chữ */
             font-weight: bold;
@@ -121,6 +124,28 @@
         .bill-controls button:hover {
             transform: translateY(-2px); /* Hiệu ứng khi di chuột qua */
         }
+/* CSS RIÊNG CHO ẢNH GÓC BILL ĐỨNG */
+    .bill-page { position: relative; overflow: hidden; padding: 40px; background-image: linear-gradient(to right, #b82220, #851f1e); } /* Quan trọng */
+    
+    .decor-img {
+        position: absolute;
+        width: 300px; /* Nhỏ hơn bill ngang (250px) */
+        height: auto;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    /* Vị trí 4 góc */
+    .img-tl { top: 0; left: 0; }
+    .img-tr { top: 0; right: 0; transform: scaleX(-1); }
+    .img-bl { bottom: 0; left: 0; transform: scaleY(-1); }
+    .img-br { bottom: 0; right: 0; transform: rotate(180deg); }
+
+    /* Đảm bảo nội dung luôn nổi lên trên ảnh */
+    .bill-content-wrapper { position: relative; z-index: 2; }
+
+        /* ĐẨY NỘI DUNG LÊN TRÊN ẢNH */
+        .bill-content { position: relative; z-index: 2; }
         .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
         .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
         .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
@@ -128,6 +153,15 @@
 </head>
 <body>
     <div class="container" id="bill-to-capture">
+      
+<div class="bill-page">
+    <img class="decor-img img-tl" crossorigin="anonymous" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+    <img class="decor-img img-tr" crossorigin="anonymous" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+    <img class="decor-img img-bl" crossorigin="anonymous" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+    <img class="decor-img img-br" crossorigin="anonymous" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+
+    <div class="bill-content-wrapper">
+
 
         <div class="header">
             <div class="left">
@@ -234,7 +268,8 @@
             <button class="share-btn">Gửi Bill</button>
         </div>
     </div>
-    
+  </div>
+</div>   
     <script>
         let billData = {};
 
