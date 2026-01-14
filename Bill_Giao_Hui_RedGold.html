@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Giao Hụi</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            font-size: 17pt;
+            color: #fff;
+        }
+        .container {
+            width: 21cm;
+            min-height: 29.7cm;
+            padding: 0;
+            margin: auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            font-size: 14pt;
+            font-weight: bold;
+        }
+        .header .right {
+            text-align: right;
+        }
+        .title {
+            text-align: center;
+            font-size: 24pt;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+        table {
+            width: 100%;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        th, td {
+            border: 2px solid #ffe278;
+            padding: 8px;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #f7c563; /* Màu xanh nhạt */
+            background-image: linear-gradient(to right, #f7c563, #fee8a1);
+            font-weight: bold;
+            text-align: left;
+            padding-left: 15px;
+            color: #b82220;
+        }
+        .info-table td:first-child,
+        .payment-table td:first-child {
+            width: 50%;
+            font-weight: bold;
+        }
+        .payment-table .value {
+            font-weight: bold;
+            text-align: left;
+        }
+        .hui-vien-row td {
+            font-size: 20pt;
+            font-weight: bold;
+        }
+        .text-red { color: #fee8a1; }
+        .text-orange { color: #fee8a1; }
+        .text-green { color: #00b050; }
+        .total-row .value {
+            font-size: 20pt;
+            color: #00b050;
+        }
+        .footer-note {
+            text-align: center;
+            font-weight: bold;
+            color: #fee8a1;
+            font-size: 20pt;
+            margin-bottom: 15px;
+        }
+        .disclaimer {
+            font-style: italic;
+            text-align: left;
+            font-size: 18pt;
+            margin-bottom: 40px;
+            color: #fff;
+        }
+        .signatures {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14pt;
+        }
+        .signatures .signer {
+            margin-top: 15px;
+        }
+        .bill-controls {
+            display: flex;
+            justify-content: center; /* Căn giữa các nút */
+            gap: 15px;
+            margin-top: 0px; /* Tạo khoảng cách với phần chữ ký ở trên */
+        }
+        .bill-controls button {    
+            padding: 10px 20px; /* Tăng kích thước */
+            font-size: 14px; /* Tăng cỡ chữ */
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .bill-controls button:hover {
+            transform: translateY(-2px); /* Hiệu ứng khi di chuột qua */
+        }
+/* CSS RIÊNG CHO ẢNH GÓC BILL ĐỨNG */
+    .bill-page { position: relative; overflow: hidden; padding: 40px; background-image: linear-gradient(to right, #b82220, #851f1e); } /* Quan trọng */
+    
+    .decor-img {
+        position: absolute;
+        width: 300px; /* Nhỏ hơn bill ngang (250px) */
+        height: auto;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    /* Vị trí 4 góc */
+    .img-tl { top: 0; left: 0; }
+    .img-tr { top: 0; right: 0; transform: scaleX(-1); }
+    .img-bl { bottom: 0; left: 0; transform: scaleY(-1); }
+    .img-br { bottom: 0; right: 0; transform: rotate(180deg); }
+
+    /* Đảm bảo nội dung luôn nổi lên trên ảnh */
+    .bill-content-wrapper { position: relative; z-index: 2; }
+
+        /* ĐẨY NỘI DUNG LÊN TRÊN ẢNH */
+        .bill-content { position: relative; z-index: 2; }
+        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
+        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
+        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
+    </style>
+</head>
+<body>
+    <div class="container" id="bill-to-capture">
+      
+<div class="bill-page">
+    <img class="decor-img img-tl" crossorigin="anonymous" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+    <img class="decor-img img-tr" crossorigin="anonymous" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+    <img class="decor-img img-bl" crossorigin="anonymous" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+    <img class="decor-img img-br" crossorigin="anonymous" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left.png">
+
+    <div class="bill-content-wrapper">
+
+
+        <div class="header">
+            <div class="left">
+                <div>Chủ Hụi: <span data-field="chu_hui_ten"></span></div>
+                <div>SĐT: <span data-field="chu_hui_sdt"></span></div>
+            </div>
+            <div class="right">
+                <div data-field="chu_hui_bank"></div>
+                <div data-field="chu_hui_bank_name"></div>
+            </div>
+        </div>
+        <div class="title">PHIẾU GIAO HỤI</div>
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2">Thông Tin Hụi: <span data-field="ma_day_hui"></span></th>
+                </tr>
+            </thead>
+            <tbody class="info-table">
+                <tr>
+                    <td>Ngày mở:</td>
+                    <td data-field="ngay_mo"></td>
+                </tr>
+                <tr>
+                    <td>Dây Hụi:</td>
+                    <td data-field="day_hui_value"></td>
+                </tr>
+                <tr>
+                    <td>Số Phần:</td>
+                    <td data-field="so_phan"></td>
+                </tr>
+                <tr>
+                    <td>Khui:</td>
+                    <td data-field="khui"></td>
+                </tr>
+            </tbody>
+        </table>
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2">Thanh Toán</th>
+                </tr>
+            </thead>
+            <tbody class="payment-table">
+                <tr class="hui-vien-row">
+                    <td>Hụi Viên:</td>
+                    <td style="text-align: center; font-size: 30pt;" data-field="hui_vien_ten"></td>
+                </tr>
+                <tr>
+                    <td>Ngày Hốt:</td>
+                    <td class="value" data-field="ngay_hot"></td>
+                </tr>
+                <tr>
+                    <td>Ngày Giao:</td>
+                    <td class="value" data-field="ngay_giao"></td>
+                </tr>
+                <tr>
+                    <td>Số Kỳ:</td>
+                    <td class="value" data-field="so_ky"></td>
+                </tr>
+                <tr>
+                    <td>Thăm Kêu:</td>
+                    <td class="value" data-field="tham_keu"></td>
+                </tr>
+                <tr>
+                    <td class="text-red">Số Chân Chết:</td>
+                    <td class="value text-red" data-field="so_chan_chet_text"></td>
+                </tr>
+                <tr>
+                    <td class="text-orange">Số Chân Sống:</td>
+                    <td class="value text-orange" data-field="so_chan_song_text"></td>
+                </tr>
+                <tr>
+                    <td class="text-green">Tiền Hụi ( Sống + Chết ):</td>
+                    <td class="value text-green" data-field="tien_hui_tong"></td>
+                </tr>
+                <tr>
+                    <td>Trừ Thảo:</td>
+                    <td class="value" data-field="tru_thao"></td>
+                </tr>
+                <tr class="total-row">
+                    <td>Giao</td>
+                    <td class="value" data-field="giao_tong_tien"></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="footer-note" data-field="man_hui_text"></div>
+        <div class="disclaimer">
+            Tôi đã đọc, kiểm đếm và nhận đủ số tiền giao hụi trên trong tình trạng hoàn toàn tỉnh táo, không bị ép buộc, phải đóng lại hoàn thành dây hụi cho đến mãn dây. Mọi phát sinh về sau tôi sẽ chịu trách nhiệm trước Pháp Luật !
+        </div>
+        <div class="signatures">
+            <div class="signature-block">
+                <div>BÊN NHẬN</div>
+                <div class="signer" data-field="signer_ben_nhan"></div>
+            </div>
+            <div class="signature-block">
+                <div>BÊN GIAO</div>
+                <div class="signer" data-field="signer_ben_giao"></div>
+            </div>
+        </div>
+        <div class="bill-controls">
+            <button class="download-btn">Tải Bill</button>
+            <button class="copy-btn">Copy Bill</button>
+            <button class="share-btn">Gửi Bill</button>
+        </div>
+    </div>
+  </div>
+</div>   
+    <script>
+        let billData = {};
+
+        window.onload = function() {
+            try {
+                const encodedData = window.location.hash.substring(1);
+                if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
+                const jsonData = decodeURIComponent(encodedData);
+                billData = JSON.parse(jsonData); // Dữ liệu bây giờ là một object
+                generateBill(billData);
+            } catch (error) {
+                document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
+                console.error("Lỗi:", error);
+            }
+        };
+
+        function generateBill(data) {
+            for (const key in data) {
+                const element = document.querySelector(`[data-field="${key}"]`);
+                if (element) {
+                    if (element.tagName === 'IMG') element.src = data[key];
+                    else element.textContent = data[key];
+                }
+            }
+            document.querySelector('[data-field="signer_ben_nhan"]').textContent = data.hui_vien_ten || '';
+            document.querySelector('[data-field="signer_ben_giao"]').textContent = data.chu_hui_ten || '';
+            
+            // Gán sự kiện cho các nút
+            const billElement = document.getElementById('bill-to-capture');
+            document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
+            document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+            document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+        }
+        
+        // --- CÁC HÀM CHỨC NĂNG CHO NÚT BẤM ---
+        async function captureBill(element, callback) {
+            const controls = element.querySelector('.bill-controls');
+            if (controls) controls.style.display = 'none';
+            try {
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                await callback(canvas);
+            } catch (error) {
+                console.error('Lỗi khi tạo ảnh:', error);
+                alert('Đã có lỗi xảy ra khi tạo ảnh.');
+            } finally {
+                if (controls) controls.style.display = 'flex';
+            }
+        }
+
+        function downloadBillAsImage(element) {
+            const filename = `PhieuGiaoHui_${billData.hui_vien_ten || 'bill'}.png`;
+            captureBill(element, canvas => {
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+
+        function copyBillAsImage(element) {
+            captureBill(element, canvas => {
+                canvas.toBlob(blob => {
+                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                    .catch(err => alert('Lỗi khi copy.'));
+                });
+            });
+        }
+
+        async function shareBillAsImage(element) {
+            const filename = `PhieuGiaoHui_${billData.hui_vien_ten}.png`;
+            const textshare = `Phiếu giao hụi của ${billData.hui_vien_ten}.`;
+            if (!navigator.share) {
+                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
+                return;
+            }
+            captureBill(element, async canvas => {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const file = new File([blob], filename, { type: 'image/png' });
+                try {
+                    await navigator.share({ title: `Phiếu Giao Hụi`, text: textshare, files: [file] });
+                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
+            });
+        }
+    </script>
+</body>
+</html>
