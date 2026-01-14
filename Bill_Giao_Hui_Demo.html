@@ -14,12 +14,12 @@
             margin: 0;
             padding: 20px;
             font-size: 17pt;
-            color: #000;
+            color: #fff;
         }
         .container {
             width: 21cm;
             min-height: 29.7cm;
-            padding: 1cm;
+            padding: 0;
             margin: auto;
             background: white;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -28,6 +28,7 @@
         .header {
             display: flex;
             justify-content: space-between;
+            margin-top: 15px;
             margin-bottom: 20px;
             font-size: 14pt;
             font-weight: bold;
@@ -43,8 +44,8 @@
         }
         table {
             width: 100%;
-            border-collapse: collapse;
             margin-bottom: 20px;
+            color: #fff;
         }
         th, td {
             border: 1px solid black;
@@ -52,10 +53,12 @@
             vertical-align: middle;
         }
         th {
-            background-color: #d9e2f3; /* Màu xanh nhạt */
+            background-color: #f7c563; /* Màu xanh nhạt */
+            background-image: linear-gradient(to right, #f7c563, #fee8a1);
             font-weight: bold;
             text-align: left;
             padding-left: 15px;
+            color: #b82220;
         }
         .info-table td:first-child,
         .payment-table td:first-child {
@@ -71,16 +74,16 @@
             font-weight: bold;
         }
         .text-red { color: #ff0000; }
-        .text-orange { color: #ff8a00; }
+        .text-orange { color: #fee8a1; }
         .text-green { color: #00b050; }
         .total-row .value {
             font-size: 20pt;
-            color: #ff0000;
+            color: #00b050;
         }
         .footer-note {
             text-align: center;
             font-weight: bold;
-            color: #ff0000;
+            color: #fee8a1;
             font-size: 20pt;
             margin-bottom: 15px;
         }
@@ -89,7 +92,7 @@
             text-align: left;
             font-size: 18pt;
             margin-bottom: 40px;
-            color: #c00000;
+            color: #fff;
         }
         .signatures {
             display: flex;
@@ -105,9 +108,9 @@
             display: flex;
             justify-content: center; /* Căn giữa các nút */
             gap: 15px;
-            margin-top: 50px; /* Tạo khoảng cách với phần chữ ký ở trên */
+            margin-top: 0px; /* Tạo khoảng cách với phần chữ ký ở trên */
         }
-        .bill-controls button {
+        .bill-controls button {    
             padding: 10px 20px; /* Tăng kích thước */
             font-size: 14px; /* Tăng cỡ chữ */
             font-weight: bold;
@@ -122,7 +125,7 @@
             transform: translateY(-2px); /* Hiệu ứng khi di chuột qua */
         }
 /* CSS RIÊNG CHO ẢNH GÓC BILL ĐỨNG */
-    .bill-page { position: relative; overflow: hidden; padding: 20px; } /* Quan trọng */
+    .bill-page { position: relative; overflow: hidden; padding: 40px; background-image: linear-gradient(to right, #b82220, #851f1e); } /* Quan trọng */
     
     .decor-img {
         position: absolute;
