@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán QR Nội Bộ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #eee; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .info-box { text-align: left; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border-left: 4px solid #0056b3; }
+        #qrcode-container { background: white; padding: 10px; display: inline-block; margin-top: 10px; }
+        #qrcode-container img { margin: 0 auto; }
+        .note { font-size: 12px; color: #666; margin: 15px 0; line-height: 1.4; background: #fffde7; padding: 10px; border-radius: 5px; }
+        .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 15px; }
+        button { border: none; padding: 12px 5px; border-radius: 6px; color: white; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-download { background: #2e7d32; }
+        .btn-copy { background: #1565c0; }
+        .btn-share { background: #ef6c00; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="capture-area">
+    <h3 style="margin: 0 0 15px 0; color: #333;">CHUYỂN KHOẢN</h3>
+    
+    <div class="info-box">
+        <div>Ngân hàng: <b id="txt-bank">...</b></div>
+        <div>STK: <b id="txt-stk">...</b></div>
+        <div>Chủ TK: <b id="txt-name">...</b></div>
+    </div>
+
+    <div id="qrcode-container">
+        <div id="qrcode"></div>
+    </div>
+
+    <div class="note">
+        Vui lòng quét QR để tiện thanh toán hoặc nhập nội dung chuyển khoản là: <br>
+        <strong id="txt-content">...</strong> <br>
+        để thuận tiện kiểm tra hệ thống.
+    </div>
+
+    <div class="actions">
+        <button class="btn-download" onclick="downloadImage()">TẢI VỀ</button>
+        <button class="btn-copy" onclick="copyText()">COPY</button>
+        <button class="btn-share" onclick="sharePage()">GỬI</button>
+    </div>
+</div>
+
+<script>
+    // 1. Xử lý dữ liệu đầu vào
+    function cleanStr(str) {
+        if (!str) return "";
+        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+        str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+        str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+        str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+        str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+        str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+        str = str.replace(/đ/g, "d");
+        return str.replace(/[^a-zA-Z0-9 ]/g, "").toUpperCase();
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const bin = params.get('bin') || '970436'; // Mã BIN ngân hàng
+    const stk = params.get('stk') || '';
+    const name = cleanStr(params.get('name') || '');
+    const amount = params.get('amount') || ''; // Có thể thêm số tiền nếu muốn
+    const content = cleanStr(params.get('content') || '');
+
+    document.getElementById('txt-bank').innerText = bin;
+    document.getElementById('txt-stk').innerText = stk;
+    document.getElementById('txt-name').innerText = name;
+    document.getElementById('txt-content').innerText = content;
+
+    // 2. Hàm tạo chuỗi VietQR chuẩn (EMVCo)
+    function generateVietQR(bin, stk, amount, content) {
+        const f = (id, val) => (id + val.length.toString().padStart(2, '0') + val);
+        
+        // Thông tin định danh (ID 38)
+        const subAccount = f('00', 'A000000727') + f('01', f('00', bin) + f('01', stk)) + f('02', '08');
+        
+        let data = f('00', '01') + f('01', '11'); // QR tĩnh 11, QR động (có tiền) dùng 12
+        data += f('38', subAccount);
+        data += f('53', '704'); // VND
+        if (amount) data += f('54', amount);
+        data += f('58', 'VN');
+        data += f('62', f('08', content));
+        
+        // Tính toán CRC16 đơn giản cho VietQR
+        function crc16(str) {
+            let crc = 0xFFFF;
+            for (let c = 0; c < str.length; c++) {
+                crc ^= str.charCodeAt(c) << 8;
+                for (let i = 0; i < 8; i++) {
+                    if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+                    else crc = crc << 1;
+                }
+            }
+            return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+        }
+        
+        data += "6304";
+        data += crc16(data);
+        return data;
+    }
+
+    // 3. Khởi tạo mã QR
+    const fullData = generateVietQR(bin, stk, amount, content);
+    new QRCode(document.getElementById("qrcode"), {
+        text: fullData,
+        width: 220,
+        height: 220,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.M
+    });
+
+    // 4. Các nút chức năng dưới cùng
+    function downloadImage() {
+        html2canvas(document.getElementById("capture-area")).then(canvas => {
+            let link = document.createElement('a');
+            link.download = `QR-Thanh-Toan-${stk}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+
+    function copyText() {
+        const info = `STK: ${stk}\nNgan hang: ${bin}\nChu TK: ${name}\nNoi dung: ${content}`;
+        navigator.clipboard.writeText(info).then(() => alert("Đã copy!"));
+    }
+
+    function sharePage() {
+        if (navigator.share) {
+            navigator.share({ title: 'Thanh toán', text: content, url: window.location.href });
+        } else {
+            alert("Trình duyệt không hỗ trợ chia sẻ nhanh.");
+        }
+    }
+</script>
+</body>
+</html>
