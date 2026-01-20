@@ -3,131 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thanh Toán QR Chuẩn Napas</title>
+    <title>Thanh Toán QR Chuẩn 100%</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --tp-color: #5b2d82; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
-        #payment-card { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .title { color: var(--tp-color); font-size: 20px; font-weight: 800; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .info-box { background: #f9f9f9; border-radius: 12px; padding: 15px; text-align: left; border-left: 5px solid var(--tp-color); margin-bottom: 20px; }
-        .info-box p { margin: 5px 0; font-size: 15px; color: #444; }
-        .info-box b { color: #000; }
-        #qrcode-target { margin: 15px auto; padding: 10px; background: white; display: inline-block; border: 1px solid #eee; }
-        .note-highlight { background: #fff9c4; border: 1px dashed #fbc02d; border-radius: 10px; padding: 15px; margin-top: 15px; }
-        .content-msg { display: block; font-size: 17px; font-weight: 900; color: #000; margin-top: 10px; text-transform: uppercase; word-break: break-all; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 25px; width: 100%; max-width: 380px; }
-        .btn { border: none; padding: 14px 0; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; }
-        .btn-dl { background: #2e7d32; } .btn-cp { background: #1565c0; } .btn-sh { background: #e67e22; }
+        :root { --tp-purple: #5b2d82; }
+        body { font-family: -apple-system, sans-serif; background-color: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        #payment-card { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #ddd; }
+        .title { color: var(--tp-purple); font-size: 22px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: left; border-left: 6px solid var(--tp-purple); margin-bottom: 20px; }
+        .info-panel p { margin: 8px 0; font-size: 15px; color: #444; }
+        .info-panel b { color: #000; font-size: 16px; }
+        #qrcode-box { margin: 15px auto; padding: 10px; background: white; display: inline-block; border: 1px solid #eee; }
+        .note-area { background: #fffde7; border: 1.5px dashed #fbc02d; border-radius: 12px; padding: 15px; margin-top: 15px; }
+        .msg-bold { display: block; font-size: 18px; font-weight: 900; color: #000; margin-top: 10px; text-transform: uppercase; word-break: break-all; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 25px; width: 100%; max-width: 380px; }
+        .btn { border: none; padding: 15px 0; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div id="payment-card">
-    <div class="title">THANH TOÁN DỊCH VỤ</div>
-    <div class="info-box">
-        <p>Ngân hàng: <b>TPBank (970423)</b></p>
+    <div class="title">Thông Tin Thanh Toán</div>
+    <div class="info-panel">
+        <p>Ngân hàng: <b>TPBANK</b></p>
         <p>Số tài khoản: <b id="ui-stk">...</b></p>
         <p>Chủ tài khoản: <b id="ui-name">...</b></p>
     </div>
-    <div id="qrcode-target"></div>
-    <div class="note-highlight">
-        <span style="font-size: 13px; color: #555;">Nội dung chuyển khoản:</span>
-        <span class="content-msg" id="ui-msg">...</span>
+    <div id="qrcode-box"></div>
+    <div class="note-area">
+        <span style="font-size: 13px; color: #666;">Nội dung chuyển khoản:</span>
+        <span class="msg-bold" id="ui-msg">...</span>
     </div>
 </div>
 
-<div class="btn-group">
-    <button class="btn btn-dl" onclick="takeAction('dl')">TẢI VỀ</button>
-    <button class="btn btn-cp" onclick="takeAction('cp')">COPY</button>
-    <button class="btn btn-sh" onclick="takeAction('sh')">GỬI</button>
+<div class="btn-grid">
+    <button class="btn" style="background:#2e7d32" onclick="handleBtn('dl')">TẢI VỀ</button>
+    <button class="btn" style="background:#1565c0" onclick="handleBtn('cp')">COPY</button>
+    <button class="btn" style="background:#e67e22" onclick="handleBtn('sh')">GỬI</button>
 </div>
 
 <script>
-    // Hàm làm sạch văn bản chuẩn tuyệt đối
-    function sanitize(s) {
-        if(!s) return "";
-        return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D")
-                .replace(/[^a-zA-Z0-9 ]/g, "").trim().toUpperCase();
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const bankBin = "970423"; 
-    const bankStk = (urlParams.get('stk') || '').replace(/\D/g, ''); 
-    const bankName = sanitize(urlParams.get('name') || '');
-    const bankMsg = sanitize(urlParams.get('content') || '');
-
-    document.getElementById('ui-stk').innerText = bankStk;
-    document.getElementById('ui-name').innerText = bankName;
-    document.getElementById('ui-msg').innerText = bankMsg;
-
-    // HÀM TẠO CHUỖI VIETQR CHUẨN XÁC Từng KÝ TỰ
-    function generateVietQR(bin, stk, msg) {
-        const createTag = (id, value) => {
-            const len = value.length.toString().padStart(2, '0');
-            return id + len + value;
-        };
-
-        // Thẻ 38 (Merchant Account Info)
-        const subTag00 = createTag('00', 'A000000727'); // Global ID
-        const subTag01 = createTag('01', createTag('00', bin) + createTag('01', stk)); // Bank & STK
-        const tag38 = createTag('38', subTag00 + subTag01);
-
-        // Các thẻ cơ bản khác
-        const tag00 = createTag('00', '01'); // Payload Format
-        const tag01 = createTag('01', '11'); // QR Static
-        const tag53 = createTag('53', '704'); // VND
-        const tag58 = createTag('58', 'VN');  // Country
-        const tag62 = createTag('62', createTag('08', msg)); // Content
-
-        let fullData = tag00 + tag01 + tag38 + tag53 + tag58 + tag62 + "6304";
-
-        // Hàm tính CRC16 chuẩn xác nhất cho VietQR
-        function getCRC16(data) {
+    // --- BỘ XỬ LÝ VIETQR TỪ MẪU ỔN ĐỊNH ---
+    const VietQRProcess = {
+        cleanText: function(str) {
+            if (!str) return "";
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^a-zA-Z0-9 ]/g, '').trim().toUpperCase();
+        },
+        crc16: function(data) {
             let crc = 0xFFFF;
             for (let i = 0; i < data.length; i++) {
                 crc ^= data.charCodeAt(i) << 8;
                 for (let j = 0; j < 8; j++) {
-                    if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
-                    else crc <<= 1;
+                    if ((crc & 0x8000) != 0) crc = (crc << 1) ^ 0x1021;
+                    else crc = crc << 1;
                 }
+                crc = crc & 0xFFFF;
             }
-            return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+            let hex = crc.toString(16).toUpperCase();
+            return "0000".substring(0, 4 - hex.length) + hex;
+        },
+        generatePayload: function(bin, stk, msg) {
+            const field = (id, value) => {
+                const valStr = String(value);
+                const len = valStr.length;
+                return id + (len < 10 ? "0" + len : len) + valStr;
+            };
+
+            const merchantInfo = field("00", "A000000727") + 
+                                 field("01", field("00", bin) + field("01", stk)) + 
+                                 field("02", "QRIBFTTA"); // Hằng số quan trọng giúp ổn định
+
+            let qrStr = field("00", "01") + 
+                        field("01", "12") + // Dùng 12 (QR Động) theo mẫu ổn định của bạn
+                        field("38", merchantInfo) + 
+                        field("53", "704") + 
+                        field("58", "VN");
+
+            if (msg) {
+                const safeContent = this.cleanText(msg);
+                qrStr += field("62", field("08", safeContent));
+            }
+            
+            qrStr += "6304";
+            qrStr += this.crc16(qrStr);
+            return qrStr;
         }
+    };
 
-        return fullData + getCRC16(fullData);
-    }
+    const params = new URLSearchParams(window.location.search);
+    const vBin = "970423";
+    const vStk = (params.get('stk') || '').replace(/\D/g, '');
+    const vName = VietQRProcess.cleanText(params.get('name') || '');
+    const vMsg = VietQRProcess.cleanText(params.get('content') || '');
 
-    // Vẽ QR
-    const qrTarget = document.getElementById("qrcode-target");
-    new QRCode(qrTarget, {
-        text: generateVietQR(bankBin, bankStk, bankMsg),
-        width: 250,
-        height: 250,
+    document.getElementById('ui-stk').innerText = vStk;
+    document.getElementById('ui-name').innerText = vName;
+    document.getElementById('ui-msg').innerText = vMsg;
+
+    // Tạo QR bằng thư viện QRCode.js
+    new QRCode(document.getElementById("qrcode-box"), {
+        text: VietQRProcess.generatePayload(vBin, vStk, vMsg),
+        width: 220,
+        height: 220,
         correctLevel: QRCode.CorrectLevel.M
     });
 
-    async function takeAction(mode) {
-        // Đợi QR render xong và đồng bộ pixel
+    async function handleBtn(type) {
         await new Promise(r => setTimeout(r, 600));
-        const card = document.getElementById("payment-card");
-        const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
-        const img = canvas.toDataURL("image/png");
+        const area = document.getElementById("payment-card");
+        const canvas = await html2canvas(area, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL("image/png");
 
-        if (mode === 'dl') {
-            const a = document.createElement('a'); a.href = img; a.download = 'QR_Payment.png'; a.click();
-        } 
-        else if (mode === 'cp') {
+        if (type === 'dl') {
+            const a = document.createElement('a'); a.href = imgData; a.download = 'ThanhToan.png'; a.click();
+        } else if (type === 'cp') {
             canvas.toBlob(blob => {
                 const item = new ClipboardItem({ "image/png": blob });
                 navigator.clipboard.write([item]).then(() => alert("Đã copy ảnh!"));
             });
-        } 
-        else if (mode === 'sh') {
-            canvas.toBlob(async (blob) => {
-                const file = new File([blob], 'ThanhToan.png', { type: 'image/png' });
-                if (navigator.share) await navigator.share({ files: [file] });
+        } else if (type === 'sh') {
+            canvas.toBlob(async blob => {
+                const file = new File([blob], 'QR.png', { type: 'image/png' });
+                if (navigator.share) navigator.share({ files: [file] });
             });
         }
     }
