@@ -3,142 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thanh Toán Chuyển Khoản</title>
+    <title>Thanh Toán VietQR</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --primary-color: #0056b3; --text-dark: #000000; }
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #e9ecef; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
-        
-        /* Khu vực sẽ chụp ảnh - Loại bỏ nút bấm ra ngoài */
-        #bill-container { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid #ddd; }
-        
-        .header-title { font-size: 22px; font-weight: 800; color: var(--primary-color); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .bank-info { text-align: left; background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 6px solid var(--primary-color); }
-        .bank-info p { margin: 8px 0; font-size: 16px; color: #333; }
-        .bank-info b { color: var(--text-dark); font-weight: 700; }
-
-        #qrcode { background: white; padding: 15px; display: inline-block; border: 1px solid #eee; border-radius: 10px; }
-        
-        .note-container { margin-top: 25px; padding: 15px; background: #fff9c4; border-radius: 10px; border: 1px dashed #fbc02d; }
-        .note-text { font-size: 14px; color: #444; line-height: 1.6; }
-        .content-highlight { font-size: 18px; color: var(--text-dark); font-weight: 900; display: block; margin: 10px 0; text-decoration: underline; }
-
-        /* Khu vực nút bấm - Sẽ không bị dính vào ảnh khi tải */
-        .action-area { width: 100%; max-width: 460px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 25px; padding-bottom: 50px; }
-        .btn { border: none; padding: 15px 5px; border-radius: 10px; color: white; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn:active { transform: scale(0.95); }
-        .btn-download { background: #27ae60; }
-        .btn-copy { background: #2980b9; }
-        .btn-share { background: #e67e22; }
+        body { font-family: 'Arial', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        #bill-content { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .title { color: #0056b3; font-size: 24px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; }
+        .info-card { background: #f8f9fa; border-radius: 15px; padding: 15px; text-align: left; border-left: 5px solid #0056b3; margin-bottom: 20px; }
+        .info-card p { margin: 5px 0; font-size: 16px; color: #333; }
+        .info-card b { color: #000; font-size: 17px; }
+        #qrcode-img { padding: 10px; background: white; display: inline-block; margin: 10px 0; }
+        .note-box { background: #fffde7; border: 1px dashed #ffd600; border-radius: 12px; padding: 15px; margin-top: 15px; }
+        .note-text { font-size: 14px; color: #555; line-height: 1.5; }
+        .content-bold { display: block; font-size: 18px; font-weight: 800; color: #000; margin: 10px 0; text-decoration: underline; text-underline-offset: 4px; }
+        .btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 25px; width: 100%; max-width: 420px; }
+        .btn { border: none; padding: 14px 0; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-dl { background: #2e7d32; } .btn-cp { background: #1565c0; } .btn-sh { background: #ef6c00; }
+        .btn:active { opacity: 0.8; }
     </style>
 </head>
 <body>
 
-<div id="bill-container">
-    <div class="header-title">Thông Tin Thanh Toán</div>
-    
-    <div class="bank-info">
-        <p>Ngân hàng: <b id="display-bank">...</b></p>
-        <p>Số tài khoản: <b id="display-stk">...</b></p>
-        <p>Chủ tài khoản: <b id="display-name">...</b></p>
+<div id="bill-content">
+    <div class="title">Thông tin thanh toán</div>
+    <div class="info-card">
+        <p>Ngân hàng: <b id="b-bank">...</b></p>
+        <p>Số tài khoản: <b id="b-stk">...</b></p>
+        <p>Chủ tài khoản: <b id="b-name">...</b></p>
     </div>
 
-    <div id="qrcode"></div>
+    <div id="qrcode-img"></div>
 
-    <div class="note-container">
+    <div class="note-box">
         <div class="note-text">
             Vui lòng quét QR để thanh toán hoặc nhập nội dung:
-            <span class="content-highlight" id="display-content">...</span>
+            <span class="content-bold" id="b-content">...</span>
             để hệ thống tự động kiểm tra.
         </div>
     </div>
 </div>
 
-<div class="action-area">
-    <button class="btn btn-download" onclick="handleAction('download')">TẢI VỀ</button>
-    <button class="btn btn-copy" onclick="handleAction('copy')">COPY ẢNH</button>
-    <button class="btn btn-share" onclick="handleAction('share')">GỬI ẢNH</button>
+<div class="btns">
+    <button class="btn btn-dl" onclick="process('download')">TẢI VỀ</button>
+    <button class="btn btn-cp" onclick="process('copy')">COPY</button>
+    <button class="btn btn-sh" onclick="process('share')">GỬI</button>
 </div>
 
 <script>
-    // Hàm xóa dấu và ký tự đặc biệt
-    function cleanStr(str) {
-        if (!str) return "";
-        str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        str = str.replace(/đ/g, "d").replace(/Đ/g, "D");
-        return str.replace(/[^a-zA-Z0-9 ]/g, "").toUpperCase();
+    function clean(s) {
+        if(!s) return "";
+        s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+        return s.replace(/[^a-zA-Z0-9 ]/g, "").toUpperCase();
     }
 
-    // Lấy dữ liệu URL
-    const params = new URLSearchParams(window.location.search);
-    const bin = params.get('bin') || '970423';
-    const stk = params.get('stk') || '';
-    const name = cleanStr(params.get('name') || '');
-    const content = cleanStr(params.get('content') || '');
+    const p = new URLSearchParams(window.location.search);
+    const bankBin = p.get('bin') || '970423';
+    const bankStk = p.get('stk') || '';
+    const bankName = clean(p.get('name') || '');
+    const bankMsg = clean(p.get('content') || '');
 
-    document.getElementById('display-bank').innerText = bin;
-    document.getElementById('display-stk').innerText = stk;
-    document.getElementById('display-name').innerText = name;
-    document.getElementById('display-content').innerText = content;
+    document.getElementById('b-bank').innerText = bankBin;
+    document.getElementById('b-stk').innerText = bankStk;
+    document.getElementById('b-name').innerText = bankName;
+    document.getElementById('b-content').innerText = bankMsg;
 
-    // Tạo chuỗi VietQR
-    function generateVietQR(bin, stk, content) {
-        const f = (id, val) => (id + val.length.toString().padStart(2, '0') + val);
-        const subAccount = f('00', 'A000000727') + f('01', f('00', bin) + f('01', stk)) + f('02', '08');
-        let data = f('00', '01') + f('01', '11') + f('38', subAccount) + f('53', '704') + f('58', 'VN') + f('62', f('08', content)) + "6304";
+    // Hàm tạo chuỗi VietQR chuẩn Napas
+    function makeQRData(bin, stk, msg) {
+        const gen = (id, val) => id + val.length.toString().padStart(2, '0') + val;
+        const guid = gen('00', 'A000000727');
+        const bank = gen('00', bin) + gen('01', stk);
+        const method = gen('38', guid + gen('01', bank) + gen('02', '08'));
         
-        function crc16(str) {
+        let raw = gen('00', '01') + gen('01', '11') + method + gen('53', '704') + gen('58', 'VN') + gen('62', gen('08', msg)) + "6304";
+
+        function crc16(data) {
             let crc = 0xFFFF;
-            for (let c = 0; c < str.length; c++) {
-                crc ^= str.charCodeAt(c) << 8;
-                for (let i = 0; i < 8; i++) {
-                    if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
-                    else crc = crc << 1;
+            for (let i = 0; i < data.length; i++) {
+                crc ^= data.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    if ((crc & 0x8000) !== 0) crc = (crc << 1) ^ 0x1021;
+                    else crc <<= 1;
                 }
             }
             return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
         }
-        return data + crc16(data);
+        return raw + crc16(raw);
     }
 
-    // Render QR
-    new QRCode(document.getElementById("qrcode"), {
-        text: generateVietQR(bin, stk, content),
-        width: 250,
-        height: 250,
-        correctLevel : QRCode.CorrectLevel.M
+    // Khởi tạo QR
+    const qrContainer = document.getElementById("qrcode-img");
+    new QRCode(qrContainer, {
+        text: makeQRData(bankBin, bankStk, bankMsg),
+        width: 260,
+        height: 260,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.M
     });
 
-    // Hàm xử lý chụp ảnh và thực hiện hành động
-    async function handleAction(type) {
-        const bill = document.getElementById("bill-container");
-        const canvas = await html2canvas(bill, { scale: 3, useCORS: true });
-        const dataUrl = canvas.toDataURL("image/png");
+    // Xử lý ảnh (Tải/Copy/Gửi)
+    async function process(mode) {
+        // Đợi 300ms để QR render xong hoàn toàn trước khi chụp
+        await new Promise(r => setTimeout(r, 300));
+        
+        const target = document.getElementById("bill-content");
+        const canvas = await html2canvas(target, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL("image/png");
 
-        if (type === 'download') {
-            const link = document.createElement('a');
-            link.download = `ThanhToan_${stk}.png`;
-            link.href = dataUrl;
-            link.click();
+        if (mode === 'download') {
+            const a = document.createElement('a');
+            a.href = imgData; a.download = 'QR_ThanhToan.png'; a.click();
         } 
-        else if (type === 'copy') {
+        else if (mode === 'copy') {
             canvas.toBlob(blob => {
                 const item = new ClipboardItem({ "image/png": blob });
-                navigator.clipboard.write([item]).then(() => alert("Đã copy ảnh vào bộ nhớ tạm!"));
+                navigator.clipboard.write([item]).then(() => alert("Đã copy ảnh!"));
             });
         } 
-        else if (type === 'share') {
+        else if (mode === 'share') {
             canvas.toBlob(async (blob) => {
-                const file = new File([blob], 'ThanhToan.png', { type: 'image/png' });
+                const file = new File([blob], 'QR.png', { type: 'image/png' });
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({ files: [file], title: 'Gửi mã thanh toán' });
-                    } catch (err) { console.error(err); }
-                } else {
-                    alert("Trình duyệt không hỗ trợ gửi file ảnh. Hãy dùng nút Tải về!");
-                }
+                    await navigator.share({ files: [file] });
+                } else { alert("Hãy dùng nút Tải về/Copy"); }
             });
         }
     }
