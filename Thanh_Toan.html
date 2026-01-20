@@ -3,84 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thanh Toán QR TPBank</title>
+    <title>Thanh Toán QR Chuẩn Napas</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --primary: #5b2d82; --secondary: #000; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
-        
-        /* Vùng nội dung chụp ảnh */
-        #payment-card { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 1px solid #eee; }
-        
-        .title { color: var(--primary); font-size: 22px; font-weight: 800; margin-bottom: 20px; text-transform: uppercase; }
-        
-        .bank-details { background: #f9f9f9; border-radius: 12px; padding: 15px; text-align: left; border-left: 6px solid var(--primary); margin-bottom: 20px; }
-        .bank-details p { margin: 8px 0; font-size: 15px; color: #444; }
-        .bank-details b { color: var(--secondary); font-size: 16px; }
-
-        #qrcode-surface { margin: 15px auto; padding: 10px; background: white; display: inline-block; border: 1px solid #f0f0f0; }
-
+        :root { --tp-color: #5b2d82; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        #payment-card { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .title { color: var(--tp-color); font-size: 20px; font-weight: 800; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .info-box { background: #f9f9f9; border-radius: 12px; padding: 15px; text-align: left; border-left: 5px solid var(--tp-color); margin-bottom: 20px; }
+        .info-box p { margin: 5px 0; font-size: 15px; color: #444; }
+        .info-box b { color: #000; }
+        #qrcode-target { margin: 15px auto; padding: 10px; background: white; display: inline-block; border: 1px solid #eee; }
         .note-highlight { background: #fff9c4; border: 1px dashed #fbc02d; border-radius: 10px; padding: 15px; margin-top: 15px; }
-        .content-text { display: block; font-size: 18px; font-weight: 900; color: #000; margin-top: 8px; line-height: 1.4; text-transform: uppercase; word-wrap: break-word; }
-
-        /* Nút bấm */
-        .action-bar { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 25px; width: 100%; max-width: 380px; }
-        .btn { border: none; padding: 15px 0; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .btn-green { background: #27ae60; } .btn-blue { background: #2980b9; } .btn-orange { background: #e67e22; }
-        .btn:active { transform: scale(0.95); }
+        .content-msg { display: block; font-size: 17px; font-weight: 900; color: #000; margin-top: 10px; text-transform: uppercase; word-break: break-all; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 25px; width: 100%; max-width: 380px; }
+        .btn { border: none; padding: 14px 0; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .btn-dl { background: #2e7d32; } .btn-cp { background: #1565c0; } .btn-sh { background: #e67e22; }
     </style>
 </head>
 <body>
 
 <div id="payment-card">
-    <div class="title">Thông Tin Thanh Toán</div>
-    
-    <div class="bank-details">
-        <p>Ngân hàng: <b>TPBANK</b></p>
-        <p>Số tài khoản: <b id="stk-val">...</b></p>
-        <p>Chủ tài khoản: <b id="name-val">...</b></p>
+    <div class="title">THANH TOÁN DỊCH VỤ</div>
+    <div class="info-box">
+        <p>Ngân hàng: <b>TPBank (970423)</b></p>
+        <p>Số tài khoản: <b id="ui-stk">...</b></p>
+        <p>Chủ tài khoản: <b id="ui-name">...</b></p>
     </div>
-
-    <div id="qrcode-surface"></div>
-
+    <div id="qrcode-target"></div>
     <div class="note-highlight">
-        <span style="font-size: 13px; color: #555;">Vui lòng nhập đúng nội dung:</span>
-        <span class="content-text" id="msg-val">...</span>
+        <span style="font-size: 13px; color: #555;">Nội dung chuyển khoản:</span>
+        <span class="content-msg" id="ui-msg">...</span>
     </div>
 </div>
 
-<div class="action-bar">
-    <button class="btn btn-green" onclick="processImg('download')">TẢI VỀ</button>
-    <button class="btn btn-blue" onclick="processImg('copy')">COPY</button>
-    <button class="btn btn-orange" onclick="processImg('share')">GỬI</button>
+<div class="btn-group">
+    <button class="btn btn-dl" onclick="takeAction('dl')">TẢI VỀ</button>
+    <button class="btn btn-cp" onclick="takeAction('cp')">COPY</button>
+    <button class="btn btn-sh" onclick="takeAction('sh')">GỬI</button>
 </div>
 
 <script>
-    // Hàm xử lý chuỗi: xóa dấu, ký tự lạ
-    function formatStr(s) {
+    // Hàm làm sạch văn bản chuẩn tuyệt đối
+    function sanitize(s) {
         if(!s) return "";
         return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D")
                 .replace(/[^a-zA-Z0-9 ]/g, "").trim().toUpperCase();
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    const bin = "970423"; // Mã BIN TPBank
-    const stk = (urlParams.get('stk') || '').replace(/\D/g, ''); // Chỉ lấy số cho STK
-    const name = formatStr(urlParams.get('name') || '');
-    const msg = formatStr(urlParams.get('content') || '');
+    const bankBin = "970423"; 
+    const bankStk = (urlParams.get('stk') || '').replace(/\D/g, ''); 
+    const bankName = sanitize(urlParams.get('name') || '');
+    const bankMsg = sanitize(urlParams.get('content') || '');
 
-    document.getElementById('stk-val').innerText = stk;
-    document.getElementById('name-val').innerText = name;
-    document.getElementById('msg-val').innerText = msg;
+    document.getElementById('ui-stk').innerText = bankStk;
+    document.getElementById('ui-name').innerText = bankName;
+    document.getElementById('ui-msg').innerText = bankMsg;
 
-    // Hàm tạo mã VietQR theo chuẩn Napas
-    function createVietQR(bin, stk, msg) {
-        const tag = (id, val) => id + val.length.toString().padStart(2, '0') + val;
-        const bankInfo = tag('00', 'A000000727') + tag('01', tag('00', bin) + tag('01', stk));
-        const rawData = tag('00', '01') + tag('01', '11') + tag('38', bankInfo) + tag('53', '704') + tag('58', 'VN') + tag('62', tag('08', msg)) + "6304";
+    // HÀM TẠO CHUỖI VIETQR CHUẨN XÁC Từng KÝ TỰ
+    function generateVietQR(bin, stk, msg) {
+        const createTag = (id, value) => {
+            const len = value.length.toString().padStart(2, '0');
+            return id + len + value;
+        };
 
-        function crc16(data) {
+        // Thẻ 38 (Merchant Account Info)
+        const subTag00 = createTag('00', 'A000000727'); // Global ID
+        const subTag01 = createTag('01', createTag('00', bin) + createTag('01', stk)); // Bank & STK
+        const tag38 = createTag('38', subTag00 + subTag01);
+
+        // Các thẻ cơ bản khác
+        const tag00 = createTag('00', '01'); // Payload Format
+        const tag01 = createTag('01', '11'); // QR Static
+        const tag53 = createTag('53', '704'); // VND
+        const tag58 = createTag('58', 'VN');  // Country
+        const tag62 = createTag('62', createTag('08', msg)); // Content
+
+        let fullData = tag00 + tag01 + tag38 + tag53 + tag58 + tag62 + "6304";
+
+        // Hàm tính CRC16 chuẩn xác nhất cho VietQR
+        function getCRC16(data) {
             let crc = 0xFFFF;
             for (let i = 0; i < data.length; i++) {
                 crc ^= data.charCodeAt(i) << 8;
@@ -91,46 +95,42 @@
             }
             return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
         }
-        return rawData + crc16(rawData);
+
+        return fullData + getCRC16(fullData);
     }
 
     // Vẽ QR
-    const qrCodeDiv = document.getElementById("qrcode-surface");
-    new QRCode(qrCodeDiv, {
-        text: createVietQR(bin, stk, msg),
-        width: 240,
-        height: 240,
+    const qrTarget = document.getElementById("qrcode-target");
+    new QRCode(qrTarget, {
+        text: generateVietQR(bankBin, bankStk, bankMsg),
+        width: 250,
+        height: 250,
         correctLevel: QRCode.CorrectLevel.M
     });
 
-    // Xử lý Ảnh
-    async function processImg(type) {
-        const area = document.getElementById("payment-card");
-        
-        // Chờ QR render ổn định
-        await new Promise(res => setTimeout(res, 400));
-        
-        const canvas = await html2canvas(area, { scale: 2, useCORS: true });
-        const dataUrl = canvas.toDataURL("image/png");
+    async function takeAction(mode) {
+        // Đợi QR render xong và đồng bộ pixel
+        await new Promise(r => setTimeout(r, 600));
+        const card = document.getElementById("payment-card");
+        const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
+        const img = canvas.toDataURL("image/png");
 
-        if (type === 'download') {
-            const l = document.createElement('a');
-            l.href = dataUrl; l.download = 'ThanhToan.png'; l.click();
+        if (mode === 'dl') {
+            const a = document.createElement('a'); a.href = img; a.download = 'QR_Payment.png'; a.click();
         } 
-        else if (type === 'copy') {
+        else if (mode === 'cp') {
             canvas.toBlob(blob => {
                 const item = new ClipboardItem({ "image/png": blob });
-                navigator.clipboard.write([item]).then(() => alert("Đã copy ảnh thành công!"));
+                navigator.clipboard.write([item]).then(() => alert("Đã copy ảnh!"));
             });
         } 
-        else if (type === 'share') {
+        else if (mode === 'sh') {
             canvas.toBlob(async (blob) => {
-                const file = new File([blob], 'QR.png', { type: 'image/png' });
+                const file = new File([blob], 'ThanhToan.png', { type: 'image/png' });
                 if (navigator.share) await navigator.share({ files: [file] });
             });
         }
     }
 </script>
-
 </body>
 </html>
