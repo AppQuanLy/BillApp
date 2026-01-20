@@ -10,26 +10,34 @@
         :root { --main-color: #EEA10D; --tp-purple: #5b2d82; }
         body { font-family: -apple-system, sans-serif; background-color: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
         
-        #payment-card { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; }
+        #payment-card { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
-        .title { color: var(--main-color); font-size: 24px; font-weight: 800; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .title { color: var(--main-color); font-size: 22px; font-weight: 800; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
         
-        .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: left; border-left: 6px solid var(--tp-purple); margin-bottom: 20px; }
-        .info-panel p { margin: 8px 0; font-size: 15px; color: #444; }
+        .info-panel { background: #f8f9fa; border-radius: 12px; padding: 15px; text-align: left; border-left: 6px solid #EEA10D; margin-bottom: 15px; }
+        .info-panel p { margin: 5px 0; font-size: 15px; color: #444; }
         .info-panel b { color: #000; font-size: 16px; }
 
-        /* Vùng chứa QR đảm bảo không bị mất khi render */
-        #qrcode-container { margin: 15px auto; padding: 10px; background: white; display: flex; justify-content: center; min-height: 220px; align-items: center; }
+        /* PHÓNG LỚN VÙNG CHỨA QR */
+        #qrcode-container { 
+            margin: 10px auto; 
+            padding: 15px; 
+            background: white; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            border: 1px solid #f0f0f0;
+            border-radius: 15px;
+            width: fit-content;
+        }
         
         .note-area { background: #fffde7; border: 1.5px dashed #fbc02d; border-radius: 12px; padding: 15px; margin-top: 15px; line-height: 1.5; }
-        .note-area p { margin: 0 0 10px 0; font-size: 14px; color: #555; }
+        .note-area p { margin: 0 0 8px 0; font-size: 14px; color: #555; }
         
-        /* Chỉnh lại độ đậm (Medium-Bold) và size nhỏ hơn theo yêu cầu */
-        .msg-highlight { display: block; font-size: 16px; font-weight: 700; color: #000; text-transform: uppercase; word-break: break-all; margin: 5px 0; }
+        .msg-highlight { display: block; font-size: 15px; font-weight: 700; color: #000; text-transform: uppercase; word-break: break-all; margin: 5px 0; line-height: 1.4; }
         
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 25px; width: 100%; max-width: 400px; }
-        .btn { border: none; padding: 14px 0; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; transition: opacity 0.2s; }
-        .btn:active { opacity: 0.7; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; width: 100%; max-width: 420px; }
+        .btn { border: none; padding: 14px 0; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -94,44 +102,33 @@
     document.getElementById('ui-name').innerText = cfg.name;
     document.getElementById('ui-msg').innerText = cfg.msg;
 
-    // Khởi tạo QR
-    const qrEl = document.getElementById("qrcode");
-    new QRCode(qrEl, {
+    // KÍCH THƯỚC QR ĐƯỢC TĂNG LÊN 280
+    new QRCode(document.getElementById("qrcode"), {
         text: VietQRUtil.generate(cfg.bin, cfg.stk, cfg.msg),
-        width: 210,
-        height: 210,
+        width: 280,
+        height: 280,
         correctLevel: QRCode.CorrectLevel.M
     });
 
     async function handleAction(type) {
         const card = document.getElementById("payment-card");
-        // Dùng scale 3 để ảnh cực nét khi gửi/tải
-        const canvas = await html2canvas(card, { 
-            scale: 3, 
-            useCORS: true, 
-            backgroundColor: "#ffffff",
-            logging: false 
-        });
+        const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
         const dataUrl = canvas.toDataURL("image/png");
 
         if (type === 'dl') {
             const link = document.createElement('a');
-            link.download = `ThanhToan_${cfg.stk}.png`;
+            link.download = `QR_${cfg.stk}.png`;
             link.href = dataUrl;
             link.click();
         } else if (type === 'cp') {
             canvas.toBlob(blob => {
                 const item = new ClipboardItem({ "image/png": blob });
-                navigator.clipboard.write([item]).then(() => alert("Đã copy ảnh thanh toán!"));
+                navigator.clipboard.write([item]).then(() => alert("Đã copy!"));
             });
         } else if (type === 'sh') {
             canvas.toBlob(async blob => {
-                const file = new File([blob], 'ThanhToan.png', { type: 'image/png' });
-                if (navigator.share) {
-                    await navigator.share({ files: [file] }).catch(() => {});
-                } else {
-                    alert("Trình duyệt không hỗ trợ chia sẻ trực tiếp.");
-                }
+                const file = new File([blob], 'QR.png', { type: 'image/png' });
+                if (navigator.share) await navigator.share({ files: [file] });
             });
         }
     }
