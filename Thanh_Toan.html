@@ -46,7 +46,7 @@
     <div class="title">THÔNG TIN THANH TOÁN</div>
     
     <div class="info-panel">
-        <p>Ngân hàng: <b>TPBANK</b></p>
+        <p>Ngân hàng: <b>PVComBank</b></p>
         <p>Số tài khoản: <b id="ui-stk">...</b></p>
         <p>Chủ tài khoản: <b id="ui-name">...</b></p>
     </div>
@@ -92,7 +92,7 @@
 
     const urlP = new URLSearchParams(window.location.search);
     const cfg = {
-        bin: "970423",
+        bin: "970412",
         stk: (urlP.get('stk') || '').replace(/\D/g, ''),
         name: VietQRUtil.clean(urlP.get('name') || ''),
         msg: VietQRUtil.clean(urlP.get('content') || '')
