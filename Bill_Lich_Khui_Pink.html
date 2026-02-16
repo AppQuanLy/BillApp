@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Khui Hụi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            font-size: 15pt;
+            font-weight: bold;
+        }
+        .container {
+            width: 28cm;
+            padding: 1cm;
+            margin: auto;
+            background: white;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            position: relative;
+            padding-bottom: 80px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 14pt;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .title-section {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .title-section h1 {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 34pt;
+            color: #ef4e77;
+            margin: 0;
+        }
+        .title-section p {
+            margin: 5px 0 0;
+            font-size: 16pt;
+            font-weight: Bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14pt;
+        }
+        th, td {
+            border: 1px solid #adb5bd;
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #ee7695;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        tr:nth-child(even) td {
+            background-color: #f8f9fa;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .text-left {
+            text-align: left;
+        }
+        .col-day-hui {
+            width: 35%;
+        }
+        .bill-controls {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+        .bill-controls button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .bill-controls button:hover {
+            transform: translateY(-2px);
+        }
+        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
+        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
+        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
+
+        @media print {
+            .bill-controls { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="bill-container">
+        <div class="header">
+            <div class="header-left">Chủ Hụi: <span id="chu-hui-ten"></span></div>
+            <div class="header-right">SĐT: <span id="chu-hui-sdt"></span></div>
+        </div>
+        <div class="title-section">
+            <h1>LỊCH KHUI HỤI</h1>
+            <p>Ngày: <span id="ngay-in-bill"></span></p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th class="col-day-hui text-left">DÂY HỤI</th>
+                    <th>NGÀY KHUI</th>
+                    <th>GIỜ ĐẤU</th>
+                    <th>KỲ HẠN</th>
+                    <th>KỲ</th>
+                    <th class="text-right">TIỀN HỤI</th>
+                </tr>
+            </thead>
+            <tbody id="details-tbody">
+            </tbody>
+        </table>
+        
+        <div class="bill-controls">
+            <button class="download-btn">Tải Bill</button>
+            <button class="copy-btn">Copy Bill</button>
+            <button class="share-btn">Gửi Bill</button>
+        </div>
+    </div>
+
+<script>
+    let billData = {}; // Biến toàn cục để lưu dữ liệu
+
+    // --- CÁC HÀM TIỆN ÍCH ---
+    function parseDate(dateString) {
+        if (!dateString) return null;
+        if (dateString.includes('-')) {
+            const parts = dateString.split('-');
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+        const parts = dateString.split('/');
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    /**
+     * HÀM ADDPERIOD ĐÃ ĐƯỢC SỬA LỖI ĐỂ TÍNH THÁNG CHÍNH XÁC
+     */
+    function addPeriod(startDate, value, unit) {
+        const date = new Date(startDate.getTime()); // Tạo bản sao để không thay đổi ngày gốc
+        const numericValue = parseInt(value) || 0;
+        if (numericValue === 0) return date;
+
+        if ((unit || '').toLowerCase().includes('tháng')) {
+            const originalDay = date.getDate();
+            // Đặt ngày về mùng 1 để tránh lỗi tràn ngày khi cộng tháng
+            date.setDate(1);
+            date.setMonth(date.getMonth() + numericValue);
+            // Lấy ngày cuối cùng của tháng mới
+            const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+            // Đặt lại ngày, chọn ngày nhỏ hơn giữa ngày gốc và ngày cuối tháng mới
+            date.setDate(Math.min(originalDay, lastDayOfNewMonth));
+        } else {
+            // Giữ nguyên cách tính cho Ngày và Tuần
+            date.setDate(date.getDate() + numericValue);
+        }
+        return date;
+    }
+    
+    function areDatesEqual(date1, date2) {
+        return date1.getFullYear() === date2.getFullYear() &&
+               date1.getMonth() === date2.getMonth() &&
+               date1.getDate() === date2.getDate();
+    }
+    
+    function formatCurrency(num) {
+        if (typeof num !== 'number' || num === null) return '';
+        return num.toLocaleString('vi-VN');
+    }
+
+    // --- HÀM XỬ LÝ CHÍNH ---
+    function generateBill(data) {
+        billData = data;
+        document.getElementById('chu-hui-ten').textContent = data.chu_hui_ten || '';
+        document.getElementById('chu-hui-sdt').textContent = data.chu_hui_sdt || '';
+        document.getElementById('ngay-in-bill').textContent = data.ngay_in_bill || '';
+        
+        const tbody = document.getElementById('details-tbody');
+        tbody.innerHTML = '';
+        
+        const targetDate = parseDate(data.ngay_in_bill);
+        let todaysHuis = [];
+
+        if (data.danh_sach_day_hui && Array.isArray(data.danh_sach_day_hui)) {
+            data.danh_sach_day_hui.forEach(hui => {
+                const startDate = parseDate(hui.ngay_khui);
+                const maxKy = parseInt(hui.so_ky_toi_da) || 0;
+                const soNgayKy = parseFloat(hui.ky_han_value) || 1;
+                
+                for (let ky = 1; ky <= maxKy; ky++) {
+                    const periodsToAdd = Math.floor((ky - 1) * soNgayKy);
+                    const currentDate = addPeriod(startDate, periodsToAdd, hui.ky_han_text);
+                    
+                    if (areDatesEqual(currentDate, targetDate)) {
+                        todaysHuis.push({
+                            ten_hui: hui.ten_hui,
+                            ngay_khui: hui.ngay_khui,
+                            gio_dau: hui.gio_dau,
+                            ky_han_text: hui.ky_han_text,
+                            ky: `${ky}/${maxKy}`,
+                            tien_hui: hui.tien_hui
+                        });
+                        break;
+                    }
+                }
+            });
+        }
+
+        todaysHuis.sort((a, b) => (a.gio_dau || '').localeCompare(b.gio_dau || ''));
+
+        if(todaysHuis.length === 0){
+             tbody.innerHTML = `<tr><td colspan="7">Không có lịch khui hụi trong ngày.</td></tr>`;
+        } else {
+            todaysHuis.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="text-left">${item.ten_hui}</td>
+                    <td>${item.ngay_khui}</td>
+                    <td>${item.gio_dau}</td>
+                    <td>${item.ky_han_text}</td>
+                    <td>${item.ky}</td>
+                    <td class="text-right">${formatCurrency(item.tien_hui)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        const billElement = document.getElementById('bill-container');
+        document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
+        document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+        document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+    }
+
+    // --- TẢI DỮ LIỆU KHI MỞ TRANG ---
+    window.onload = function() {
+        try {
+            const encodedData = window.location.hash.substring(1);
+            if (!encodedData) {
+                const sampleData = { "chu_hui_ten": "Lê Minh", "chu_hui_sdt": "0938338272", "ngay_in_bill": "22/09/2025", "danh_sach_day_hui": [ { "ten_hui": "HH36", "ngay_khui": "22/08/2025", "gio_dau": "15:00", "ky_han_text": "Tháng", "ky_han_value": 1, "so_ky_toi_da": 12, "tien_hui": 5000000 } ] };
+                generateBill(sampleData);
+                return;
+            }
+            const jsonData = decodeURIComponent(encodedData);
+            const billData = JSON.parse(jsonData);
+            generateBill(billData);
+        } catch (error) {
+            document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
+            console.error("Lỗi:", error);
+        }
+    };
+
+        async function captureBill(element, callback) {
+            const controls = element.querySelector('.bill-controls');
+            if (controls) controls.style.display = 'none';
+            try {
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                await callback(canvas);
+            } catch (error) {
+                console.error('Lỗi khi tạo ảnh:', error);
+                alert('Đã có lỗi xảy ra khi tạo ảnh.');
+            } finally {
+                if (controls) controls.style.display = 'flex';
+            }
+        }
+
+        function downloadBillAsImage(element) {
+            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+            captureBill(element, canvas => {
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+
+        function copyBillAsImage(element) {
+            captureBill(element, canvas => {
+                canvas.toBlob(blob => {
+                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                    .catch(err => alert('Lỗi khi copy.'));
+                });
+            });
+        }
+
+        async function shareBillAsImage(element) {
+            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+            const textshare = `Lịch khui hụi ngày ${billData.ngay_in_bill}.`;
+            if (!navigator.share) {
+                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
+                return;
+            }
+            captureBill(element, async canvas => {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                const file = new File([blob], filename, { type: 'image/png' });
+                try {
+                    await navigator.share({ title: `Lịch Khui Hụi`, text: textshare, files: [file] });
+                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
+            });
+        }
+    </script>
+</body>
+</html>
