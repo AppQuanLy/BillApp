@@ -190,7 +190,7 @@ function generateBill(data) {
     const totalRow = document.createElement('tr');
     totalRow.className = 'total-row';
     totalRow.innerHTML = `
-        <td colspan="6" style="background-color: #ee7695);color: white;" >TỔNG CỘNG</td>
+        <td colspan="6" style="background-color: #ee7695; color: white;" >TỔNG CỘNG</td>
         <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
         <td class="text-right">${formatCurrency(tongHuiSong)}</td>
         <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
