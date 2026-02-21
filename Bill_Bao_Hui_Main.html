@@ -8,7 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&amp;family=Roboto:wght@400;700&amp;display=swap" rel="stylesheet">
 
     <style>
         @page { size: A3 landscape; margin: 1.5cm; }
@@ -35,42 +34,19 @@
             background-color: #f9f9f9; border: 1px solid #eee;
         }
         .total-box { font-size: 28pt; font-weight: bold; margin: 10px 0; }
-        .text-red { color: #b82220; }
+        .text-red { color: #d90000; }
         .text-green { color: #00b050; }
         .label-text { font-size: 14pt; font-weight: bold; color: #555; }
         
-        .bill-page { max-width: 1200px; min-width: 1200px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: Arial, sans-serif; font-size: 16pt; }
+        .bill-page { background-color: white; max-width: 1200px; min-width: 1200px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: Arial, sans-serif; font-size: 16pt; }
         .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
         .bill-controls button, .info-panel button { padding: 5px 10px; font-size: 12px; cursor: pointer; color: white; border: none; border-radius: 4px; transition: background-color 0.2s; }
-       
-        /* --- CLASS CHO HÌNH ẢNH TRANG TRÍ --- */
-        .decor-img {
-            position: absolute;
-            z-index: 1; /* Nằm trên nền trắng, dưới chữ */
-            pointer-events: none; /* Để chuột bấm xuyên qua được */
-            max-width: 300px; /* Giới hạn kích thước ảnh */
-            height: auto;
-        }
-
-        /* VỊ TRÍ 4 GÓC - BẠN CÓ THỂ CHỈNH SỐ PIXEL (px) ĐỂ DỊCH CHUYỂN */
-        .img-tl { top: 0; left: 0; }
-        .img-tr { top: 0; right: 0; }
-        .img-bl { bottom: 0; left: 0; }
-        .img-br { bottom: 0; right: 0; }
         
-        /* ẢNH VIỀN (NẾU CÓ) */
-        .img-border {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; object-fit: fill; pointer-events: none;
-        }
-
-        /* ĐẨY NỘI DUNG LÊN TRÊN ẢNH */
-        .bill-content { position: relative; z-index: 2; }
         /* Header Bill */
-        .bill-header { position: relative; min-height: 210px; margin-bottom: 15px; }
-        .header-left { position: absolute; left: 35px; top: 40px; font-weight: bold; font-size: 14pt; line-height: 1.5; max-width: 30%; color: #b82220;}
+        .bill-header { position: relative; min-height: 210px; border-bottom: 1px solid #ccc; margin-bottom: 15px; }
+        .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.5; max-width: 30%; }
         .header-left p { margin: 0; }
-        .header-title-date { position: absolute; left: 50%; top: 50px; transform: translateX(-50%); text-align: center; width: 60%; color: #b82220; }
+        .header-title-date { position: absolute; left: 50%; top: 50px; transform: translateX(-50%); text-align: center; width: 60%; }
         
         /* QR Code Container */
         .qr-code { width: 200px; height: 200px; position: absolute; right: 0; top: 0; background-color: white; padding: 5px; }
@@ -81,14 +57,14 @@
         .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
         .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
         
-        table { width: 100%; margin-top: 10px; }
-        th, td { border: 2px solid #851f1e; padding: 4px 6px; vertical-align: middle; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #000; }
+        th, td { border: 1px solid #666; padding: 4px 6px; vertical-align: middle; }
         th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
         .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; }
         .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
         .summary-table th { background-color: #d9e1f2; }
-        .summary-table .highlight { background-color: #b82220; background-image: linear-gradient(to right, #851f1e, #b82220); color: #fff; } 
-        .details-table th { background-color: #b82220; background-image: linear-gradient(to right, #851f1e, #b82220); color: #fff; }
+        .summary-table .highlight { background-color: #fff2cc; background-image: linear-gradient(to right, #f5e0a0, #fff2cc); } 
+        .details-table th { background-color: #d9e1f2; background-image: linear-gradient(to right, #c3d2ef, #d9e1f2); }
         .details-table { margin-bottom: 10px; font-size: 14pt; font-weight: bold; }
         
         .footer-banner { padding: 5px; text-align: center; font-size: 14pt; color: white; margin-bottom: 5px;}
@@ -96,7 +72,7 @@
         .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; }
         .footer-right { width: 60%; }
         .totals-table td { padding: 5px 7px; font-size: 16pt; }
-        .footer-notes { font-size: 14pt; font-weight: bold; text-align: center; margin-top: 10px; color: #0275d8; }
+        .footer-notes { font-size: 14pt; font-weight: bold; text-align: center; margin-top: 10px; color: red; }
 
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -124,7 +100,7 @@
 
             <div class="dashboard-col" style="border-bottom: 4px solid #d90000;">
                 <div class="label-text">TỔNG PHẢI THU (Bill Đóng):</div>
-                <div id="total-receivable" class="total-box">0</div>
+                <div id="total-receivable" class="total-box text-red">0</div>
                 <button id="copy-summary-btn" style="background-color: #d90000; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; margin-top: 10px; cursor: pointer;">📋 Copy danh sách thu</button>
             </div>
         </div>
@@ -134,13 +110,6 @@
 
     <template id="bill-template">
          <div class="bill-page">
-              
-             <img class="decor-img img-tl" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left_R.png" crossorigin="anonymous">
-             <img class="decor-img img-tr" style="transform: scaleX(-1);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left_R.png" crossorigin="anonymous">
-             <img class="decor-img img-bl" style="transform: scaleY(-1);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left_R.png" crossorigin="anonymous">
-             <img class="decor-img img-br" style="transform: rotate(180deg);" src="https://raw.githubusercontent.com/AppQuanLy/BillApp/main/Images_Hui/top_left_R.png" crossorigin="anonymous">
-
-        <div class="bill-content">
             <div class="bill-controls">
                 <button class="download-btn">Tải Bill</button>
                 <button class="copy-btn">Copy Bill</button>
@@ -174,7 +143,7 @@
             <div class="footer-container">
                 <div class="footer-left">
                     <div class="footer-banner" data-field="footer_banner"></div>
-                    <span data-field="footer_hoi_vien" style="font-family: 'Dancing Script', cursive;font-size: 24pt;"></span>
+                    <span data-field="footer_hoi_vien"></span>
                     <div class="footer-notes">
                         <p data-field="ghi_chu_1"></p>
                         <p data-field="ghi_chu_2"></p>
@@ -182,14 +151,13 @@
                 </div>
                 <div class="footer-right">
                     <table class="totals-table no-border">
-                        <tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham" ></td></tr>
+                        <tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham"></td></tr>
                         <tr><td class="font-bold">Tổng Tiền Hốt:</td><td class="text-right font-large font-bold" data-field="bill_tong_hot"></td><td class="text-center">(2)</td><td class="text-blue font-bold" data-field="tong_thao"></td></tr>
-                        <tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-left font-bold"></td><td class="text-left font-bold" data-field="final_formula_text"></td></tr>
+                        <tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-center font-bold"></td><td class="text-center font-bold" data-field="final_formula_text"></td></tr>
                     </table>
                 </div>
             </div>
         </div>
-     </div>
     </template>
     
 <script>
