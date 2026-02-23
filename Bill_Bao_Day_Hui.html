@@ -3,56 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bill Báo Hụi Tổng Hợp</title>
+    <title>Bill Báo Hụi Theo Dây</title>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         @page { size: A3 landscape; margin: 1.5cm; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         
-        .info-panel { max-width: 900px; margin: 0 auto 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 15px; }
-        .info-panel h1 { width: 100%; margin: 0 0 15px 0; }
-        
-        /* --- CSS DASHBOARD --- */
-        .dashboard-panel { 
-            max-width: 1200px; margin: 0 auto 20px auto; padding: 15px; 
-            background: #fff; border: 2px solid #ddd; border-radius: 8px; 
-            color: #333; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .dashboard-title { 
-            font-size: 20pt; font-weight: bold; margin-bottom: 20px; 
-            text-align: center; text-transform: uppercase; color: #444; border-bottom: 2px solid #eee; padding-bottom: 10px;
-        }
-        .dashboard-grid { 
-            display: flex; gap: 30px; justify-content: space-between; 
-        }
-        .dashboard-col { 
-            flex: 1; text-align: center; padding: 15px; border-radius: 8px; 
-            background-color: #f9f9f9; border: 1px solid #eee;
-        }
-        .total-box { font-size: 28pt; font-weight: bold; margin: 10px 0; }
-        .text-red { color: #d90000; }
-        .text-green { color: #00b050; }
-        .label-text { font-size: 14pt; font-weight: bold; color: #555; }
+        #status-message { text-align: center; font-size: 18px; color: #333; margin-top: 20px; font-weight: bold; }
         
         .bill-page { background-color: white; max-width: 1200px; min-width: 1200px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: Arial, sans-serif; font-size: 16pt; }
         .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
-        .bill-controls button, .info-panel button { padding: 5px 10px; font-size: 12px; cursor: pointer; color: white; border: none; border-radius: 4px; transition: background-color 0.2s; }
+        .bill-controls button { padding: 8px 15px; font-size: 14px; font-weight: bold; cursor: pointer; color: white; border: none; border-radius: 4px; transition: 0.2s; }
         
         /* Header Bill */
         .bill-header { position: relative; min-height: 210px; border-bottom: 1px solid #ccc; margin-bottom: 15px; }
-        .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.5; max-width: 30%; }
+        .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.5; max-width: 50%; }
         .header-left p { margin: 0; }
         .header-title-date { position: absolute; left: 50%; top: 50px; transform: translateX(-50%); text-align: center; width: 60%; }
         
         /* QR Code Container */
-        .qr-code { width: 200px; height: 200px; position: absolute; right: 0; top: 0; background-color: white; padding: 5px; }
+        .qr-code { width: 180px; height: 180px; position: absolute; right: 0; top: 0; background-color: white; padding: 5px; }
         .qr-code img { width: 100%; height: 100%; display: block; }
 
-        .info-panel button { padding: 10px 20px; font-size: 14px; font-weight: bold; }
         .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
         .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
         .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
@@ -60,23 +34,18 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; color: #000; }
         th, td { border: 1px solid #666; padding: 4px 6px; vertical-align: middle; }
         th { background-color: #f2f2f2; font-weight: bold; text-transform: uppercase; }
-        .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; }
-        .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
-        .summary-table th { background-color: #d9e1f2; }
-        .summary-table .highlight { background-color: #fff2cc; background-image: linear-gradient(to right, #f5e0a0, #fff2cc); } 
-        .details-table th { background-color: #d9e1f2; background-image: linear-gradient(to right, #c3d2ef, #d9e1f2); }
-        .details-table { margin-bottom: 10px; font-size: 14pt; font-weight: bold; }
+        .text-center { text-align: center; } 
+        .font-bold { font-weight: bold; } 
+        .text-red { color: #d90000; }
         
-        .footer-banner { padding: 5px; text-align: center; font-size: 14pt; color: white; margin-bottom: 5px;}
-        .footer-container { display: flex; align-items: flex-start; gap: 10px;}
-        .footer-left { width: 40%; font-size: 18pt; font-weight: bold; text-align: center; }
-        .footer-right { width: 60%; }
-        .totals-table td { padding: 5px 7px; font-size: 16pt; }
-        .footer-notes { font-size: 14pt; font-weight: bold; text-align: center; margin-top: 10px; color: red; }
+        .summary-table th { background-color: #d9e1f2; }
+        .summary-table .highlight { background-color: #fff2cc; } 
+        .details-table th { background-color: #d9e1f2; }
+        .details-table { margin-bottom: 10px; font-size: 14pt; font-weight: bold; }
 
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .info-panel, .bill-controls, .dashboard-panel { display: none !important; }
+            .bill-controls, #status-message { display: none !important; }
             .bill-page { page-break-after: always; margin: 0; padding: 0; box-shadow: none; border: none; width: 100%; max-width: none; min-width: 0; }
             body { background-color: #fff; padding: 0; margin: 0; }
         }
@@ -84,6 +53,7 @@
 </head>
 <body>
     
+    <div id="status-message">Đang chờ dữ liệu từ App Hụi...</div>
     <div id="bills-container"></div>
 
     <template id="bill-template">
@@ -110,59 +80,49 @@
 
             <table class="summary-table text-center">
                 <thead><tr><th class="highlight" data-field="summary_title_hui_vien"></th><th class="highlight" data-field="summary_title_hui_chet"></th><th class="highlight" data-field="summary_title_hui_song"></th></tr></thead>
-                <tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td></tr></tbody>
+                <tbody><tr><td class="font-bold" data-field="hoi_vien">Dây Hụi</td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td></tr></tbody>
             </table>
             
             <table class="details-table text-center">
                 <thead><tr><th style="width: 4%;">STT</th><th>Kỳ</th><th>Hụi Viên</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Đúp</th><th>Được Nhận</th><th>Phải Đóng</th></tr></thead>
                 <tbody data-field="details_tbody"></tbody>
             </table>
-
         </div>
     </template>
     
-<script>
-        // Biến toàn cục để lưu nội dung copy
-        let globalSummaryTextReceivable = ""; 
-        let globalSummaryTextPayable = ""; 
-
-        // Tự động chạy khi mở file
+    <script>
         window.onload = function() {
-            const infoPanel = document.getElementById('info-panel');
             const statusMessage = document.getElementById('status-message');
-            const downloadZipBtn = document.getElementById('download-zip-btn');
-            infoPanel.style.display = 'block';
 
             try {
                 const encodedData = window.location.hash.substring(1);
                 if (encodedData) {
                     const jsonData = decodeURIComponent(encodedData);
-                    generateBills(jsonData);
+                    let parsedData = JSON.parse(jsonData);
+                    
+                    // Xử lý lỗi nếu AppSheet trả về Object thay vì Array
+                    if (!Array.isArray(parsedData)) {
+                        parsedData = [parsedData];
+                    }
+
+                    generateBills(parsedData);
                     statusMessage.style.display = 'none';
-                    downloadZipBtn.style.display = 'inline-block';
-                    downloadZipBtn.addEventListener('click', downloadAllAsZip);
-                } else {
-                    // Nếu không có dữ liệu, hiện thông báo chờ
-                    statusMessage.textContent = "Đang chờ dữ liệu từ AppSheet...";
                 }
-            } catch (error) { statusMessage.textContent = 'Lỗi dữ liệu bill.'; console.error(error); }
+            } catch (error) { 
+                statusMessage.textContent = 'Lỗi dữ liệu bill: ' + error.message; 
+                console.error(error); 
+            }
         };
 
-        function formatCurrency(num) { if (typeof num !== 'number' || num === null) return '0'; return num.toLocaleString('vi-VN'); }
+        function formatCurrency(num) { 
+            if (typeof num !== 'number' || num === null) return '0'; 
+            return num.toLocaleString('vi-VN'); 
+        }
 
-        // --- HÀM TẠO BILL (ĐÃ NÂNG CẤP SẮP XẾP) ---
-        function generateBills(jsonInput) {
+        function generateBills(data) {
             const billsContainer = document.getElementById('bills-container');
             billsContainer.innerHTML = '';
-            const data = JSON.parse(jsonInput);
             const billTemplate = document.getElementById('bill-template');
-            
-            // Mảng tạm để lưu dữ liệu nhằm mục đích sắp xếp
-            let listThu = []; 
-            let listGiao = [];
-            
-            let totalThu = 0;
-            let totalGiao = 0;
 
             data.forEach((kh, index) => {
                 const billNode = document.importNode(billTemplate.content, true);
@@ -174,17 +134,14 @@
                 q('[data-field="bank_info"]').textContent = kh.bank_info || ''; 
                 q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; 
                 q('[data-field="dia_chi"]').textContent = kh.dia_chi || ''; 
-                q('[data-field="ghi_chu_1"]').textContent = kh.ghi_chu_1 || ''; 
-                q('[data-field="ghi_chu_2"]').textContent = kh.ghi_chu_2 || ''; 
 
-                // Binding bảng tổng hợp
                 q('[data-field="summary_title_hui_vien"]').textContent = `Dây Hụi`; 
                 q('[data-field="summary_title_hui_chet"]').textContent = `Kỳ`; 
                 q('[data-field="summary_title_hui_song"]').textContent = `Thăm`;
                 q('[data-field="tong_hui_chet"]').textContent = formatCurrency(kh.tong_hui_chet); 
                 q('[data-field="tong_hui_song"]').textContent = formatCurrency(kh.tong_hui_song); 
 
-                
+               
                 // Binding bảng chi tiết
                 const detailsBody = q('[data-field="details_tbody"]');
                 const allDetails = [].concat(kh.chan_hui_details || []);
@@ -203,10 +160,8 @@
                     });
                 }
                 
-                
                 const billElement = billNode.querySelector('.bill-page');
-                billElement.dataset.sdt = kh.sdt_kh || ''; 
-                billElement.dataset.hoivien = kh.hoi_vien || 'bill';
+                billElement.dataset.chu_hui = kh.chu_hui || 'Bill';
                 
                 billNode.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
                 billNode.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
@@ -214,24 +169,26 @@
                 
                 billsContainer.appendChild(billNode);
             });
-
         }
         
-        // --- CÁC HÀM TIỆN ÍCH (Copy, Tải, Share, Zip) GIỮ NGUYÊN ---
+        function getFileName(element) {
+            return `Bill_${element.dataset.chu_hui}_${new Date().getTime()}.png`;
+        }
+
         function copyBillAsImage(element) { 
             const c = element.querySelector('.bill-controls'); c.style.display = 'none'; 
             html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { 
                 canvas.toBlob(blob => { 
                     try { 
-                        window.focus(); navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); 
-                    } catch (e) { alert("Trình duyệt không hỗ trợ"); } 
+                        window.focus(); 
+                        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!'))
+                    } catch (e) { alert("Trình duyệt không hỗ trợ copy ảnh trực tiếp."); } 
                 }); c.style.display = 'flex'; 
-            }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); 
+            }).catch(err => { console.error('Lỗi:', err); c.style.display = 'flex'; }); 
         }
         
         function downloadBillAsImage(element) { 
-            const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; 
-            const filename = 'BillDay.png'; 
+            const filename = getFileName(element);
             const c = element.querySelector('.bill-controls'); c.style.display = 'none'; 
             html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { 
                 const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; 
@@ -239,21 +196,20 @@
         }
         
         async function shareBillAsImage(element) { 
-            const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; 
-            const filename = 'BillDay.png'; 
+            const filename = getFileName(element);
             const shareBtn = element.querySelector('.share-btn'); const originalText = shareBtn.textContent; 
             shareBtn.textContent = "⏳ Đang xử lý..."; shareBtn.disabled = true; 
             const c = element.querySelector('.bill-controls'); c.style.display = 'none'; 
             try { 
-                const tryShare = async (scale) => { 
-                    const canvas = await html2canvas(element, { scale: scale, useCORS: true, logging: false }); 
-                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
-                    const file = new File([blob], filename, { type: 'image/png' }); 
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); } else { throw new Error('No Share API'); } 
-                }; 
-                try { await tryShare(1.5); } catch (e) { console.log("Thử lại chất lượng thấp"); await tryShare(1.0); } 
+                const canvas = await html2canvas(element, { scale: 1.5, useCORS: true, logging: false }); 
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
+                const file = new File([blob], filename, { type: 'image/png' }); 
+                if (navigator.canShare && navigator.canShare({ files: [file] })) { 
+                    await navigator.share({ files: [file] }); 
+                } else { throw new Error('No Share API'); } 
             } catch (error) { 
-                if(!error.message.includes('No Share API')) alert('Lỗi gửi bill. Hãy thử Tải Bill.'); else alert('Trình duyệt này không hỗ trợ chia sẻ file.'); 
+                if(!error.message.includes('No Share API')) alert('Lỗi gửi bill. Hãy thử Tải Bill.'); 
+                else alert('Trình duyệt / Thiết bị này không hỗ trợ chia sẻ file trực tiếp.'); 
             } finally { c.style.display = 'flex'; shareBtn.textContent = originalText; shareBtn.disabled = false; } 
         }
     </script>
