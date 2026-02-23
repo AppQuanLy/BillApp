@@ -14,18 +14,15 @@
         #status-message { text-align: center; font-size: 18px; color: #333; margin-top: 20px; font-weight: bold; }
         
         .bill-page { background-color: white; max-width: 1200px; min-width: 1200px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: relative; font-family: Arial, sans-serif; font-size: 16pt; }
-        .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
+        .bill-controls { position: absolute; bottom: -10px; left: 50%; display: flex; gap: 10px; z-index: 10; }
         .bill-controls button { padding: 8px 15px; font-size: 14px; font-weight: bold; cursor: pointer; color: white; border: none; border-radius: 4px; transition: 0.2s; }
         
         /* Header Bill */
-        .bill-header { position: relative; min-height: 210px; border-bottom: 1px solid #ccc; margin-bottom: 15px; }
+        .bill-header { position: relative; min-height: 170px; }
         .header-left { position: absolute; left: 0; top: 15px; font-weight: bold; font-size: 14pt; line-height: 1.5; max-width: 50%; }
         .header-left p { margin: 0; }
         .header-title-date { position: absolute; left: 50%; top: 50px; transform: translateX(-50%); text-align: center; width: 60%; }
         
-        /* QR Code Container */
-        .qr-code { width: 180px; height: 180px; position: absolute; right: 0; top: 0; background-color: white; padding: 5px; }
-        .qr-code img { width: 100%; height: 100%; display: block; }
 
         .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
         .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
@@ -39,8 +36,8 @@
         .text-red { color: #d90000; }
         
         .summary-table th { background-color: #d9e1f2; }
-        .summary-table .highlight { background-color: #fff2cc; } 
-        .details-table th { background-color: #d9e1f2; }
+        .summary-table .highlight { background-color: #fff2cc; background-image: linear-gradient(to right, #f5e0a0, #fff2cc); } 
+        .details-table th { background-color: #d9e1f2; background-image: linear-gradient(to right, #c3d2ef, #d9e1f2);}
         .details-table { margin-bottom: 10px; font-size: 14pt; font-weight: bold; }
 
         @media print {
@@ -72,19 +69,18 @@
                     <p data-field="bank_info"></p>
                 </div>
                 <div class="header-title-date">
-                    <h2 style="margin: 5px 0 0 0; font-size: 30pt;">BILL BÁO HỤI</h2>
+                    <h2 style="margin: 5px 0 0 0; font-size: 30pt;">BILL BÁO ĐÓNG HỤI</h2>
                     <p style="margin: 0;">Ngày: <span data-field="ngay_tao_bill"></span></p>
                 </div>
-                <div class="qr-code" data-field="qr_container"></div>
             </div>
 
             <table class="summary-table text-center">
                 <thead><tr><th class="highlight" data-field="summary_title_hui_vien"></th><th class="highlight" data-field="summary_title_hui_chet"></th><th class="highlight" data-field="summary_title_hui_song"></th></tr></thead>
-                <tbody><tr><td class="font-bold" data-field="hoi_vien">Dây Hụi</td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td></tr></tbody>
+                <tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td></tr></tbody>
             </table>
             
             <table class="details-table text-center">
-                <thead><tr><th style="width: 4%;">STT</th><th>Kỳ</th><th>Hụi Viên</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Đúp</th><th>Được Nhận</th><th>Phải Đóng</th></tr></thead>
+                <thead><tr><th style="width: 4%;">STT</th><th>Hụi Viên</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Đúp</th><th>Được Nhận</th><th>Phải Đóng</th></tr></thead>
                 <tbody data-field="details_tbody"></tbody>
             </table>
         </div>
@@ -153,7 +149,7 @@
                         if ((d.khui || '').toLowerCase().includes('nợ')) {
                             row.innerHTML = `<td colspan="7" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
                         } else {
-                            row.innerHTML = `<td>${sttCounter}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td>${d.dup || 0}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td>`;
+                            row.innerHTML = `<td>${sttCounter}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td>${d.dup || 0}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td>`;
                             sttCounter++;
                         }
                         detailsBody.appendChild(row);
