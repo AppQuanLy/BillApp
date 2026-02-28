@@ -77,6 +77,7 @@
             background-color: #d9e2f3;
             font-weight: bold;
         }
+        /* CÁC CLASS MÀU SẮC TRẠNG THÁI */
         .status-cell.dead {
             background-color: #ff0000;
             color: white;
@@ -87,6 +88,12 @@
             color: white;
             font-weight: bold;
         }
+        .status-cell.c-status {
+            background-color: #ffcc00; /* Màu vàng */
+            color: #000; /* Chữ đen cho dễ đọc trên nền vàng */
+            font-weight: bold;
+        }
+        /* ======================== */
         .total-row td {
             font-weight: bold;
             background-color: #f2f2f2;
@@ -182,9 +189,16 @@
             if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
             const jsonData = decodeURIComponent(encodedData);
             billData = JSON.parse(jsonData);
+
+            // Gộp danh sách từ nhiều mảng (hỗ trợ cả AppSheet cũ và mới)
+            let arrOld = billData.danh_sach_chan || [];
+            let arr1 = billData.danh_sach_chan_1 || [];
+            let arr2 = billData.danh_sach_chan_2 || [];
+            billData.danh_sach_chan = [...arrOld, ...arr1, ...arr2];
+
             generateBill(billData);
         } catch (error) {
-            document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
+            document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi tải dữ liệu!</h2><p style="text-align: center;">${error.message}</p>`;
             console.error("Lỗi:", error);
         }
     };
@@ -223,12 +237,9 @@
         return `${newDay}/${newMonth}/${newYear}`;
     }
 
-    /**
-     * HÀM GENERATEBILL ĐÃ SỬA LẠI LOGIC SORT
-     */
     function generateBill(data) {
         for (const key in data) {
-            if (key !== 'danh_sach_chan') {
+            if (key !== 'danh_sach_chan' && key !== 'danh_sach_chan_1' && key !== 'danh_sach_chan_2') {
                 const element = document.querySelector(`[data-field="${key}"]`);
                 if (element) element.textContent = data[key];
             }
@@ -240,9 +251,6 @@
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
             
-            // --- LOGIC SẮP XẾP ĐÃ SỬA LẠI ---
-            // Sắp xếp chỉ dựa trên giá trị 'ky' từ JSON.
-            // Nếu 'ky' rỗng hoặc không phải là số, đẩy nó xuống cuối.
             data.danh_sach_chan.sort((a, b) => {
                 const kyA = parseInt(a.ky) || Infinity;
                 const kyB = parseInt(b.ky) || Infinity;
@@ -252,7 +260,6 @@
             const ngayMo = data.ngay_mo;
             const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
 
-            // Tính ngày mãn kỳ chính xác
             const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
             if (manKyDuKienEl) {
                 const soKyInt = parseInt(data.so_ky) || 0;
@@ -260,24 +267,23 @@
                 manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
             }
 
-            // Lặp qua từng hụi viên
             data.danh_sach_chan.forEach((chan, index) => {
-                const stt = index + 1; // STT là thứ tự hiển thị
-                const kyHienThi = chan.ky || ""; // Lấy KỲ từ JSON, nếu rỗng thì là chuỗi rỗng
+                const stt = index + 1;
+                const kyHienThi = chan.ky || ""; 
                 
                 const row = document.createElement('tr');
-                let ngayHienThi = chan.ngay; // Mặc định là ngày của hụi viên "Chết"
+                let ngayHienThi = chan.ngay; 
 
                 const statusText = chan.status; 
-                let statusClass = 'dead';
+                let statusClass = 'dead'; // Mặc định là X (Đỏ)
 
+                // CẬP NHẬT LOGIC MÀU TRẠNG THÁI Ở ĐÂY
                 if (statusText === 'V' || statusText === 'S') {
-                    statusClass = 'alive';
-                    
-                    // Tính ngày dựa trên STT (index + 1)
-                    // Vì danh sách đã được sắp xếp đúng, STT sẽ khớp với KỲ
+                    statusClass = 'alive'; // V là Xanh lá
                     const periodsToAdd = (stt - 1) * kyHanValueFloat;
                     ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                } else if (statusText === 'C') {
+                    statusClass = 'c-status'; // C là Vàng
                 }
                 
                 const ngayClass = (statusText !== 'V' && statusText !== 'S') ? 'text-red' : '';
@@ -367,5 +373,3 @@
 </script>
 </body>
 </html>
-
-
