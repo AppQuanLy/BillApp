@@ -167,16 +167,20 @@
 </div>
 
 <script>
-    // 1. Tự động đổ dữ liệu từ URL JSON
 window.onload = function() {
     try {
-        // Lấy dữ liệu sau dấu # (hash)
-        const hashData = window.location.hash.substring(1); 
+        let hashData = window.location.hash.substring(1); 
         if (hashData) {
-            // Giải mã URL và Parse JSON
-            const data = JSON.parse(decodeURIComponent(hashData));
+            // Giải mã URL
+            let decodedData = decodeURIComponent(hashData);
             
-            // Tự động điền vào các ID tương ứng (val-Ngay, val-Ho_va_ten,...)
+            // Xử lý nếu lỡ có dấu [ ] ở hai đầu
+            if (decodedData.startsWith('[')) {
+                decodedData = decodedData.substring(1, decodedData.length - 1);
+            }
+
+            const data = JSON.parse(decodedData);
+            
             for (let key in data) {
                 const el = document.getElementById('val-' + key);
                 if (el) {
@@ -185,10 +189,31 @@ window.onload = function() {
             }
         }
     } catch (e) {
-        console.error("Lỗi đọc dữ liệu từ URL Hash:", e);
-        alert("Không thể đọc dữ liệu bill. Vui lòng kiểm tra lại link!");
+        console.error("Lỗi:", e);
     }
 };
+
+// Hàm Copy Bill dưới dạng HÌNH ẢNH
+async function copyBill() {
+    const bill = document.getElementById('bill-container');
+    try {
+        const canvas = await html2canvas(bill);
+        canvas.toBlob(async (blob) => {
+            const data = [new ClipboardItem({ [blob.type]: blob })];
+            await navigator.clipboard.write(data);
+            alert("Đã copy ảnh Bill! Bạn có thể dán (Ctrl+V) vào Zalo/Telegram.");
+        });
+    } catch (err) {
+        alert("Trình duyệt không hỗ trợ copy ảnh trực tiếp.");
+    }
+}
+
+// Hàm Gửi Bill qua Telegram (Gửi link kèm lời nhắn)
+function sendBill() {
+    const ten = document.getElementById('val-Ho_va_ten').innerText;
+    const shareUrl = window.location.href;
+    window.open(`https://t.me/share/url?url=${shareUrl}&text=${msg}`);
+}
 
     // 2. Hàm Tải Bill (Chụp ảnh màn hình)
     function downloadBill() {
@@ -201,24 +226,7 @@ window.onload = function() {
         });
     }
 
-    // 3. Hàm Copy Bill (Dạng văn bản)
-    function copyBill() {
-        const ten = document.getElementById('val-Ho_va_ten').innerText;
-        const tien = document.getElementById('val-Tien_phai_gop').innerText;
-        const ky = document.getElementById('val-Ky_hien_tai').innerText;
-        const text = `PHIẾU TIỀN GÓP\nKhách: ${ten}\nKỳ: ${ky}\nSố tiền: ${tien}`;
-        
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Đã copy nội dung tóm tắt!");
-        });
-    }
 
-    // 4. Hàm Gửi Bill (Mở Telegram)
-    function sendBill() {
-        const ten = document.getElementById('val-Ho_va_ten').innerText;
-        const msg = encodeURIComponent(`Gửi bill tiền góp cho khách: ${ten}`);
-        window.open(`https://t.me/share/url?url=${window.location.href}&text=${msg}`);
-    }
 </script>
 
 </body>
