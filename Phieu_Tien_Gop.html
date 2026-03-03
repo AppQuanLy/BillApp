@@ -24,11 +24,25 @@
         }
 
         #bill-container {
-            width: 600px;
-            background-color: #fff;
+            width: 400px;
+            background-color: #ffffff !important; /* Ép buộc nền trắng tinh */
             padding: 20px;
             border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: none; /* Bỏ đổ bóng để tránh vệt xám khi chụp ảnh */
+            margin: 0 auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background-color: #ffffff; /* Đảm bảo bảng cũng có nền trắng */
+        }
+        
+        /* Đảm bảo khi in ra không bị dính màu nền của trang web */
+        @media print {
+            body { background: none !important; }
+            #bill-container { border: none; }
         }
 
         .header {
@@ -42,11 +56,7 @@
             text-transform: uppercase;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
+
 
         th, td {
             border: 1px solid var(--border-color);
@@ -88,11 +98,7 @@
         .btn-copy { background-color: #2980b9; }
         .btn-send { background-color: #d35400; }
 
-        @media print {
-            .button-group { display: none; }
-            body { background-color: #fff; padding: 0; }
-            #bill-container { border: none; box-shadow: none; }
-        }
+
     </style>
 </head>
 <body>
