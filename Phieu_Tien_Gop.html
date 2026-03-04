@@ -5,92 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phiếu Tiền Góp - App Hụi</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
     <style>
+        :root {
+            --border-color: #000;
+        }
+
         body {
-            font-family: 'Roboto', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            background-color: #e0e0e0;
+            background-color: #f0f0f0;
             margin: 0;
             padding: 20px;
-            min-height: 100vh;
         }
 
-        /* --- STYLE ĐỒNG BỘ VỚI BILL BÁO HỤI --- */
         #bill-container {
-            width: 650px;
-            background-color: #fffdf0; /* Nền kem sáng */
-            padding: 30px;
-            /* Viền đỏ và vàng kim */
-            border: 8px solid #b71c1c;
-            outline: 2px solid #ffd700;
-            outline-offset: -5px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 600px;
+            background-color: #ffffff !important;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: none; 
             margin: 0 auto;
-            position: relative;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px dashed #b71c1c;
-            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .header h1 {
-            margin: 0 0 5px 0;
-            font-family: 'Playfair Display', serif;
-            font-size: 32px;
-            color: #b71c1c;
+            margin: 0;
+            font-size: 22px;
             text-transform: uppercase;
-            text-shadow: 1px 1px 0px #ffd700;
-        }
-
-        .header div {
-            font-size: 14px;
-            color: #555;
-            font-weight: bold;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 15px;
-            background-color: #ffffff;
-        }
-        
-        th, td {
-            border: 1px solid #b71c1c;
-            padding: 10px;
-            vertical-align: middle;
+            font-size: 14px;
+            background-color: #ffffff; 
         }
 
-        /* Tiêu đề các phần (Đổi sang Vàng Kim - Chữ Đỏ) */
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: left;
+        }
+
         .section-title {
-            background: linear-gradient(to bottom, #ffecb3, #ffca28);
-            color: #b71c1c;
             font-weight: bold;
             text-transform: uppercase;
-            text-align: center;
-            font-size: 16px;
         }
 
-        td:first-child { font-weight: bold; color: #333; }
+        /* --- GRADIENT DỰA TRÊN MÀU GỐC --- */
+        .bg-green { background: linear-gradient(135deg, #e2f0d9 0%, #c5e0b4 100%); }
+        .bg-blue { background: linear-gradient(135deg, #deebf7 0%, #bdd7ee 100%); }
+        .bg-orange { background: linear-gradient(135deg, #fbe5d6 0%, #f8cbad 100%); }
+        
+        /* Hiệu ứng nổi bật khi số tiền > 0 */
+        .highlight-grad-total { background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); }
 
-        .text-red { color: #d32f2f; font-weight: bold; }
+        .text-red { color: red; font-weight: bold; }
         .center { text-align: center; }
-        .highlight-row { background-color: #fffde7; }
 
-        /* --- NÚT CHỨC NĂNG --- */
+        /* Nút chức năng */
         .button-group {
-            margin-top: 25px;
+            margin-top: 20px;
             display: flex;
-            gap: 15px;
-            width: 650px;
+            gap: 10px;
+            width: 600px;
         }
 
         .btn {
@@ -100,21 +84,17 @@
             cursor: pointer;
             color: white;
             font-weight: bold;
-            font-size: 15px;
+            font-size: 14px;
             flex: 1;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: transform 0.1s;
         }
-        
-        .btn:hover { transform: translateY(-2px); }
 
-        .btn-download { background-color: #b71c1c; }
-        .btn-copy { background-color: #fbc02d; color: #b71c1c; }
-        .btn-send { background-color: #0288d1; }
+        .btn-download { background-color: #27ae60; }
+        .btn-copy { background-color: #2980b9; }
+        .btn-send { background-color: #d35400; }
 
         @media print {
             body { background: none !important; }
-            #bill-container { border: 2px solid #000; box-shadow: none; outline: none; }
+            #bill-container { border: none; }
             .button-group { display: none; }
         }
     </style>
@@ -124,45 +104,62 @@
 <div id="bill-container">
     <div class="header">
         <h1>PHIẾU TIỀN GÓP</h1>
-        <div>Ngày lập phiếu: <span id="val-Ngay">...</span></div>
+        <div>Ngày: <span id="val-Ngay">...</span></div>
     </div>
 
     <table>
-        <tr>
+        <tr class="bg-green">
             <td colspan="3" class="section-title">QUY ĐỊNH KHI VAY</td>
         </tr>
         <tr>
             <td rowspan="3" class="center" style="width: 30%;">Cung Cấp</td>
             <td colspan="2">IC 2 mặt</td>
         </tr>
-        <tr><td colspan="2">FB chính chủ</td></tr>
-        <tr><td colspan="2">Địa chỉ chỗ làm</td></tr>
-        <tr class="highlight-row">
-            <td colspan="3">LƯU Ý: Tiền góp ngày nên phải thanh toán, <span class="text-red">Trả trước 6PM</span></td>
+        <tr>
+            <td colspan="2">FB chính chủ</td>
         </tr>
-        <tr><td colspan="3">Người mượn phải có trách nhiệm với số tiền mình mượn</td></tr>
-        <tr class="highlight-row"><td colspan="3" class="text-red center">CẢM THẤY KHÔNG KHẢ NĂNG TRẢ, ĐỪNG MƯỢN!</td></tr>
-        <tr><td colspan="3">GIỜ LÀM VIỆC: <b>10AM - 6PM</b></td></tr>
-        <tr><td colspan="3">LƯU Ý: Thanh toán theo giờ làm việc <span class="text-red">✕ Trễ + $50</span></td></tr>
+        <tr>
+            <td colspan="2">Địa chỉ chỗ làm</td>
+        </tr>
+        <tr>
+            <td colspan="3">LƯU Ý : tiền góp ngày nên phải thanh toán , <span class="text-red">Trả trước 6PM</span></td>
+        </tr>
+        <tr>
+            <td colspan="3">Người mượn phải có trách nhiệm với số tiền mình mượn</td>
+        </tr>
+        <tr>
+            <td colspan="3">CẢM THẤY KO KHẢ NĂNG TRẢ , ĐỪNG MƯỢN</td>
+        </tr>
+        <tr>
+            <td colspan="3">GIỜ LÀM VIỆC : <b>10AM - 6PM</b></td>
+        </tr>
+        <tr>
+            <td colspan="3">LƯU Ý : Thanh toán theo giờ làm việc <span class="text-red">✕ Trễ + $50</span></td>
+        </tr>
 
-        <tr><td colspan="3" class="section-title" style="margin-top: 10px;">NGƯỜI VAY</td></tr>
-        <tr><td>TÊN</td><td colspan="2" id="val-Ho_va_ten" class="text-red"></td></tr>
+        <tr class="bg-blue">
+            <td colspan="3" class="section-title">NGƯỜI VAY</td>
+        </tr>
+        <tr><td>TÊN</td><td colspan="2" id="val-Ho_va_ten"></td></tr>
         <tr><td>TÊN TRÊN IC</td><td colspan="2" id="val-Ten_tieng_anh"></td></tr>
         <tr><td>NGÀY SINH</td><td colspan="2" id="val-Ngay_sinh"></td></tr>
         <tr><td>SỐ IC</td><td colspan="2" id="val-So_IC"></td></tr>
         <tr><td>SỐ ĐT</td><td colspan="2" id="val-So_DT"></td></tr>
         <tr><td>ĐỊA CHỈ</td><td colspan="2" id="val-Dia_chi"></td></tr>
 
-        <tr><td colspan="3" class="section-title">THÔNG TIN GÓP</td></tr>
-        <tr><td>SỐ TIỀN MƯỢN</td><td colspan="2" id="val-So_tien_muon" class="text-red" style="font-size: 18px;"></td></tr>
+        <tr class="bg-orange">
+            <td colspan="3" class="section-title">THÔNG TIN</td>
+        </tr>
+        <tr><td>SỐ TIỀN MƯỢN</td><td colspan="2" id="val-So_tien_muon"></td></tr>
         <tr><td>KỲ HẠN</td><td colspan="2"><span id="val-Ky_han"></span> Ngày</td></tr>
         <tr><td>SỐ KỲ</td><td colspan="2"><span id="val-So_ky"></span> Kỳ</td></tr>
         <tr><td>NGÀY MƯỢN</td><td colspan="2" id="val-Ngay_muon"></td></tr>
         <tr><td>BẮT ĐẦU TRẢ</td><td colspan="2" id="val-Ngay_bat_dau"></td></tr>
         <tr><td>KỲ HIỆN TẠI</td><td colspan="2" id="val-Ky_hien_tai"></td></tr>
-        <tr class="highlight-row">
-            <td class="section-title" style="text-align: left;">TIỀN PHẢI GÓP</td>
-            <td colspan="2" class="text-red" style="font-size: 20px;" id="val-Tien_phai_gop"></td>
+        
+        <tr id="row-tien-gop">
+            <td class="section-title">TIỀN PHẢI GÓP</td>
+            <td colspan="2" class="text-red" style="font-size: 16px;" id="val-Tien_phai_gop"></td>
         </tr>
     </table>
 </div>
@@ -174,7 +171,7 @@
 </div>
 
 <script>
-// 1. Nhận dữ liệu từ URL AppSheet
+// 1. Nhận dữ liệu từ URL và Tô màu ô Tiền
 window.onload = function() {
     try {
         let hashData = window.location.hash.substring(1); 
@@ -184,12 +181,29 @@ window.onload = function() {
                 decodedData = decodedData.substring(1, decodedData.length - 1);
             }
             const data = JSON.parse(decodedData);
+            
             for (let key in data) {
                 const el = document.getElementById('val-' + key);
-                if (el) { el.innerText = data[key]; }
+                if (el) { 
+                    el.innerText = data[key]; 
+                }
+            }
+
+            // Xử lý đổi màu dòng TIỀN PHẢI GÓP nếu số tiền > 0
+            const tienPhaiGopStr = data['Tien_phai_gop'] || '0';
+            // Chuyển chuỗi thành số (bỏ dấu chấm, phẩy...)
+            const tienPhaiGopNum = parseInt(String(tienPhaiGopStr).replace(/\D/g, '')) || 0;
+            const rowTienGop = document.getElementById('row-tien-gop');
+            
+            if (tienPhaiGopNum > 0) {
+                rowTienGop.classList.add('highlight-grad-total');
+            } else {
+                rowTienGop.classList.remove('highlight-grad-total');
             }
         }
-    } catch (e) { console.error("Lỗi parse URL:", e); }
+    } catch (e) {
+        console.error("Lỗi:", e);
+    }
 };
 
 // 2. Hàm Tải Bill
@@ -198,7 +212,7 @@ function downloadBill() {
     const ten = document.getElementById('val-Ho_va_ten').innerText || "Khach";
     html2canvas(bill, { scale: 1.5, useCORS: true }).then(canvas => {
         const link = document.createElement('a');
-        link.download = `Phieu-Tien-Gop_${ten}.png`;
+        link.download = `Phieu-Tien-Gop-${ten}.png`;
         link.href = canvas.toDataURL("image/png");
         link.click();
     });
@@ -215,18 +229,21 @@ async function copyBill() {
                 const data = [new ClipboardItem({ 'image/png': blob })];
                 await navigator.clipboard.write(data);
                 alert("Đã copy ảnh Bill! Bạn có thể dán (Ctrl+V) vào Zalo/Telegram.");
-            } catch (e) { alert("Lỗi khi copy. Vui lòng bấm Tải Bill."); }
+            } catch (e) {
+                alert("Trình duyệt không hỗ trợ copy ảnh trực tiếp. Vui lòng bấm Tải Bill.");
+            }
         });
-    } catch (err) { alert("Trình duyệt không hỗ trợ."); }
+    } catch (err) {
+        alert("Lỗi khi tạo ảnh bill.");
+    }
 }
 
-// 4. Hàm Gửi Bill (Đã sửa lỗi msg và dùng Web Share API xịn xò)
+// 4. Hàm Gửi Bill (Đã fix hoàn toàn)
 async function sendBill() {
     const bill = document.getElementById('bill-container');
     const ten = document.getElementById('val-Ho_va_ten').innerText || "Khach";
-    const filename = `Phieu-Tien-Gop_${ten}.png`;
+    const filename = `Phieu-Tien-Gop-${ten}.png`;
     
-    // Đổi nút thành trạng thái đang xử lý
     const btnSend = document.querySelector('.btn-send');
     const originalText = btnSend.innerText;
     btnSend.innerText = "Đang tạo ảnh...";
@@ -237,24 +254,21 @@ async function sendBill() {
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         const file = new File([blob], filename, { type: 'image/png' });
 
-        // Sử dụng tính năng chia sẻ gốc của điện thoại (Zalo, Telegram, FB...)
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
                 files: [file],
                 title: 'Phiếu Tiền Góp',
-                text: `Phiếu Tiền Góp của khách hàng: ${ten}`
+                text: `Phiếu Tiền Góp của khách: ${ten}`
             });
         } else {
-            alert('Trình duyệt của bạn không hỗ trợ chia sẻ ảnh trực tiếp. Vui lòng dùng nút "Tải Bill" hoặc "Copy".');
+            alert('Thiết bị/Trình duyệt không hỗ trợ Share trực tiếp. Hãy dùng nút "Tải Bill" hoặc "Copy".');
         }
     } catch (error) {
-        console.error('Lỗi chia sẻ:', error);
-        // Bỏ qua báo lỗi nếu người dùng tự ý tắt bảng Share
-        if (!error.message.includes('Share API')) {
+        if (!error.message.includes('Share API') && !error.message.includes('abort')) {
+            console.error('Lỗi chia sẻ:', error);
             alert('Có lỗi xảy ra khi gửi bill.');
         }
     } finally {
-        // Trả lại trạng thái nút
         btnSend.innerText = originalText;
         btnSend.disabled = false;
     }
