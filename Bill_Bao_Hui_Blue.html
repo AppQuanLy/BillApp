@@ -112,6 +112,7 @@
                     <p>SĐT: <span data-field="sdt"></span></p>
                     <p>Địa chỉ: <span data-field="dia_chi"></span></p>
                     <p data-field="bank_info"></p>
+                    <p class="chu-tk-row" style="display: none;">Chủ TK: <span data-field="chu_tk" style="text-transform: uppercase;"></span></p>
                 </div>
                 <div class="header-title-date">
                     <h2 style="margin: 5px 0 0 0; font-size: 30pt;">BILL BÁO HỤI</h2>
@@ -191,6 +192,11 @@
                 q('[data-field="chu_hui"]').textContent = kh.chu_hui || ''; 
                 q('[data-field="sdt"]').textContent = kh.sdt || ''; 
                 q('[data-field="bank_info"]').textContent = kh.bank_info || ''; 
+                const chuTkRow = q('.chu-tk-row');
+                    if (kh.chu_tk && kh.chu_tk.trim() !== '') {
+                        q('[data-field="chu_tk"]').textContent = kh.chu_tk;
+                        if (chuTkRow) chuTkRow.style.display = 'block'; 
+                    }
                 q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; 
                 q('[data-field="qr_bill_url"]').src = kh.qr_bill_url || '';
                 
