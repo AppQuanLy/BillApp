@@ -402,7 +402,100 @@
         function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { canvas.toBlob(blob => { try { window.focus(); navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); } catch (e) { alert("Trình duyệt không hỗ trợ"); } }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
         function downloadBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien.replace(/\s+/g, '_')}`) + '.png'; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error(err); alert('Lỗi tạo ảnh.'); c.style.display = 'flex'; }); }
         async function shareBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png'; const shareBtn = element.querySelector('.share-btn'); const originalText = shareBtn.textContent; shareBtn.textContent = "⏳ Đang xử lý..."; shareBtn.disabled = true; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const tryShare = async (scale) => { const canvas = await html2canvas(element, { scale: scale, useCORS: true, logging: false }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], filename, { type: 'image/png' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); } else { throw new Error('No Share API'); } }; try { await tryShare(1.5); } catch (e) { console.log("Thử lại chất lượng thấp"); await tryShare(1.0); } } catch (error) { if(!error.message.includes('No Share API')) alert('Lỗi gửi bill. Hãy thử Tải Bill.'); else alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } finally { c.style.display = 'flex'; shareBtn.textContent = originalText; shareBtn.disabled = false; } }
-        async function downloadAllAsZip() { const bills = document.querySelectorAll('.bill-page'); const total = bills.length; if (total === 0) { alert('Không có bill nào để tải.'); return; } const button = document.getElementById('download-zip-btn'); const originalText = button.innerHTML; button.disabled = true; const zip = new JSZip(); let successCount = 0; for (let i = 0; i < total; i++) { const bill = bills[i]; button.innerHTML = `⏳ Đang xử lý ${i + 1}/${total}...`; const controls = bill.querySelector('.bill-controls'); if (controls) controls.style.display = 'none'; try { const capturePromise = html2canvas(bill, { scale: 1.5, useCORS: true, logging: false }); const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 8000)); const canvas = await Promise.race([capturePromise, timeoutPromise]); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const sdt = bill.dataset.sdt; const hoivien = bill.dataset.hoivien; const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png'; zip.file(fileName, blob); successCount++; } catch (error) { console.error(`Lỗi bill ${i}:`, error); } finally { if (controls) controls.style.display = 'flex'; } await new Promise(r => setTimeout(r, 100)); } if (successCount > 0) { button.innerHTML = '📦 Đang nén...'; const content = await zip.generateAsync({ type: "blob" }); const link = document.createElement('a'); link.href = URL.createObjectURL(content); const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-'); link.download = `Tat_ca_bill_${today}.zip`; document.body.appendChild(link); link.click(); document.body.removeChild(link); } button.innerHTML = originalText; button.disabled = false; }
-    </script>
+        async function downloadAllAsZip() { 
+            const bills = document.querySelectorAll('.bill-page'); 
+            const total = bills.length; 
+            if (total === 0) { alert('Không có bill nào để tải.'); return; } 
+            
+            const button = document.getElementById('download-zip-btn'); 
+            const originalText = button.innerHTML; 
+            button.disabled = true; 
+            
+            const zip = new JSZip(); 
+            let successCount = 0; 
+            let failList = []; // Danh sách lưu tên các bill bị rớt
+            
+            for (let i = 0; i < total; i++) { 
+                const bill = bills[i]; 
+                const sdt = bill.dataset.sdt; 
+                const hoivien = bill.dataset.hoivien || "Khach_Hang"; 
+                const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png'; 
+                
+                button.innerHTML = `⏳ Đang chụp ${i + 1}/${total}...`; 
+                const controls = bill.querySelector('.bill-controls'); 
+                if (controls) controls.style.display = 'none'; 
+                
+                let success = false;
+                let attempts = 0;
+                const maxAttempts = 3; // Thử lại tối đa 3 lần nếu bị lỗi
+                
+                while (!success && attempts < maxAttempts) {
+                    attempts++;
+                    try { 
+                        // Ép trình duyệt nghỉ 0.5s trước khi chụp để xả RAM (RẤT QUAN TRỌNG)
+                        await new Promise(r => setTimeout(r, 500));
+                        
+                        const capturePromise = html2canvas(bill, { scale: 1.5, useCORS: true, logging: false }); 
+                        // Chờ tối đa 15 giây cho 1 bill
+                        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 15000)); 
+                        
+                        const canvas = await Promise.race([capturePromise, timeoutPromise]); 
+                        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
+                        
+                        if (blob) {
+                            zip.file(fileName, blob); 
+                            successCount++; 
+                            success = true; // Đánh dấu thành công để thoát vòng lặp Retry
+                        } else {
+                            throw new Error("Không tạo được ảnh");
+                        }
+                    } catch (error) { 
+                        console.warn(`Lần thử ${attempts} thất bại cho bill ${fileName}:`, error); 
+                        if (attempts >= maxAttempts) {
+                            console.error(`Đã bỏ qua bill ${fileName} sau ${maxAttempts} lần thử.`);
+                            failList.push(hoivien); // Lưu tên người bị lỗi
+                        }
+                        // Trình duyệt đang ngợp, cho nó nghỉ 1 giây rồi mới thử lại
+                        await new Promise(r => setTimeout(r, 1000));
+                    } 
+                }
+                
+                if (controls) controls.style.display = 'flex'; 
+            } 
+            
+            if (successCount > 0) { 
+                button.innerHTML = '📦 Đang nén ZIP (Đợi 1 chút)...'; 
+                // Chờ giao diện cập nhật chữ xong mới bắt đầu nén
+                await new Promise(r => setTimeout(r, 500));
+                
+                try {
+                    const content = await zip.generateAsync({ type: "blob" }); 
+                    const link = document.createElement('a'); 
+                    link.href = URL.createObjectURL(content); 
+                    const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-'); 
+                    link.download = `Tat_ca_bill_${today}.zip`; 
+                    document.body.appendChild(link); 
+                    link.click(); 
+                    document.body.removeChild(link); 
+                    
+                    // CẢNH BÁO RÕ TÊN NGƯỜI BỊ LỖI NẾU CÓ
+                    if (successCount < total) {
+                        alert(`⚠️ HOÀN TẤT NHƯNG CÓ LỖI:\nChỉ tải được ${successCount}/${total} bill.\n\n❌ Các bill bị thiếu:\n${failList.join(', ')}\n\n👉 Giải pháp: RAM máy tính đang bị đầy. Hãy F5 tải lại trang, tắt bớt tab khác hoặc bấm "Tải Bill" lẻ cho những người bị thiếu.`);
+                    } else {
+                        // Tải đủ 100%
+                        button.innerHTML = '✅ Đã tải xong!';
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                } catch (zipError) {
+                    alert("Lỗi khi nén file Zip: Trình duyệt bị hết RAM. Hãy chia nhỏ số lượng người trước khi tải.");
+                }
+            } else {
+                alert('Lỗi: Không thể tải được bill nào. Vui lòng kiểm tra lại!');
+            }
+            
+            button.innerHTML = originalText; 
+            button.disabled = false; 
+        }
+   </script>
 </body>
 </html>
