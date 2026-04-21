@@ -112,18 +112,25 @@
         } 
 
         /* CSS MỚI CHO KHỐI TỔNG TIỀN CĂN GIỮA FOOTER */
-        .totals-center-wrapper {
-            display: inline-block; /* Giúp khối này ôm sát kích thước bảng */
-            background-color: rgba(255, 255, 255, 0.9); /* Nền trắng mờ giúp số rõ ràng */
+		.totals-center-wrapper {
+            display: inline-block; 
+            background-color: #ffffff; /* Sửa ở đây: Từ rgba(...) thành mã màu đặc #ffffff */
             padding: 15px 30px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            margin: 0 auto; /* Đảm bảo luôn nằm chính giữa */
-            text-align: left; /* Đưa chữ trong bảng về căn trái bình thường */
+            margin: 0 auto; 
+            text-align: left; 
+            position: relative;
+            z-index: 5; /* Thêm z-index để nổi lên trên */
         }
         
         .totals-table { width: auto; margin-bottom: 0; }
-        .totals-table td { padding: 5px 10px; font-size: 16pt; }
+        .totals-table td { 
+            padding: 5px 10px; 
+            font-size: 16pt; 
+            background-color: transparent !important; /* Thêm dòng này: Ép các ô lưới trong suốt */
+            color: #111; /* Đảm bảo chữ hiển thị màu đen rõ nét */
+        }
 
         /* Nút chức năng */
         .bill-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10; }
