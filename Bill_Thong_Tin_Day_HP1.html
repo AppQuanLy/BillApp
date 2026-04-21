@@ -59,20 +59,25 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        /* Vùng chứa Ảnh Header (Giữ nguyên) */
         .img-title-container {
+            position: absolute;
+            left: 50%;
+            top: 25px; /* Bạn có thể chỉnh số này để đẩy cụm tiêu đề lên/xuống */
+            transform: translateX(-50%);
             text-align: center;
-            margin-bottom: 20px;
-            position: relative;
+            width: 100%;
+            z-index: 5;
         }
         .img-title-container img {
             width: 100%;
             max-width: 500px;
             height: auto;
             filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
+            display: block;
+            margin: 0 auto; /* Ép hình ảnh luôn nằm chính giữa */
         }
         .img-title-container p {
-            margin: -30px 0 0; /* Đẩy ngày lên dưới ảnh */
+            margin: -20px auto 0 auto; /* Kéo nút "Ngày" lên lồng vào hình một chút cho đẹp */
             font-size: 14pt;
             font-weight: bold;
             color: #111;
