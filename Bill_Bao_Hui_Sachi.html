@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bill Báo Hụi Tổng Hợp - Happy Theme</title>
+    <title>Bill Báo Hụi - Theme</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
     
@@ -43,7 +43,7 @@
         /* --- CSS GIAO DIỆN BILL KHỐI NỀN --- */
         .bill-page { 
             max-width: 1200px; min-width: 1200px; margin: 20px auto; 
-            padding: 0; 
+            padding: 0; /* Xóa padding để header/footer bám sát lề bill */
             border: 1px solid #b0bec5; box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
             position: relative; font-family: Arial, sans-serif; font-size: 16pt; 
             border-radius: 12px; overflow: hidden; color: #111;
@@ -55,8 +55,11 @@
             background-size: 100%; 
         }
         
+        .bill-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 10; }
+        .bill-controls button, .info-panel button { padding: 5px 10px; font-size: 12px; cursor: pointer; color: white; border: none; border-radius: 4px; transition: background-color 0.2s; }
+        
         /* =======================================================
-           KHỐI 1: HEADER LÀM BACKGROUND 
+           2. KHỐI HEADER LÀM BACKGROUND 
            ======================================================= */
         .bill-header { 
             position: relative; 
@@ -67,6 +70,7 @@
             background-position: top center;
             background-repeat: no-repeat;
         }
+        /* Các thành phần nổi trên Header */
         .header-left { position: absolute; left: 20px; top: 20px; font-weight: bold; font-size: 14pt; line-height: 1.5; max-width: 30%; background-color: #ffffffe6; padding: 15px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .header-left p { margin: 0; }
         
@@ -75,68 +79,51 @@
         .qr-code { width: 180px; height: 180px; position: absolute; right: 20px; top: 20px; background-color: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .qr-code img { width: 100%; height: 100%; display: block; }
 
+        /* Nút Tải/Copy/Gửi */
+        .info-panel button { padding: 10px 20px; font-size: 14px; font-weight: bold; }
+        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
+        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
+        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
+        
         /* =======================================================
-           KHỐI 2: CHỨA BẢNG DỮ LIỆU Ở GIỮA
+           3. KHỐI CHỨA BẢNG DỮ LIỆU Ở GIỮA
            ======================================================= */
         .bill-body-content {
             padding: 0 20px; 
-            min-height: 150px;
+            min-height: 200px;
         }
         
         table { width: 100%; border-collapse: collapse; margin-bottom: 10px; color: #111; }
         th, td { border: 1px solid #cfd8dc; padding: 4px 6px; vertical-align: middle; }
         th { background-color: #18739f; font-weight: bold; text-transform: uppercase; color: #ffca30; }
-        td { background-color: #ffffffe6; } 
+        td { background-color: #ffffffe6; } /* Nền trắng mờ để số hiển thị rõ */
         
         .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; background: transparent; }
         .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
         
         .summary-table th { background-color: rgba(2, 136, 209, 0.2); }
         .summary-table .highlight { background-color: #18739f; color: #ffca30; } 
-        
-        .details-table { margin-bottom: 5px !important; font-size: 14pt; font-weight: bold; }
+        .details-table { margin-bottom: 20px; font-size: 14pt; font-weight: bold; }
         
         /* =======================================================
-           KHỐI 3: FOOTER LÀM BACKGROUND VÀ CHỨA BẢNG TỔNG
+           4. KHỐI FOOTER LÀM BACKGROUND 
            ======================================================= */
-        .footer-section { 
-            position: relative;
-            min-height: 136px;
-            padding: 15px 10px 40px 20px;
-            background-image: url(''); 
+        .footer-container { 
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; 
+            padding: 15px 10px 40px 20px; 
+            background-image: url('');
             background-size: 100%;
-            background-position: top center;
+            background-position: bottom center;
             background-repeat: no-repeat;
-            margin-top: 0px; 
-            text-align: center; 
+			margin-top: 0px; 
         } 
-
-        .totals-center-wrapper {
-            display: inline-block; 
-            background-color: #ffffff; 
-            padding: 15px 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            margin: 0 auto; 
-            text-align: left; 
-            position: relative;
-            z-index: 5;
-        }
+        /* Cần lót nền trắng mờ cho 2 ô trái/phải để chữ không chìm vào background */
+        .footer-left { width: 42%; font-size: 18pt; font-weight: bold; text-align: center; background-color: #ffffffe6; padding: 15px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .footer-right { width: 55%; background-color: #ffffffe6; padding: 15px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         
-        .totals-table { width: auto; margin-bottom: 0; }
-        .totals-table td { 
-            padding: 5px 10px; 
-            font-size: 16pt; 
-            background-color: transparent !important; 
-            color: #111; 
-        }
-
-        /* Nút chức năng */
-        .bill-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10; }
-        .bill-controls button, .info-panel button { padding: 8px 15px; font-size: 14px; font-weight: bold; cursor: pointer; color: white; border: none; border-radius: 4px; transition: background-color 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
-        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
-        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
+        .footer-banner { padding: 5px; text-align: center; font-size: 14pt; color: white; margin-bottom: 5px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .totals-table td { padding: 5px 7px; font-size: 16pt; }
+        .footer-notes { font-size: 14pt; font-weight: bold; text-align: center; margin-top: 10px; color: red; }
 
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -175,6 +162,12 @@
     <template id="bill-template">
          <div class="bill-page">
             
+            <div class="bill-controls">
+                <button class="download-btn">Tải Bill</button>
+                <button class="copy-btn">Copy Bill</button>
+                <button class="share-btn">Gửi Bill</button>
+            </div>
+            
             <div class="bill-header">
                 <div class="header-left">
                     <p>Chủ hụi: <span data-field="chu_hui"></span></p>
@@ -201,33 +194,26 @@
                 </table>
                 
                 <table class="details-table text-center">
-                    <thead><tr><th style="width: 4%;">STT</th><th>Dây Hụi</th><th>Kỳ</th><th>Khui</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Thăm</th></tr></thead>
+                    <thead><tr><th style="width: 4%;">STT</th><th>Dây Hụi</th><th>Kỳ</th><th>Khui</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Thăm</th><th>Thảo</th><th>Đúp</th></tr></thead>
                     <tbody data-field="details_tbody"></tbody>
                 </table>
             </div>
 
-            <div class="footer-section">
-                <div class="totals-center-wrapper">
-                    <table class="totals-table no-border">
-                        <tr>
-                            <td class="font-bold">Tổng Tiền Đóng:</td>
-                            <td class="text-right font-large font-bold" data-field="bill_tong_dong" style="font-size: 30pt; color: #d90000;"></td>
-                            <td class="text-blue font-bold" data-field="tong_tham" style="padding-left: 40px; color: #0275d8;"></td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div style="display: none;">
-                    <div data-field="footer_banner"></div>
+            <div class="footer-container">
+                <div class="footer-left">
+                    <div class="footer-banner" data-field="footer_banner"></div>
                     <span data-field="footer_hoi_vien"></span>
-                    <p data-field="ghi_chu_1"></p>
-                    <p data-field="ghi_chu_2"></p>
+                    <div class="footer-notes">
+                        <p data-field="ghi_chu_1"></p>
+                        <p data-field="ghi_chu_2"></p>
+                    </div>
                 </div>
-                
-                <div class="bill-controls">
-                    <button class="download-btn">Tải Bill</button>
-                    <button class="copy-btn">Copy Bill</button>
-                    <button class="share-btn">Gửi Bill</button>
+                <div class="footer-right">
+                    <table class="totals-table no-border">
+                        <tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham"></td></tr>
+                        <tr><td class="font-bold">Tổng Tiền Hốt:</td><td class="text-right font-large font-bold" data-field="bill_tong_hot"></td><td class="text-center">(2)</td><td class="text-blue font-bold" data-field="tong_thao"></td></tr>
+                        <tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-center font-bold"></td><td class="text-center font-bold" data-field="final_formula_text"></td></tr>
+                    </table>
                 </div>
             </div>
 
@@ -370,12 +356,11 @@
                     let sttCounter = 1;
                     allDetails.forEach(d => {
                         const row = document.createElement('tr');
-                        // Đã bỏ 2 trường Thảo và Đúp, căn chỉnh lại colspan cho dòng Nợ
                         if ((d.khui || '').toLowerCase().includes('nợ')) {
                             row.style.backgroundColor = 'rgba(255, 240, 240, 0.8)'; 
-                            row.innerHTML = `<td colspan="7" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td></td>`;
+                            row.innerHTML = `<td colspan="8" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
                         } else {
-                            row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td>`;
+                            row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
                             sttCounter++;
                         }
                         detailsBody.appendChild(row);
@@ -384,11 +369,9 @@
                 
                 q('[data-field="footer_hoi_vien"]').textContent = kh.hoi_vien || ''; 
                 q('[data-field="bill_tong_dong"]').textContent = formatCurrency(kh.bill_tong_dong); 
-                
-                // Các trường dưới đây đã xóa khỏi giao diện nên thêm if() để chặn lỗi ngầm của Javascript
-                const elBillTongHot = q('[data-field="bill_tong_hot"]'); if(elBillTongHot) elBillTongHot.textContent = formatCurrency(kh.bill_tong_hot); 
-                const elTongTham = q('[data-field="tong_tham"]'); if(elTongTham) elTongTham.textContent = `Tổng Thăm: ${formatCurrency(kh.tong_tham)}`; 
-                const elTongThao = q('[data-field="tong_thao"]'); if(elTongThao) elTongThao.textContent = `Tổng Thảo: ${formatCurrency(kh.tong_thao)}`;
+                q('[data-field="bill_tong_hot"]').textContent = formatCurrency(kh.bill_tong_hot); 
+                q('[data-field="tong_tham"]').textContent = `Tổng Thăm: ${formatCurrency(kh.tong_tham)}`; 
+                q('[data-field="tong_thao"]').textContent = `Tổng Thảo: ${formatCurrency(kh.tong_thao)}`;
                 
                 const banner = q('[data-field="footer_banner"]'); 
                 const tongDong = kh.bill_tong_dong || 0; 
@@ -399,11 +382,10 @@
                 if (tongDong > tongHot) { 
                     banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; 
                     banner.style.backgroundColor = '#d90000'; 
-                    
-                    const elFinalTextLabel = q('[data-field="final_text_label"]'); if (elFinalTextLabel) elFinalTextLabel.textContent = 'Phải Đóng:'; 
+                    q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; 
                     const amount = tongDong - tongHot;
-                    const elFinalAmount = q('[data-field="final_amount"]'); if (elFinalAmount) elFinalAmount.textContent = formatCurrency(amount); 
-                    const elFinalFormula = q('[data-field="final_formula_text"]'); if (elFinalFormula) elFinalFormula.textContent = '=(1)-(2)'; 
+                    q('[data-field="final_amount"]').textContent = formatCurrency(amount); 
+                    q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; 
                     
                     const qrRawData = kh.qr_bill_url; 
                     if (qrRawData) {
@@ -419,11 +401,10 @@
                 } else { 
                     banner.textContent = 'Hụi Viên được nhận tiền'; 
                     banner.style.backgroundColor = '#00b050'; 
-                    
-                    const elFinalTextLabel = q('[data-field="final_text_label"]'); if (elFinalTextLabel) elFinalTextLabel.textContent = 'Được Nhận:'; 
+                    q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; 
                     const amountPayable = tongHot - tongDong;
-                    const elFinalAmount = q('[data-field="final_amount"]'); if (elFinalAmount) elFinalAmount.textContent = formatCurrency(amountPayable); 
-                    const elFinalFormula = q('[data-field="final_formula_text"]'); if (elFinalFormula) elFinalFormula.textContent = '=(2)-(1)'; 
+                    q('[data-field="final_amount"]').textContent = formatCurrency(amountPayable); 
+                    q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; 
                     qrContainer.style.display = 'none';
                     
                     listGiao.push({ name: kh.hoi_vien, amount: amountPayable });
