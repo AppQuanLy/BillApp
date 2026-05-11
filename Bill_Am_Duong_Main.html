@@ -97,6 +97,7 @@
                     <th>TIỀN HỤI</th>
                     <th class="khui-col">KỲ HẠN</th>
                     <th>KỲ</th>
+                    <th>KỲ HỐT</th>
                     <th>HỤI CHẾT</th>
                     <th>HỤI SỐNG</th>
                     <th>LỜI LỖ</th>
@@ -169,6 +170,7 @@ function generateBill(data) {
                 <td class="text-right">${formatCurrency(item.so_tien)}</td>
                 <td class="khui-col">${item.khui}</td>
                 <td>${item.ky}</td>
+                <td class="text-red">${item.ky_hot || ''}</td>
                 <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
                 <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
                 <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
@@ -190,7 +192,7 @@ function generateBill(data) {
     const totalRow = document.createElement('tr');
     totalRow.className = 'total-row';
     totalRow.innerHTML = `
-        <td colspan="6" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
+        <td colspan="7" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
         <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
         <td class="text-right">${formatCurrency(tongHuiSong)}</td>
         <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
@@ -209,8 +211,8 @@ function generateBill(data) {
     const balanceRow = document.createElement('tr');
     balanceRow.className = 'total-row'; // Dùng lại style của hàng tổng
     balanceRow.innerHTML = `
-        <td colspan="6" >Cân Bằng Hụi (Âm/Dương)</td>
-        <td colspan="2" class="${balanceClass}">${formatCurrency(balance)}</td>
+        <td colspan="7" >Cân Bằng Hụi (Âm/Dương)</td>
+        <td colspan="3" class="${balanceClass}">${formatCurrency(balance)}</td>
     `;
 
     // 4. Thêm hàng mới vào cuối bảng
