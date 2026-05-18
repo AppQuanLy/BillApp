@@ -115,14 +115,14 @@
     </div>
 
     <script>
-        let billData = {}; // Biến toàn cục để lưu dữ liệu bill
+        let billData = {}; 
 
         window.onload = function() {
             try {
                 const encodedData = window.location.hash.substring(1);
                 if (!encodedData) { throw new Error('Không tìm thấy dữ liệu.'); }
                 const jsonData = decodeURIComponent(encodedData);
-                billData = JSON.parse(jsonData); // Gán dữ liệu vào biến toàn cục
+                billData = JSON.parse(jsonData); 
                 generateBill(billData);
             } catch (error) {
                 document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
@@ -135,97 +135,96 @@
             return num.toLocaleString('vi-VN');
         }
 
-function generateBill(data) {
-    // Điền thông tin chung
-    document.querySelector('[data-field="chu_hui_ten"]').textContent = data.chu_hui_ten || '';
-    document.querySelector('[data-field="chu_hui_sdt"]').textContent = data.chu_hui_sdt || '';
-    document.querySelector('[data-field="ngay_in_bill"]').textContent = data.ngay_in_bill || '';
-    document.querySelector('[data-field="hui_vien_ten"]').textContent = data.hui_vien_ten || '';
+        function generateBill(data) {
+            document.querySelector('[data-field="chu_hui_ten"]').textContent = data.chu_hui_ten || '';
+            document.querySelector('[data-field="chu_hui_sdt"]').textContent = data.chu_hui_sdt || '';
+            document.querySelector('[data-field="ngay_in_bill"]').textContent = data.ngay_in_bill || '';
+            document.querySelector('[data-field="hui_vien_ten"]').textContent = data.hui_vien_ten || '';
 
-    // Xử lý bảng chi tiết
-    const tbody = document.getElementById('details-tbody');
-    tbody.innerHTML = '';
-    let tongHuiChet = 0;
-    let tongHuiSong = 0;
-    let tongLoiLo = 0;
+            const tbody = document.getElementById('details-tbody');
+            tbody.innerHTML = '';
+            let tongHuiChet = 0;
+            let tongHuiSong = 0;
+            let tongLoiLo = 0;
 
-    if (data.details && Array.isArray(data.details)) {
-        // THAY ĐỔI: Thêm "(item, index)" để lấy số thứ tự
-        data.details.forEach((item, index) => {
-            const stt = index + 1; // Tự động tạo STT bắt đầu từ 1
-            const row = document.createElement('tr');
-            
-            let loiLoClass = '';
-            if (item.loi_lo > 0) {
-                loiLoClass = 'text-green';
-            } else if (item.loi_lo < 0) {
-                loiLoClass = 'text-red';
+            // ========================================================
+            // BƯỚC GOM DATA: KẾT HỢP DETAILS VÀ DETAILS_2 (NẾU CÓ)
+            // ========================================================
+            let allDetails = [];
+            if (data.details && Array.isArray(data.details)) {
+                allDetails = allDetails.concat(data.details);
+            }
+            if (data.details_2 && Array.isArray(data.details_2)) {
+                allDetails = allDetails.concat(data.details_2);
             }
 
-            // THAY ĐỔI: Dùng biến "stt" thay cho "item.stt"
-            row.innerHTML = `
-                <td>${stt}</td>
-                <td class="day-hui-col">${item.day_hui}</td>
-                <td>${item.ngay_khui}</td>
-                <td class="text-right">${formatCurrency(item.so_tien)}</td>
-                <td class="khui-col">${item.khui}</td>
-                <td>${item.ky}</td>
-                <td class="text-red">${item.ky_hot || ''}</td>
-                <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
-                <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
-                <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
+            // Dùng mảng allDetails đã gom chung để lặp và vẽ bảng
+            if (allDetails.length > 0) {
+                allDetails.forEach((item, index) => {
+                    const stt = index + 1; 
+                    const row = document.createElement('tr');
+                    
+                    let loiLoClass = '';
+                    if (item.loi_lo > 0) {
+                        loiLoClass = 'text-green';
+                    } else if (item.loi_lo < 0) {
+                        loiLoClass = 'text-red';
+                    }
+
+                    row.innerHTML = `
+                        <td>${stt}</td>
+                        <td class="day-hui-col">${item.day_hui}</td>
+                        <td>${item.ngay_khui}</td>
+                        <td class="text-right">${formatCurrency(item.so_tien)}</td>
+                        <td class="khui-col">${item.khui}</td>
+                        <td>${item.ky}</td>
+                        <td class="text-red">${item.ky_hot || ''}</td>
+                        <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
+                        <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
+                        <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
+                    `;
+                    tbody.appendChild(row);
+
+                    tongHuiChet += item.hui_chet || 0;
+                    tongHuiSong += item.hui_song || 0;
+                    tongLoiLo += item.loi_lo || 0;
+                });
+            }
+            
+            let tongLoiLoClass = '';
+            if(tongLoiLo > 0) tongLoiLoClass = 'text-green';
+            if(tongLoiLo < 0) tongLoiLoClass = 'text-red';
+
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td colspan="7" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
+                <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
+                <td class="text-right">${formatCurrency(tongHuiSong)}</td>
+                <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
             `;
-            tbody.appendChild(row);
+            tbody.appendChild(totalRow);
+            
+            const balance = tongHuiSong - tongHuiChet;
 
-            // Tính tổng
-            tongHuiChet += item.hui_chet || 0;
-            tongHuiSong += item.hui_song || 0;
-            tongLoiLo += item.loi_lo || 0;
-        });
-    }
-    
-    // Thêm dòng tổng cộng
-    let tongLoiLoClass = '';
-    if(tongLoiLo > 0) tongLoiLoClass = 'text-green';
-    if(tongLoiLo < 0) tongLoiLoClass = 'text-red';
+            let balanceClass = '';
+            if (balance > 0)  balanceClass = 'text-green';
+            if (balance < 0)  balanceClass = 'text-red';
+            
+            const balanceRow = document.createElement('tr');
+            balanceRow.className = 'total-row'; 
+            balanceRow.innerHTML = `
+                <td colspan="7" >Cân Bằng Hụi (Âm/Dương)</td>
+                <td colspan="3" class="${balanceClass}">${formatCurrency(balance)}</td>
+            `;
+            tbody.appendChild(balanceRow);
 
-    const totalRow = document.createElement('tr');
-    totalRow.className = 'total-row';
-    totalRow.innerHTML = `
-        <td colspan="7" style="background-color: rgb(217, 0, 0);color: white;" >TỔNG CỘNG</td>
-        <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
-        <td class="text-right">${formatCurrency(tongHuiSong)}</td>
-        <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
-    `;
-    tbody.appendChild(totalRow);
-        // 1. Tính toán số tiền cân bằng
-    const balance = tongHuiSong - tongHuiChet;
-
-    // 2. Xác định màu sắc (xanh cho dương, đỏ cho âm)
-    let balanceClass = '';
-    if (balance > 0)  balanceClass = 'text-green';
-    if (balance < 0)  balanceClass = 'text-red';
-    
-
-    // 3. Tạo hàng mới cho bảng
-    const balanceRow = document.createElement('tr');
-    balanceRow.className = 'total-row'; // Dùng lại style của hàng tổng
-    balanceRow.innerHTML = `
-        <td colspan="7" >Cân Bằng Hụi (Âm/Dương)</td>
-        <td colspan="2" class="${balanceClass}">${formatCurrency(balance)}</td>
-    `;
-
-    // 4. Thêm hàng mới vào cuối bảng
-    tbody.appendChild(balanceRow);
-
-    // Gán sự kiện cho các nút
-    const billElement = document.getElementById('bill-to-capture');
-    document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
-    document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
-    document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
-}
+            const billElement = document.getElementById('bill-to-capture');
+            document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
+            document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
+            document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+        }
         
-        // --- CÁC HÀM CHỨC NĂNG CHO NÚT BẤM ---
         async function captureBill(element, callback) {
             const controls = element.querySelector('.bill-controls');
             if (controls) controls.style.display = 'none';
