@@ -210,8 +210,18 @@
             let tongHuiSong = 0;
             let tongLoiLo = 0;
 
-            if (data.details && Array.isArray(data.details)) {
-                data.details.forEach((item, index) => {
+                let allDetails = [];
+                
+                if (data.details && Array.isArray(data.details)) {
+                    allDetails = allDetails.concat(data.details);
+                }
+                
+                if (data.details_2 && Array.isArray(data.details_2)) {
+                    allDetails = allDetails.concat(data.details_2);
+                }
+            
+                if (allDetails.length > 0) {
+                    allDetails.forEach((item, index) => {
                     const stt = index + 1;
                     const row = document.createElement('tr');
                     
