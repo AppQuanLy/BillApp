@@ -202,6 +202,10 @@
                 <span class="label">Thăm Sàn:</span>
                 <span data-field="tham_san" class="value text-red"></span>
             </div>
+            <div class="info-item" id="row_hot_chot" style="display: none;">
+                <span class="label">Hốt Cuối:</span>
+                <span data-field="hot_chot" class="value text-green"></span>
+            </div>
         </div>
         
         <table>
@@ -301,6 +305,24 @@
             const valThamSan = isNaN(data.tham_san) ? data.tham_san : formatCurrency(Number(data.tham_san));
             document.querySelector('[data-field="tham_san"]').textContent = valThamSan;
             rowThamSan.style.display = 'block'; // Hiển thị dòng này
+        }
+        // --- XỬ LÝ ẨN/HIỆN HỐT CHÓT (Chống lỗi phiên bản cũ) ---
+        const rowHotChot = document.getElementById('row_hot_chot');
+        if (data.tien_hui && data.tien_hui.toString().trim() !== "") {
+            // Lấy riêng phần số từ chữ "12 Kỳ"
+            let soKyNum = 0;
+            if (data.so_ky) {
+                const match = data.so_ky.toString().match(/\d+/); // Bóc tách số bằng Regex
+                if (match) soKyNum = parseInt(match[0]);
+            }
+            
+            if (soKyNum > 0) {
+                const tienHuiNumber = Number(data.tien_hui.toString().replace(/\D/g, '')); // Lọc bỏ ký tự thừa nếu có
+                const giaTriHotChot = tienHuiNumber * (soKyNum - 1);
+                
+                document.querySelector('[data-field="hot_chot"]').textContent = formatCurrency(giaTriHotChot);
+                rowHotChot.style.display = 'block';
+            }
         }
         // ------------------------------------------
 
