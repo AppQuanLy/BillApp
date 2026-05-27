@@ -641,12 +641,17 @@
                 if (controls) controls.style.display = 'flex';
             }
 
-            button.innerHTML = '🚀 Đang đẩy dữ liệu sang Zalo...';
+            button.innerHTML = '🚀 Đang chuẩn bị Zalo...';
 
-            window.postMessage({
-                type: "AUTO_BILL_TRIGGER_BULK",
-                danh_sach_bill: payloadData
-            }, "*");
+            window.postMessage({ type: "SWITCH_TO_ZALO" }, "*");
+
+            setTimeout(() => {
+                button.innerHTML = '🚀 Đang gửi bill...';
+                window.postMessage({
+                    type: "AUTO_BILL_TRIGGER_BULK",
+                    danh_sach_bill: payloadData
+                }, "*");
+            }, 1500);
 
             setTimeout(() => {
                 button.innerHTML = originalText;
