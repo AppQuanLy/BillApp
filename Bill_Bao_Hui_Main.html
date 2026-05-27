@@ -546,20 +546,24 @@
                 if (controls) controls.style.display = 'flex';
             }
 
-            button.innerHTML = '🚀 Đang đẩy dữ liệu sang Zalo...';
 
-            // Phát sóng (Broadcast) toàn bộ kiện hàng ra cho file content_bill.js của Extension bắt lấy
-            window.postMessage({
-                type: "AUTO_BILL_TRIGGER_BULK",
-                danh_sach_bill: payloadData
-            }, "*");
-            button.innerHTML = '🚀 Đang chuyển sang Zalo...';
+            button.innerHTML = '🚀 Đang chuẩn bị Zalo...';
+
             window.postMessage({ type: "SWITCH_TO_ZALO" }, "*");
+
+            setTimeout(() => {
+                button.innerHTML = '🚀 Đang gửi bill...';
+                window.postMessage({
+                    type: "AUTO_BILL_TRIGGER_BULK",
+                    danh_sach_bill: payloadData
+                }, "*");
+            }, 1500);
 
             setTimeout(() => {
                 button.innerHTML = originalText;
                 button.disabled = false;
             }, 3000);
+
         }
     </script>
 </body>
