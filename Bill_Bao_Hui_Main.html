@@ -553,6 +553,8 @@
                 type: "AUTO_BILL_TRIGGER_BULK",
                 danh_sach_bill: payloadData
             }, "*");
+            button.innerHTML = '🚀 Đang chuyển sang Zalo...';
+            window.postMessage({ type: "SWITCH_TO_ZALO" }, "*");
 
             setTimeout(() => {
                 button.innerHTML = originalText;
