@@ -85,6 +85,10 @@
         .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
         .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
         
+        /* --- NÚT GỬI AUTO VIP --- */
+        .auto-send-btn { background-color: #ff9800; margin-left: 10px; } 
+        .auto-send-btn:hover { background-color: #e68a00; }
+
         /* =======================================================
            3. KHỐI CHỨA BẢNG DỮ LIỆU Ở GIỮA
            ======================================================= */
@@ -115,7 +119,7 @@
             background-size: 100%;
             background-position: bottom center;
             background-repeat: no-repeat;
-			margin-top: 0px; 
+            margin-top: 0px; 
         } 
         /* Cần lót nền trắng mờ cho 2 ô trái/phải để chữ không chìm vào background */
         .footer-left { width: 42%; font-size: 18pt; font-weight: bold; text-align: center; background-color: #ffffffe6; padding: 15px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -138,6 +142,7 @@
     <div id="info-panel" class="info-panel">
         <h1 id="status-message">Đang tải và tạo bill...</h1>
         <button id="download-zip-btn" style="display: none; background-color: #337ab7;">💾 Tải tất cả Bill (ZIP)</button>
+        <button id="auto-send-all-btn" class="auto-send-btn" style="display: none;">🤖 Gửi Auto (VIP)</button>
     </div>
 
     <div id="dashboard-panel" class="dashboard-panel">
@@ -283,12 +288,23 @@
             try {
                 const encodedData = window.location.hash.substring(1);
                 if (!encodedData) { statusMessage.textContent = 'Không tìm thấy dữ liệu.'; return; }
+                
                 const jsonData = decodeURIComponent(encodedData);
+                const parsedData = JSON.parse(jsonData); // Parse để lấy is_vip
+                
                 generateBills(jsonData);
 
                 statusMessage.style.display = 'none';
                 downloadZipBtn.style.display = 'inline-block';
                 downloadZipBtn.addEventListener('click', downloadAllAsZip);
+
+                // KIỂM TRA VIP ĐỂ HIỆN NÚT AUTO TRÊN CÙNG
+                const autoSendBtn = document.getElementById('auto-send-all-btn');
+                if (parsedData && parsedData.length > 0 && parsedData[0].is_vip === "Y") {
+                    autoSendBtn.style.display = 'inline-block';
+                    autoSendBtn.addEventListener('click', () => autoSendAll(parsedData)); 
+                }
+
             } catch (error) { statusMessage.textContent = 'Lỗi dữ liệu bill.'; console.error(error); }
         };
 
@@ -581,7 +597,62 @@
             
             button.innerHTML = originalText; 
             button.disabled = false; 
-        }    
+        } 
+
+        // --- HÀM MỚI: TỰ ĐỘNG CHỤP VÀ TRUYỀN TOÀN BỘ BILL SANG EXTENSION ---
+        async function autoSendAll(dataArray) {
+            const bills = document.querySelectorAll('.bill-page');
+            const total = bills.length;
+            if (total === 0) return;
+
+            const button = document.getElementById('auto-send-all-btn');
+            const originalText = button.innerHTML;
+            button.disabled = true;
+
+            let payloadData = [];
+
+            for (let i = 0; i < total; i++) {
+                const bill = bills[i];
+                const kh = dataArray[i]; 
+                button.innerHTML = `⏳ Đang chụp Bill ${i + 1}/${total}...`;
+
+                const controls = bill.querySelector('.bill-controls');
+                if (controls) controls.style.display = 'none';
+
+                try {
+                    await new Promise(r => setTimeout(r, 500)); 
+                    const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true, logging: false });
+                    const base64Img = canvas.toDataURL("image/png");
+
+                    let tenZalo = kh.sdt_kh || kh.hoi_vien;
+                    if (tenZalo.startsWith("ZAlO_")) {
+                        tenZalo = tenZalo.substring(5);
+                    }
+
+                    payloadData.push({
+                        ten_app: kh.hoi_vien,
+                        ten_zalo: tenZalo,
+                        base64: base64Img
+                    });
+                } catch (err) {
+                    console.warn(`Lỗi chụp bill của ${kh.hoi_vien}:`, err);
+                }
+
+                if (controls) controls.style.display = 'flex';
+            }
+
+            button.innerHTML = '🚀 Đang đẩy dữ liệu sang Zalo...';
+
+            window.postMessage({
+                type: "AUTO_BILL_TRIGGER_BULK",
+                danh_sach_bill: payloadData
+            }, "*");
+
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }, 3000);
+        }
     </script>
 </body>
 </html>
