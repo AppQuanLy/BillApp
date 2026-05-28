@@ -501,74 +501,91 @@
             button.disabled = false; 
         }
 
-        // --- 4. HÀM MỚI: TỰ ĐỘNG CHỤP VÀ TRUYỀN TOÀN BỘ BILL SANG EXTENSION ---
-        async function autoSendAll(dataArray) {
-            if (dataArray[0].is_vip !== "Y") {
-                alert("Bạn không có quyền sử dụng tính năng này!");
-                return;
-            }
-            const bills = document.querySelectorAll('.bill-page');
-            const total = bills.length;
-            if (total === 0) return;
+// =====================================================================
+// 4. HÀM CẢI TIẾN: TỰ ĐỘNG CHỤP VÀ TRUYỀN TOÀN BỘ BILL SANG EXTENSION (CÓ CHỐT CHẶN)
+// =====================================================================
+async function autoSendAll(dataArray) {
+    if (dataArray[0].is_vip !== "Y") {
+        alert("Bạn không có quyền sử dụng tính năng này!");
+        return;
+    }
+    const bills = document.querySelectorAll('.bill-page');
+    const total = bills.length;
+    if (total === 0) return;
 
-            const button = document.getElementById('auto-send-all-btn');
-            const originalText = button.innerHTML;
-            button.disabled = true;
+    const button = document.getElementById('auto-send-all-btn');
+    const originalText = button.innerHTML;
+    button.disabled = true;
 
-            let payloadData = []; // Mảng chứa dữ liệu đẩy sang Extension
+    let payloadData = []; // Mảng chứa dữ liệu sạch đẩy sang Extension
 
-            for (let i = 0; i < total; i++) {
-                const bill = bills[i];
-                const kh = dataArray[i]; 
-                button.innerHTML = `⏳ Đang chụp Bill ${i + 1}/${total}...`;
+    for (let i = 0; i < total; i++) {
+        const bill = bills[i];
+        const kh = dataArray[i]; 
+        
+        // Bước 1: Lấy chuỗi văn bản gốc truyền từ công thức AppSheet sang
+        let tenZaloRaw = kh.sdt_kh || kh.hoi_vien || "";
 
-                // Ẩn thanh công cụ trước khi chụp
-                const controls = bill.querySelector('.bill-controls');
-                if (controls) controls.style.display = 'none';
-
-                try {
-                    await new Promise(r => setTimeout(r, 500)); // Nghỉ 0.5s xả RAM
-                    const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true, logging: false });
-                    const base64Img = canvas.toDataURL("image/png");
-
-                    // Xử lý tên Zalo: Bỏ tiền tố "ZAlO_" bị dính từ công thức AppSheet
-                    let tenZalo = kh.sdt_kh || kh.hoi_vien;
-                    if (tenZalo.startsWith("ZAlO_")) {
-                        tenZalo = tenZalo.substring(5);
-                    }
-
-                    // Đóng gói 1 người vào kiện hàng
-                    payloadData.push({
-                        ten_app: kh.hoi_vien,
-                        ten_zalo: tenZalo,
-                        base64: base64Img
-                    });
-                } catch (err) {
-                    console.warn(`Lỗi chụp bill của ${kh.hoi_vien}:`, err);
-                }
-
-                if (controls) controls.style.display = 'flex';
-            }
-
-
-            button.innerHTML = '🚀 Đang chuẩn bị Zalo...';
-
-            window.postMessage({ type: "SWITCH_TO_ZALO" }, "*");
-
-            setTimeout(() => {
-                button.innerHTML = '🚀 Đang gửi bill...';
-                window.postMessage({
-                    type: "AUTO_BILL_TRIGGER_BULK",
-                    danh_sach_bill: payloadData
-                }, "*");
-            }, 1500);
-
-            setTimeout(() => {
-                button.innerHTML = originalText;
-                button.disabled = false;
-            }, 3000);
-
+        // Bước 2: CHỐT CHẶN BẢO MẬT - Kiểm tra tiền tố "zalo_" (Không phân biệt hoa thường)
+        if (!tenZaloRaw.toLowerCase().startsWith("zalo_")) {
+            console.log(`⏩ Hệ thống bỏ qua hụi viên: ${kh.hoi_vien} vì không gắn nhãn ZAlO_`);
+            continue; // Bỏ qua, lập tức chuyển hướng sang người tiếp theo, không chụp ảnh
         }
+
+        // Bước 3: Nếu có tiền tố hợp lệ, tiến hành chụp ảnh màn hình Bill
+        button.innerHTML = `⏳ Đang chụp Bill ${i + 1}/${total}...`;
+
+        // Ẩn thanh công cụ điều khiển trước khi chụp ảnh
+        const controls = bill.querySelector('.bill-controls');
+        if (controls) controls.style.display = 'none';
+
+        try {
+            await new Promise(r => setTimeout(r, 500)); // Nghỉ 0.5s xả RAM bộ nhớ tạm
+            const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true, logging: false });
+            const base64Img = canvas.toDataURL("image/png");
+
+            // Bước 4: Làm sạch chuỗi - Cắt bỏ 5 ký tự đầu ("ZAlO_") để lấy Tên/SĐT chuẩn
+            let tenZaloSach = tenZaloRaw.substring(5);
+
+            // Đóng gói thông tin hụi viên hợp lệ vào mảng dữ liệu
+            payloadData.push({
+                ten_app: kh.hoi_vien,
+                ten_zalo: tenZaloSach,
+                base64: base64Img
+            });
+        } catch (err) {
+            console.warn(`Lỗi chụp bill của ${kh.hoi_vien}:`, err);
+        }
+
+        // Hiển thị lại thanh công cụ điều khiển sau khi chụp xong
+        if (controls) controls.style.display = 'flex';
+    }
+
+    // Bước 5: Kiểm tra danh sách sau khi lọc, nếu không có ai hợp lệ thì dừng quy trình
+    if (payloadData.length === 0) {
+        alert("Thao tác hoàn thành! Không tìm thấy hụi viên nào có tiền tố 'ZAlO_' để gửi tự động.");
+        button.innerHTML = originalText;
+        button.disabled = false;
+        return;
+    }
+
+    // Bước 6: Truyền phát tín hiệu điều hướng dữ liệu sang Zalo Web
+    button.innerHTML = '🚀 Đang chuẩn bị Zalo...';
+    window.postMessage({ type: "SWITCH_TO_ZALO" }, "*");
+
+    setTimeout(() => {
+        button.innerHTML = '🚀 Đang gửi bill...';
+        window.postMessage({
+            type: "AUTO_BILL_TRIGGER_BULK",
+            danh_sach_bill: payloadData
+        }, "*");
+    }, 1500);
+
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }, 3000);
+}
     </script>
 </body>
 </html>
