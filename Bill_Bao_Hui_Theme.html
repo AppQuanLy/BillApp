@@ -601,6 +601,19 @@
 
         // --- HÀM MỚI: TỰ ĐỘNG CHỤP VÀ TRUYỀN TOÀN BỘ BILL SANG EXTENSION ---
         async function autoSendAll(dataArray) {
+            if (dataArray[0].is_vip !== "Y") {
+                alert("Bạn không có quyền sử dụng tính năng này!");
+                return;
+            }
+            const bills = document.querySelectorAll('.bill-page');
+            const total = bills.length;
+            if (total === 0) return;
+
+            const button = document.getElementById('auto-send-all-btn');
+            const originalText = button.innerHTML;
+            button.disabled = true;
+
+            let payloadData = []; // Mảng chứa dữ liệu đẩy sang Extension
             const bills = document.querySelectorAll('.bill-page');
             const total = bills.length;
             if (total === 0) return;
