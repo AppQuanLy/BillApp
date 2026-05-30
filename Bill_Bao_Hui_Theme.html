@@ -215,7 +215,7 @@
         </div>
     </template>
     
-<script>
+    <script>
         // =====================================================================
         // 1. VIETQR GENERATOR
         // =====================================================================
@@ -432,6 +432,7 @@
             if (listThu.length > 0 || listGiao.length > 0) {
                 document.getElementById('dashboard-panel').style.display = 'block';
                 
+                // Thu
                 document.getElementById('total-receivable').textContent = formatCurrency(totalThu);
                 listThu.sort((a, b) => b.amount - a.amount);
                 let strThu = "DANH SÁCH PHẢI THU (BILL ĐÓNG):\n";
@@ -443,6 +444,7 @@
                     navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!'));
                 };
 
+                // Giao
                 document.getElementById('total-payable').textContent = formatCurrency(totalGiao);
                 listGiao.sort((a, b) => b.amount - a.amount);
                 let strGiao = "DANH SÁCH PHẢI GIAO (BILL HỐT):\n";
@@ -458,7 +460,7 @@
                 }
             }
         }
-
+        
         // =====================================================================
         // 2. KHỐI LOGIC MỚI: TỰ ĐỘNG CHỤP VÀ TRUYỀN CUỐN CHIẾU ĐƠN LẺ CHỐNG NGHẼN
         // =====================================================================
@@ -506,15 +508,7 @@
 
             // Điểm dừng quy trình: Khi đã duyệt qua toàn bộ mảng khách hàng
             if (i >= total) {
-                LOGIC_CUON_CHIEU.buttonElement.innerHTML = LOGIC_CUON_CHIEU.textGocCuaNut;
-                LOGIC_CUON_CHIEU.buttonElement.disabled = false;
-
-                // Xuất kết xuất báo cáo tổng hợp chi tiết
-                let chuoiBaoCao = "📊 KẾT QUẢ GỬI BILL HỤI TỰ ĐỘNG:\n\n";
-                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.forEach((kq, index) => {
-                    chuoiBaoCao += `${index + 1}. ${kq.ten_app}: ${kq.trang_thai}\n`;
-                });
-                alert(chuoiBaoCao);
+                xu lyInBaoCaoKetThuc();
                 return;
             }
 
@@ -547,6 +541,7 @@
                 if (controls) controls.style.display = 'flex';
 
                 let tenZaloSach = tenZaloRaw.substring(5); // Loại bỏ chuỗi "zalo_"
+                let laNguoiCuoiCung = (i === total - 1);
 
                 // Truyền dữ liệu DUY NHẤT một gói hàng sạch sang Extension
                 window.postMessage({
@@ -554,7 +549,8 @@
                     danh_sach_bill: [{
                         ten_app: kh.hoi_vien,
                         ten_zalo: tenZaloSach,
-                        base64: base64Img
+                        base64: base64Img,
+                        la_nguoi_cuoi: laNguoiCuoiCung
                     }]
                 }, "*");
 
@@ -571,11 +567,11 @@
 
         // ĐĂNG KÝ BỘ NHẬN PHẢN HỒI: Chờ tín hiệu báo cáo thành công từ tab Zalo gọi về
         window.addEventListener("message", function(event) {
-            if (event.data && event.data.type === "ZALO_SINGLE_DONE_CALLBACK") {
+            if (event.data && event.data.type === "NEXT_BILL_KICKSTART") {
                 console.log("♻️ Nhận tín hiệu hồi đáp: Đã hoàn tất gửi tin nhắn trên Zalo. Chuyển người tiếp theo!");
                 
                 // Thu nạp trạng thái thực tế từ Zalo vào mảng kết quả
-                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push(event.data.ket_qua);
+                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push(event.data.get_qua || event.data.ket_qua);
                 
                 // Dịch chuyển chỉ số lên 1 nấc
                 LOGIC_CUON_CHIEU.chiSoHienTai++;
@@ -586,6 +582,30 @@
                 }, 400);
             }
         });
+
+        // Tách biệt hàm kết xuất báo cáo thông minh gọn gàng
+        function xu lyInBaoCaoKetThuc() {
+            let soLuongThanhCong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => item.trang_thai.includes("✅")).length;
+            let tongSoLuong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.length;
+
+            let chuoiBaoCaoGọn = `🏁 ĐÃ HOÀN TẤT TIẾN TRÌNH GỬI TẤT CẢ BILL!\n📊 Tổng kết: Đã gửi thành công ${soLuongThanhCong}/${tongSoLuong} bill.\n`;
+            
+            let danhSachLoi = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => !item.trang_thai.includes("✅"));
+
+            if (danhSachLoi.length > 0) {
+                chuoiBaoCaoGọn += `\n⚠️ DANH SÁCH BILL CHƯA GỬI ĐƯỢC (CẦN KIỂM TRA):\n`;
+                danhSachLoi.forEach((item, index) => {
+                    chuoiBaoCaoGọn += `${index + 1}. ${item.ten_app}: ${item.trang_thai}\n`;
+                });
+            } else {
+                chuoiBaoCaoGọn += `\n🎉 Tuyệt vời! Tất cả hóa đơn hụi đã được gửi đi thành công mỹ mãn!`;
+            }
+
+            LOGIC_CUON_CHIEU.buttonElement.innerHTML = LOGIC_CUON_CHIEU.textGocCuaNut;
+            LOGIC_CUON_CHIEU.buttonElement.disabled = false;
+
+            alert(chuoiBaoCaoGọn);
+        }
 
         // =====================================================================
         // 3. CÁC HÀM XỬ LÝ ẢNH & FILE ZIP LẺ
