@@ -614,7 +614,7 @@
 
 
 // =====================================================================
-// BỘ LẮNG NGHE LỆNH CHẠY TIẾP & IN BÁO CÁO RÚT GỌN (SỬA TRONG HTML MAIN/THEME)
+// BỘ LẮNG NGHE LỆNH CHẠY TIẾP & BÁO CÁO DỨT ĐIỂM TOÀN DIỆN (HTML MAIN)
 // =====================================================================
 window.addEventListener("message", function(event) {
     if (event.data && event.data.type === "NEXT_BILL_KICKSTART") {
@@ -623,44 +623,44 @@ window.addEventListener("message", function(event) {
         // Lưu kết quả của người vừa chạy xong vào báo cáo tổng
         LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push(event.data.get_qua || event.data.ket_qua);
         
-        // Tăng vị trí đếm lên 1 người
+        // Tăng vị trí đếm tiến trình lên 1 người
         LOGIC_CUON_CHIEU.chiSoHienTai++;
         
-        // --- ĐOẠN KIỂM TRA ĐIỂM DỪNG VÀ IN BÁO CÁO CẢI TIẾN ---
+        // --- CHỐT CHẶN KIỂM TRA ĐIỂM DỪNG VÀ IN BÁO CÁO TOÀN DIỆN ---
         if (LOGIC_CUON_CHIEU.chiSoHienTai >= LOGIC_CUON_CHIEU.domBills.length) {
             
             // 1. Đếm tổng số lượng người gửi thành công thực tế
             let soLuongThanhCong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => item.trang_thai.includes("✅")).length;
             let tongSoLuong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.length;
 
-            // 2. Thiết lập dòng tiêu đề tổng kết ngắn gọn theo ý bạn
-            let chuoiBaoCaoGọn = `📊 KẾT QUẢ GỬI BILL HỤI TỰ ĐỘNG: Đã gửi ${soLuongThanhCong}/${tongSoLuong} bill.\n`;
+            // 2. Tiêu đề thông báo dứt điểm rõ ràng cho khách hàng biết hệ thống đã dừng hẳn
+            let chuoiBaoCaoGọn = `🏁 ĐÃ HOÀN TẤT TIẾN TRÌNH GỬI TẤT CẢ BILL!\n📊 Tổng kết: Đã gửi thành công ${soLuongThanhCong}/${tongSoLuong} bill.\n`;
             
-            // 3. Lọc lấy DANH SÁCH CÁC BILL BỊ LỖI (Bỏ qua các dòng Thành công và Chủ động Bỏ qua)
+            // 3. LỌC DANH SÁCH LỖI: Gom cả lỗi Zalo lẫn những người chủ động bỏ qua (Không cài Zalo)
             let danhSachLoi = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => 
-                !item.trang_thai.includes("✅") && !item.trang_thai.includes("⏭️")
+                !item.trang_thai.includes("✅")
             );
 
-            // 4. Nếu có người bị lỗi thì mới in danh sách lỗi ra, nếu không có ai lỗi thì báo thành công mỹ mãn
+            // 4. Kết xuất chi tiết danh sách những người chưa được gửi để chủ hụi kiểm soát
             if (danhSachLoi.length > 0) {
-                chuoiBaoCaoGọn += `\n⚠️ DANH SÁCH BILL BỊ LỖI KHÔNG GỬI ĐƯỢC:\n`;
+                chuoiBaoCaoGọn += `\n⚠️ DANH SÁCH BILL CHƯA GỬI ĐƯỢC (CẦN KIỂM TRA):\n`;
                 danhSachLoi.forEach((item, index) => {
                     chuoiBaoCaoGọn += `${index + 1}. ${item.ten_app}: ${item.trang_thai}\n`;
                 });
             } else {
-                chuoiBaoCaoGọn += `\n🎉 Tất cả hóa đơn đã được gửi đi an toàn!`;
+                chuoiBaoCaoGọn += `\n🎉 Tuyệt vời! Tất cả hóa đơn hụi đã được gửi đi thành công mỹ mãn!`;
             }
 
-            // Trả nút bấm về trạng thái ban đầu để khách dùng cho lượt sau
+            // Giải phóng nút bấm về trạng thái ban đầu để chuẩn bị cho các đợt khui hụi sau
             LOGIC_CUON_CHIEU.buttonElement.innerHTML = LOGIC_CUON_CHIEU.textGocCuaNut;
             LOGIC_CUON_CHIEU.buttonElement.disabled = false;
 
-            // Hiện hộp thoại alert siêu sạch sẽ, gọn gàng cho khách
+            // Hiển thị hộp thoại Alert dứt điểm rõ ràng, sạch sẽ
             alert(chuoiBaoCaoGọn);
             return;
         }
         
-        // Nếu chưa hết danh sách thì tiếp tục gọi hàm xử lý người sau
+        // Nếu chưa đi hết danh sách, tiếp tục đánh thức hàm chụp và gửi cuốn chiếu người sau
         setTimeout(() => {
             chupVaChuyenTienTrinhDonLe();
         }, 400);
