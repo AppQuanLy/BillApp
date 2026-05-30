@@ -590,6 +590,7 @@
                 if (controls) controls.style.display = 'flex';
 
                 let tenZaloSach = tenZaloRaw.substring(5); // Cắt bỏ chữ "zalo_"
+                let laNguoiCuoiCung = (i === total - 1);
 
                 // Phát tín hiệu truyền tải DUY NHẤT 1 người này sang Extension
                 window.postMessage({
@@ -597,7 +598,8 @@
                     danh_sach_bill: [{
                         ten_app: kh.hoi_vien,
                         ten_zalo: tenZaloSach,
-                        base64: base64Img
+                        base64: base64Img,
+                        la_nguoi_cuoi: laNguoiCuoiCung
                     }]
                 }, "*");
 
