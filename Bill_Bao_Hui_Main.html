@@ -613,7 +613,9 @@
         }
 
 
-// BỘ LẮNG NGHE CHUẨN ĐỂ NHẬN LỆNH CHẠY TIẾP NGƯỜI SAU
+// =====================================================================
+// BỘ LẮNG NGHE LỆNH CHẠY TIẾP & IN BÁO CÁO RÚT GỌN (SỬA TRONG HTML MAIN/THEME)
+// =====================================================================
 window.addEventListener("message", function(event) {
     if (event.data && event.data.type === "NEXT_BILL_KICKSTART") {
         console.log("♻️ HTML Nhận lệnh: Bốc người tiếp theo!");
@@ -624,7 +626,41 @@ window.addEventListener("message", function(event) {
         // Tăng vị trí đếm lên 1 người
         LOGIC_CUON_CHIEU.chiSoHienTai++;
         
-        // Cho trình duyệt nghỉ 400ms rồi tự động chụp/gửi người kế tiếp
+        // --- ĐOẠN KIỂM TRA ĐIỂM DỪNG VÀ IN BÁO CÁO CẢI TIẾN ---
+        if (LOGIC_CUON_CHIEU.chiSoHienTai >= LOGIC_CUON_CHIEU.domBills.length) {
+            
+            // 1. Đếm tổng số lượng người gửi thành công thực tế
+            let soLuongThanhCong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => item.trang_thai.includes("✅")).length;
+            let tongSoLuong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.length;
+
+            // 2. Thiết lập dòng tiêu đề tổng kết ngắn gọn theo ý bạn
+            let chuoiBaoCaoGọn = `📊 KẾT QUẢ GỬI BILL HỤI TỰ ĐỘNG: Đã gửi ${soLuongThanhCong}/${tongSoLuong} bill.\n`;
+            
+            // 3. Lọc lấy DANH SÁCH CÁC BILL BỊ LỖI (Bỏ qua các dòng Thành công và Chủ động Bỏ qua)
+            let danhSachLoi = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => 
+                !item.trang_thai.includes("✅") && !item.trang_thai.includes("⏭️")
+            );
+
+            // 4. Nếu có người bị lỗi thì mới in danh sách lỗi ra, nếu không có ai lỗi thì báo thành công mỹ mãn
+            if (danhSachLoi.length > 0) {
+                chuoiBaoCaoGọn += `\n⚠️ DANH SÁCH BILL BỊ LỖI KHÔNG GỬI ĐƯỢC:\n`;
+                danhSachLoi.forEach((item, index) => {
+                    chuoiBaoCaoGọn += `${index + 1}. ${item.ten_app}: ${item.trang_thai}\n`;
+                });
+            } else {
+                chuoiBaoCaoGọn += `\n🎉 Tất cả hóa đơn đã được gửi đi an toàn!`;
+            }
+
+            // Trả nút bấm về trạng thái ban đầu để khách dùng cho lượt sau
+            LOGIC_CUON_CHIEU.buttonElement.innerHTML = LOGIC_CUON_CHIEU.textGocCuaNut;
+            LOGIC_CUON_CHIEU.buttonElement.disabled = false;
+
+            // Hiện hộp thoại alert siêu sạch sẽ, gọn gàng cho khách
+            alert(chuoiBaoCaoGọn);
+            return;
+        }
+        
+        // Nếu chưa hết danh sách thì tiếp tục gọi hàm xử lý người sau
         setTimeout(() => {
             chupVaChuyenTienTrinhDonLe();
         }, 400);
