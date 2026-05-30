@@ -612,24 +612,24 @@
             }
         }
 
-        // BỘ LẮNG NGHE TÍN HIỆU NGƯỢC: Nhận lệnh từ content_zalo.js (Zalo gửi xong báo về)
-        window.addEventListener("message", function(event) {
-            // Nhận kết quả từ nội bộ Extension dội ngược lại qua luồng postMessage
-            if (event.data && event.data.type === "ZALO_SINGLE_DONE_CALLBACK") {
-                console.log("♻️ Hệ thống nhận tín hiệu: Zalo đã xử lý xong. Chuyển người!");
-                
-                // Lưu kết quả gửi thật từ Zalo vào mảng báo cáo tổng
-                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push(event.data.ket_qua);
-                
-                // Tăng chỉ số để xử lý người kế tiếp
-                LOGIC_CUON_CHIEU.chiSoHienTai++;
-                
-                // Cho trình duyệt nghỉ 400ms giải phóng bộ đệm rồi chạy tiếp
-                setTimeout(() => {
-                    chupVaChuyenTienTrinhDonLe();
-                }, 400);
-            }
-        });
+
+// BỘ LẮNG NGHE CHUẨN ĐỂ NHẬN LỆNH CHẠY TIẾP NGƯỜI SAU
+window.addEventListener("message", function(event) {
+    if (event.data && event.data.type === "NEXT_BILL_KICKSTART") {
+        console.log("♻️ HTML Nhận lệnh: Bốc người tiếp theo!");
+        
+        // Lưu kết quả của người vừa chạy xong vào báo cáo tổng
+        LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push(event.data.get_qua || event.data.ket_qua);
+        
+        // Tăng vị trí đếm lên 1 người
+        LOGIC_CUON_CHIEU.chiSoHienTai++;
+        
+        // Cho trình duyệt nghỉ 400ms rồi tự động chụp/gửi người kế tiếp
+        setTimeout(() => {
+            chupVaChuyenTienTrinhDonLe();
+        }, 400);
+    }
+});
     </script>
 </body>
 </html>
