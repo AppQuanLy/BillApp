@@ -216,7 +216,9 @@
     </template>
     
     <script>
+        // =====================================================================
         // 1. VIETQR GENERATOR
+        // =====================================================================
         const VietQR = {
             cleanText: function(str) {
                 if (!str) return "";
@@ -281,14 +283,14 @@
                 const jsonData = decodeURIComponent(encodedData);
                 const data = JSON.parse(jsonData);
 
-                // Tạo toàn bộ hóa đơn
-                generateBills(jsonData);
+                // Thống nhất nạp biến mảng 'data' đã parse để chạy đồng bộ với hàm generateBills bên dưới
+                generateBills(data);
 
                 statusMessage.style.display = 'none';
                 downloadZipBtn.style.display = 'inline-block';
                 downloadZipBtn.addEventListener('click', downloadAllAsZip);
 
-                // --- KIỂM TRA QUYỀN VIP KHI TRANG LOAD ---
+                // --- KIỂM TRA VIP ĐỂ HIỆN NÚT AUTO TRÊN CÙNG ---
                 const autoSendBtn = document.getElementById('auto-send-all-btn');
                 if (data.length > 0 && data[0].is_vip === "Y") {
                     autoSendBtn.style.display = 'inline-block';
@@ -300,10 +302,9 @@
 
         function formatCurrency(num) { if (typeof num !== 'number' || num === null) return '0'; return num.toLocaleString('vi-VN'); }
 
-        function generateBills(jsonInput) {
+        function generateBills(data) {
             const billsContainer = document.getElementById('bills-container');
             billsContainer.innerHTML = '';
-            const data = JSON.parse(jsonInput);
             const billTemplate = document.getElementById('bill-template');
             
             let listThu = []; 
@@ -363,7 +364,7 @@
                     allDetails.forEach(d => {
                         const row = document.createElement('tr');
                         if ((d.khui || '').toLowerCase().includes('nợ')) {
-                            row.style.backgroundColor = 'rgba(255, 240, 240, 0.8)'; 
+                            row.style.backgroundColor = '#fff0f0';
                             row.innerHTML = `<td colspan="8" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
                         } else {
                             row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
@@ -430,7 +431,6 @@
             if (listThu.length > 0 || listGiao.length > 0) {
                 document.getElementById('dashboard-panel').style.display = 'block';
                 
-                // Thu
                 document.getElementById('total-receivable').textContent = formatCurrency(totalThu);
                 listThu.sort((a, b) => b.amount - a.amount);
                 let strThu = "DANH SÁCH PHẢI THU (BILL ĐÓNG):\n";
@@ -442,7 +442,6 @@
                     navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!'));
                 };
 
-                // Giao
                 document.getElementById('total-payable').textContent = formatCurrency(totalGiao);
                 listGiao.sort((a, b) => b.amount - a.amount);
                 let strGiao = "DANH SÁCH PHẢI GIAO (BILL HỐT):\n";
@@ -458,94 +457,149 @@
                 }
             }
         }
-        
-// =====================================================================
-// 4. HÀM CẢI TIẾN: TỰ ĐỘNG CHỤP VÀ TRUYỀN TOÀN BỘ BILL SANG EXTENSION (CÓ CHỐT CHẶN)
-// =====================================================================
-async function autoSendAll(dataArray) {
-    if (dataArray[0].is_vip !== "Y") {
-        alert("Bạn không có quyền sử dụng tính năng này!");
-        return;
-    }
-    const bills = document.querySelectorAll('.bill-page');
-    const total = bills.length;
-    if (total === 0) return;
 
-    const button = document.getElementById('auto-send-all-btn');
-    const originalText = button.innerHTML;
-    button.disabled = true;
+        // =====================================================================
+        // 2. KHỐI LOGIC: TỰ ĐỘNG CHỤP VÀ TRUYỀN CUỐN CHIẾU ĐƠN LẺ KHÔNG GÂY ĐƠ RAM
+        // =====================================================================
+        let LOGIC_CUON_CHIEU = {
+            dataArrayGoc: [],
+            domBills: [],
+            chiSoHienTai: 0,
+            mangBaoCaoTongHop: [],
+            buttonElement: null,
+            textGocCuaNut: ""
+        };
 
-    let payloadData = []; // Mảng chứa dữ liệu sạch đẩy sang Extension
+        async function autoSendAll(dataArray) {
+            if (dataArray[0].is_vip !== "Y") {
+                alert("Bạn không có quyền sử dụng tính năng này!");
+                return;
+            }
 
-    for (let i = 0; i < total; i++) {
-        const bill = bills[i];
-        const kh = dataArray[i]; 
-        
-        // Bước 1: Lấy chuỗi văn bản gốc truyền từ công thức AppSheet sang
-        let tenZaloRaw = kh.sdt_kh || kh.hoi_vien || "";
+            const bills = document.querySelectorAll('.bill-page');
+            if (bills.length === 0) return;
 
-        // Bước 2: CHỐT CHẶN BẢO MẬT - Kiểm tra tiền tố "zalo_" (Không phân biệt hoa thường)
-        if (!tenZaloRaw.toLowerCase().startsWith("zalo_")) {
-            console.log(`⏩ Hệ thống bỏ qua hụi viên: ${kh.hoi_vien} vì không gắn nhãn ZAlO_`);
-            continue; // Bỏ qua, lập tức chuyển hướng sang người tiếp theo, không chụp ảnh
+            // Đồng bộ bộ nhớ điều khiển toàn cục
+            LOGIC_CUON_CHIEU.dataArrayGoc = dataArray;
+            LOGIC_CUON_CHIEU.domBills = bills;
+            LOGIC_CUON_CHIEU.chiSoHienTai = 0;
+            LOGIC_CUON_CHIEU.mangBaoCaoTongHop = [];
+            LOGIC_CUON_CHIEU.buttonElement = document.getElementById('auto-send-all-btn');
+            LOGIC_CUON_CHIEU.textGocCuaNut = LOGIC_CUON_CHIEU.buttonElement.innerHTML;
+
+            LOGIC_CUON_CHIEU.buttonElement.disabled = true;
+
+            // Chuyển màn hình sang Tab Zalo Web trước
+            LOGIC_CUON_CHIEU.buttonElement.innerHTML = '🚀 Đang kết nối Zalo...';
+            window.postMessage({ type: "SWITCH_TO_ZALO" }, "*");
+
+            // Chờ 1.5 giây cho tab sẵn sàng rồi chạy cuốn chiếu
+            setTimeout(() => {
+                chupVaChuyenTienTrinhDonLe();
+            }, 1500);
         }
 
-        // Bước 3: Nếu có tiền tố hợp lệ, tiến hành chụp ảnh màn hình Bill
-        button.innerHTML = `⏳ Đang chụp Bill ${i + 1}/${total}...`;
+        async function chupVaChuyenTienTrinhDonLe() {
+            const i = LOGIC_CUON_CHIEU.chiSoHienTai;
+            const total = LOGIC_CUON_CHIEU.domBills.length;
 
-        // Ẩn thanh công cụ điều khiển trước khi chụp ảnh
-        const controls = bill.querySelector('.bill-controls');
-        if (controls) controls.style.display = 'none';
+            // Điểm dừng: Khi đã chạy hết danh sách khách hàng
+            if (i >= total) {
+                xuLyInBaoCaoKetThuc();
+                return;
+            }
 
-        try {
-            await new Promise(r => setTimeout(r, 500)); // Nghỉ 0.5s xả RAM bộ nhớ tạm
-            const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true, logging: false });
-            const base64Img = canvas.toDataURL("image/png");
+            const bill = LOGIC_CUON_CHIEU.domBills[i];
+            const kh = LOGIC_CUON_CHIEU.dataArrayGoc[i];
 
-            // Bước 4: Làm sạch chuỗi - Cắt bỏ 5 ký tự đầu ("ZAlO_") để lấy Tên/SĐT chuẩn
-            let tenZaloSach = tenZaloRaw.substring(5);
+            let tenZaloRaw = kh.sdt_kh || kh.hoi_vien || "";
 
-            // Đóng gói thông tin hụi viên hợp lệ vào mảng dữ liệu
-            payloadData.push({
-                ten_app: kh.hoi_vien,
-                ten_zalo: tenZaloSach,
-                base64: base64Img
-            });
-        } catch (err) {
-            console.warn(`Lỗi chụp bill của ${kh.hoi_vien}:`, err);
+            // Bộ lọc tiền tố "zalo_" chốt chặn
+            if (!tenZaloRaw.toLowerCase().startsWith("zalo_")) {
+                console.log(`⏩ Bỏ qua: ${kh.hoi_vien} do không cài Zalo`);
+                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "⏭️ Bỏ qua (Không cài Zalo)" });
+                
+                LOGIC_CUON_CHIEU.chiSoHienTai++;
+                chupVaChuyenTienTrinhDonLe();
+                return;
+            }
+
+            LOGIC_CUON_CHIEU.buttonElement.innerHTML = `⏳ Đang gửi Bill ${i + 1}/${total}...`;
+            const controls = bill.querySelector('.bill-controls');
+            if (controls) controls.style.display = 'none';
+
+            try {
+                await new Promise(r => setTimeout(r, 300)); // Nghỉ xả RAM
+                const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true, logging: false });
+                const base64Img = canvas.toDataURL("image/png");
+
+                if (controls) controls.style.display = 'flex';
+
+                let tenZaloSach = tenZaloRaw.substring(5); // Cắt chữ "zalo_"
+                let laNguoiCuoiCung = (i === total - 1);
+
+                // Bắn gói hàng đơn lẻ sang Extension
+                window.postMessage({
+                    type: "AUTO_BILL_TRIGGER_BULK",
+                    danh_sach_bill: [{
+                        ten_app: kh.hoi_vien,
+                        ten_zalo: tenZaloSach,
+                        base64: base64Img,
+                        la_nguoi_cuoi: laNguoiCuoiCung
+                    }]
+                }, "*");
+
+            } catch (err) {
+                console.error(`Lỗi tạo ảnh của ${kh.hoi_vien}:`, err);
+                if (controls) controls.style.display = 'flex';
+                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "❌ Lỗi đồ họa" });
+                
+                LOGIC_CUON_CHIEU.chiSoHienTai++;
+                chupVaChuyenTienTrinhDonLe();
+            }
         }
 
-        // Hiển thị lại thanh công cụ điều khiển sau khi chụp xong
-        if (controls) controls.style.display = 'flex';
-    }
+        // ĐĂNG KÝ BỘ NHẬN PHẢN HỒI TỪ ZALO
+        window.addEventListener("message", function(event) {
+            if (event.data && event.data.type === "NEXT_BILL_KICKSTART") {
+                console.log("♻️ Nhận phản hồi từ Zalo, chuyển người!");
+                
+                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push(event.data.get_qua || event.data.ket_qua);
+                LOGIC_CUON_CHIEU.chiSoHienTai++;
+                
+                setTimeout(() => {
+                    chupVaChuyenTienTrinhDonLe();
+                }, 400);
+            }
+        });
 
-    // Bước 5: Kiểm tra danh sách sau khi lọc, nếu không có ai hợp lệ thì dừng quy trình
-    if (payloadData.length === 0) {
-        alert("Thao tác hoàn thành! Không tìm thấy hụi viên nào có tiền tố 'ZAlO_' để gửi tự động.");
-        button.innerHTML = originalText;
-        button.disabled = false;
-        return;
-    }
+        // Hàm kết xuất báo cáo thông minh dứt điểm, ẩn bill thành công
+        function xuLyInBaoCaoKetThuc() {
+            let soLuongThanhCong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => item.trang_thai.includes("✅")).length;
+            let tongSoLuong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.length;
 
-    // Bước 6: Truyền phát tín hiệu điều hướng dữ liệu sang Zalo Web
-    button.innerHTML = '🚀 Đang chuẩn bị Zalo...';
-    window.postMessage({ type: "SWITCH_TO_ZALO" }, "*");
+            let chuoiBaoCaoGon = `🏁 ĐÃ HOÀN TẤT TIẾN TRÌNH GỬI TẤT CẢ BILL!\n📊 Tổng kết: Đã gửi thành công ${soLuongThanhCong}/${tongSoLuong} bill.\n`;
+            
+            let danhSachLoi = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => !item.trang_thai.includes("✅"));
 
-    setTimeout(() => {
-        button.innerHTML = '🚀 Đang gửi bill...';
-        window.postMessage({
-            type: "AUTO_BILL_TRIGGER_BULK",
-            danh_sach_bill: payloadData
-        }, "*");
-    }, 1500);
+            if (danhSachLoi.length > 0) {
+                chuoiBaoCaoGon += `\n⚠️ DANH SÁCH BILL CHƯA GỬI ĐƯỢC (CẦN KIỂM TRA):\n`;
+                danhSachLoi.forEach((item, index) => {
+                    chuoiBaoCaoGon += `${index + 1}. ${item.ten_app}: ${item.trang_thai}\n`;
+                });
+            } else {
+                chuoiBaoCaoGon += `\n🎉 Tuyệt vời! Tất cả hóa đơn hụi đã được gửi đi thành công mỹ mãn!`;
+            }
 
-    setTimeout(() => {
-        button.innerHTML = originalText;
-        button.disabled = false;
-    }, 3000);
-}
+            LOGIC_CUON_CHIEU.buttonElement.innerHTML = LOGIC_CUON_CHIEU.textGocCuaNut;
+            LOGIC_CUON_CHIEU.buttonElement.disabled = false;
 
-        // --- CÁC HÀM XỬ LÝ ẢNH & FILE ZIP ---
+            alert(chuoiBaoCaoGon);
+        }
+
+        // =====================================================================
+        // 3. CÁC HÀM XỬ LÝ ẢNH & FILE ZIP LẺ
+        // =====================================================================
         function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { canvas.toBlob(blob => { try { window.focus(); navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); } catch (e) { alert("Trình duyệt không hỗ trợ"); } }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
         function downloadBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien.replace(/\s+/g, '_')}`) + '.png'; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error(err); alert('Lỗi tạo ảnh.'); c.style.display = 'flex'; }); }
         
@@ -553,20 +607,16 @@ async function autoSendAll(dataArray) {
             const sdt = element.dataset.sdt; 
             const hoivien = element.dataset.hoivien; 
             const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png'; 
-            
             const shareBtn = element.querySelector('.share-btn'); 
             const originalText = shareBtn.textContent; 
             shareBtn.textContent = "⏳ Đang xử lý..."; 
             shareBtn.disabled = true; 
-            
             const c = element.querySelector('.bill-controls'); 
             c.style.display = 'none'; 
-            
             try { 
                 const canvas = await html2canvas(element, { scale: 1.5, useCORS: true, logging: false }); 
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
                 const file = new File([blob], filename, { type: 'image/png' }); 
-                
                 if (navigator.canShare && navigator.canShare({ files: [file] })) { 
                     await navigator.share({ files: [file] }); 
                 } else { 
@@ -591,40 +641,31 @@ async function autoSendAll(dataArray) {
             const bills = document.querySelectorAll('.bill-page'); 
             const total = bills.length; 
             if (total === 0) { alert('Không có bill nào để tải.'); return; } 
-            
             const button = document.getElementById('download-zip-btn'); 
             const originalText = button.innerHTML; 
             button.disabled = true; 
-            
             const zip = new JSZip(); 
             let successCount = 0; 
             let failList = []; 
-            
             for (let i = 0; i < total; i++) { 
                 const bill = bills[i]; 
                 const sdt = bill.dataset.sdt; 
                 const hoivien = bill.dataset.hoivien || "Khach_Hang"; 
                 const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png'; 
-                
                 button.innerHTML = `⏳ Đang chụp ${i + 1}/${total}...`; 
                 const controls = bill.querySelector('.bill-controls'); 
                 if (controls) controls.style.display = 'none'; 
-                
                 let success = false;
                 let attempts = 0;
                 const maxAttempts = 3; 
-                
                 while (!success && attempts < maxAttempts) {
                     attempts++;
                     try { 
                         await new Promise(r => setTimeout(r, 500));
-                        
                         const capturePromise = html2canvas(bill, { scale: 1.5, useCORS: true, logging: false }); 
                         const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 15000)); 
-                        
                         const canvas = await Promise.race([capturePromise, timeoutPromise]); 
                         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
-                        
                         if (blob) {
                             zip.file(fileName, blob); 
                             successCount++; 
@@ -640,15 +681,12 @@ async function autoSendAll(dataArray) {
                         }
                         await new Promise(r => setTimeout(r, 1000));
                     } 
-                }
-                
+                } 
                 if (controls) controls.style.display = 'flex'; 
             } 
-            
             if (successCount > 0) { 
                 button.innerHTML = '📦 Đang nén ZIP (Đợi 1 chút)...'; 
                 await new Promise(r => setTimeout(r, 500));
-                
                 try {
                     const content = await zip.generateAsync({ type: "blob" }); 
                     const link = document.createElement('a'); 
@@ -658,7 +696,6 @@ async function autoSendAll(dataArray) {
                     document.body.appendChild(link); 
                     link.click(); 
                     document.body.removeChild(link); 
-                    
                     if (successCount < total) {
                         alert(`⚠️ HOÀN TẤT NHƯNG CÓ LỖI:\nChỉ tải được ${successCount}/${total} bill.\n\n❌ Các bill bị thiếu:\n${failList.join(', ')}\n\n👉 Giải pháp: RAM máy tính đang bị đầy. Hãy F5 tải lại trang, tắt bớt tab khác hoặc bấm "Tải Bill" lẻ cho những người bị thiếu.`);
                     } else {
@@ -671,7 +708,6 @@ async function autoSendAll(dataArray) {
             } else {
                 alert('Lỗi: Không thể tải được bill nào. Vui lòng kiểm tra lại!');
             }
-            
             button.innerHTML = originalText; 
             button.disabled = false; 
         }    
