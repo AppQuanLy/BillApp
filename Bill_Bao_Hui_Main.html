@@ -543,76 +543,92 @@
             }, 1500);
         }
 
-        async function chupVaChuyenTienTrinhDonLe() {
-            const i = LOGIC_CUON_CHIEU.chiSoHienTai;
-            const total = LOGIC_CUON_CHIEU.domBills.length;
+// =====================================================================
+// HÀM CHỤP CUỐN CHIẾU CẢI TIẾN - CHỐT CHẶN THOÁT HIỂM CHO BILL CUỐI KHÔNG ZALO
+// =====================================================================
+async function chupVaChuyenTienTrinhDonLe() {
+    const i = LOGIC_CUON_CHIEU.chiSoHienTai;
+    const total = LOGIC_CUON_CHIEU.domBills.length;
 
-            // CHỐT CHẶN: Nếu đã duyệt hết danh sách hụi viên
-            if (i >= total) {
-                LOGIC_CUON_CHIEU.buttonElement.innerHTML = LOGIC_CUON_CHIEU.textGocCuaNut;
-                LOGIC_CUON_CHIEU.buttonElement.disabled = false;
+    // 1. Nếu chỉ số vượt quá tổng số bill, kết thúc tiến trình tại màn hình HTML
+    if (i >= total) {
+        xuLyInBaoCaoKetThuc();
+        return;
+    }
 
-                // Xuất kết quả tổng hợp ra hộp thoại alert
-                let chuoiBaoCao = "📊 KẾT QUẢ GỬI BILL HỤI TỰ ĐỘNG:\n\n";
-                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.forEach((kq, index) => {
-                    chuoiBaoCao += `${index + 1}. ${kq.ten_app}: ${kq.trang_thai}\n`;
-                });
-                alert(chuoiBaoCao);
-                return;
-            }
+    const bill = LOGIC_CUON_CHIEU.domBills[i];
+    const kh = LOGIC_CUON_CHIEU.dataArrayGoc[i];
 
-            const bill = LOGIC_CUON_CHIEU.domBills[i];
-            const kh = LOGIC_CUON_CHIEU.dataArrayGoc[i];
+    let tenZaloRaw = kh.sdt_kh || kh.hoi_vien || "";
 
-            let tenZaloRaw = kh.sdt_kh || kh.hoi_vien || "";
-
-            // Kiểm tra điều kiện tiền tố "zalo_" (Chốt chặn bỏ qua hụi viên không dùng Zalo)
-            if (!tenZaloRaw.toLowerCase().startsWith("zalo_")) {
-                console.log(`⏩ Bỏ qua: ${kh.hoi_vien} do không chứa nhãn zalo_`);
-                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "⏭️ Bỏ qua (Không cài Zalo)" });
-                
-                // Nhảy ngay sang người tiếp theo mà không cần xử lý ảnh
-                LOGIC_CUON_CHIEU.chiSoHienTai++;
-                chupVaChuyenTienTrinhDonLe();
-                return;
-            }
-
-            // Tiến hành chụp ảnh cuốn chiếu cho người hợp lệ
-            LOGIC_CUON_CHIEU.buttonElement.innerHTML = `⏳ Đang gửi Bill ${i + 1}/${total}...`;
-            const controls = bill.querySelector('.bill-controls');
-            if (controls) controls.style.display = 'none';
-
-            try {
-                await new Promise(r => setTimeout(r, 300)); // Thời gian xả RAM cục bộ
-                const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true, logging: false });
-                const base64Img = canvas.toDataURL("image/png");
-
-                if (controls) controls.style.display = 'flex';
-
-                let tenZaloSach = tenZaloRaw.substring(5); // Cắt bỏ chữ "zalo_"
-                let laNguoiCuoiCung = (i === total - 1);
-
-                // Phát tín hiệu truyền tải DUY NHẤT 1 người này sang Extension
-                window.postMessage({
-                    type: "AUTO_BILL_TRIGGER_BULK",
-                    danh_sach_bill: [{
-                        ten_app: kh.hoi_vien,
-                        ten_zalo: tenZaloSach,
-                        base64: base64Img,
-                        la_nguoi_cuoi: laNguoiCuoiCung
-                    }]
-                }, "*");
-
-            } catch (err) {
-                console.error(`Lỗi tạo ảnh của ${kh.hoi_vien}:`, err);
-                if (controls) controls.style.display = 'flex';
-                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "❌ Lỗi đồ họa" });
-                
-                // Gặp lỗi chụp thì chuyển tiếp luôn
-                LOGIC_CUON_CHIEU.chiSoHienTai++;
-                chupVaChuyenTienTrinhDonLe();
-            }
+    // 2. KIỂM TRA ĐIỀU KIỆN NHÃN ZALO
+    if (!tenZaloRaw.toLowerCase().startsWith("zalo_")) {
+        console.log(`⏩ Hệ thống bỏ qua hụi viên: ${kh.hoi_vien} vì không gắn nhãn zalo_`);
+        LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "⏭️ Bỏ qua (Không cài Zalo)" });
+        
+        // --- CHỐT CHẶN CHÍ MẠNG MỚI NÂNG CẤP ---
+        // Kiểm tra xem người KHÔNG CÓ ZALO này có phải là người cuối cùng của danh sách không
+        if (i === total - 1) {
+            console.log("📢 Người không có Zalo này là người cuối cùng! Bắn tín hiệu kết thúc sang Zalo Web.");
+            
+            // Bắn một gói tin đặc biệt, thông báo cho Zalo đóng tiến trình dứt điểm
+            window.postMessage({
+                type: "AUTO_BILL_TRIGGER_BULK",
+                danh_sach_bill: [{
+                    ten_app: kh.hoi_vien,
+                    ten_zalo: "STOP_SIGNAL", // Gắn mã dừng hệ thống
+                    base64: "",              // Không cần ảnh
+                    la_nguoi_cuoi: true      // Ép biến người cuối lên TRUE
+                }]
+            }, "*");
+            
+            // Chờ 0.5 giây cho lệnh truyền đi rồi kết thúc luồng HTML luôn
+            await new Promise(r => setTimeout(r, 500));
+            LOGIC_CUON_CHIEU.chiSoHienTai++;
+            xuLyInBaoCaoKetThuc();
+            return;
         }
+
+        // Nếu chưa phải người cuối cùng, nhảy số tiến sang người kế tiếp như bình thường
+        LOGIC_CUON_CHIEU.chiSoHienTai++;
+        chupVaChuyenTienTrinhDonLe();
+        return;
+    }
+
+    // 3. LUỒNG CHỤP ẢNH VÀ GỬI CHO NGƯỜI CÓ ZALO HỢP LỆ (Giữ nguyên)
+    LOGIC_CUON_CHIEU.buttonElement.innerHTML = `⏳ Đang gửi Bill ${i + 1}/${total}...`;
+    const controls = bill.querySelector('.bill-controls');
+    if (controls) controls.style.display = 'none';
+
+    try {
+        await new Promise(r => setTimeout(r, 500)); 
+        const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true, logging: false });
+        const base64Img = canvas.toDataURL("image/png");
+
+        if (controls) controls.style.display = 'flex';
+
+        let tenZaloSach = tenZaloRaw.substring(5); 
+        let laNguoiCuoiCung = (i === total - 1);
+
+        window.postMessage({
+            type: "AUTO_BILL_TRIGGER_BULK",
+            danh_sach_bill: [{
+                ten_app: kh.hoi_vien,
+                ten_zalo: tenZaloSach,
+                base64: base64Img,
+                la_nguoi_cuoi: laNguoiCuoiCung
+            }]
+        }, "*");
+
+    } catch (err) {
+        console.error(`Lỗi đồ họa của ${kh.hoi_vien}:`, err);
+        if (controls) controls.style.display = 'flex';
+        LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "❌ Lỗi đồ họa" });
+        
+        LOGIC_CUON_CHIEU.chiSoHienTai++;
+        chupVaChuyenTienTrinhDonLe();
+    }
+}
 
 
 // =====================================================================
