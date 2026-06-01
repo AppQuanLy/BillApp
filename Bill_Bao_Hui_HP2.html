@@ -307,28 +307,28 @@
                 const jsonData = decodeURIComponent(encodedData);
                 const data = JSON.parse(jsonData);
 
-                // Nạp đúng chuỗi JSON thô đặc trưng hiển thị của Happy Theme
-                generateBills(jsonData);
+                // Thống nhất nạp biến mảng 'data' đã parse để chạy đồng bộ với hàm generateBills bên dưới
+                generateBills(data);
 
                 statusMessage.style.display = 'none';
                 downloadZipBtn.style.display = 'inline-block';
                 downloadZipBtn.addEventListener('click', downloadAllAsZip);
-                
-                // --- KIỂM TRA ĐIỀU KIỆN VIP ĐỂ HIỂN THỊ NÚT BẤM AUTO ---
+
+                // --- KIỂM TRA VIP ĐỂ HIỆN NÚT AUTO TRÊN CÙNG ---
                 const autoSendBtn = document.getElementById('auto-send-all-btn');
                 if (data.length > 0 && data[0].is_vip === "Y") {
                     autoSendBtn.style.display = 'inline-block';
-                    autoSendBtn.addEventListener('click', () => autoSendAll(data));
+                    autoSendBtn.addEventListener('click', () => autoSendAll(data)); 
                 }
+
             } catch (error) { statusMessage.textContent = 'Lỗi dữ liệu bill.'; console.error(error); }
         };
 
         function formatCurrency(num) { if (typeof num !== 'number' || num === null) return '0'; return num.toLocaleString('vi-VN'); }
 
-        function generateBills(jsonInput) {
+        function generateBills(data) {
             const billsContainer = document.getElementById('bills-container');
             billsContainer.innerHTML = '';
-            const data = JSON.parse(jsonInput);
             const billTemplate = document.getElementById('bill-template');
             
             let listThu = []; 
@@ -344,10 +344,10 @@
                 q('[data-field="sdt"]').textContent = kh.sdt || ''; 
                 q('[data-field="bank_info"]').textContent = kh.bank_info || ''; 
                 const chuTkRow = q('.chu-tk-row');
-                    if (kh.chu_tk && kh.chu_tk.trim() !== '') {
-                        q('[data-field="chu_tk"]').textContent = kh.chu_tk;
-                        if (chuTkRow) chuTkRow.style.display = 'block'; 
-                    }
+                if (kh.chu_tk && kh.chu_tk.trim() !== '') {
+                    q('[data-field="chu_tk"]').textContent = kh.chu_tk;
+                    if (chuTkRow) chuTkRow.style.display = 'block'; 
+                }
                 q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; 
                 q('[data-field="dia_chi"]').textContent = kh.dia_chi || ''; 
 
@@ -388,10 +388,10 @@
                     allDetails.forEach(d => {
                         const row = document.createElement('tr');
                         if ((d.khui || '').toLowerCase().includes('nợ')) {
-                            row.style.backgroundColor = 'rgba(255, 240, 240, 0.8)'; 
-                            row.innerHTML = `<td colspan="7" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td></td>`;
+                            row.style.backgroundColor = '#fff0f0';
+                            row.innerHTML = `<td colspan="8" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
                         } else {
-                            row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td>`;
+                            row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
                             sttCounter++;
                         }
                         detailsBody.appendChild(row);
@@ -400,10 +400,9 @@
                 
                 q('[data-field="footer_hoi_vien"]').textContent = kh.hoi_vien || ''; 
                 q('[data-field="bill_tong_dong"]').textContent = formatCurrency(kh.bill_tong_dong); 
-                
-                const elBillTongHot = q('[data-field="bill_tong_hot"]'); if(elBillTongHot) elBillTongHot.textContent = formatCurrency(kh.bill_tong_hot); 
-                const elTongTham = q('[data-field="tong_tham"]'); if(elTongTham) elTongTham.textContent = `Tổng Thăm: ${formatCurrency(kh.tong_tham)}`; 
-                const elTongThao = q('[data-field="tong_thao"]'); if(elTongThao) elTongThao.textContent = `Tổng Thảo: ${formatCurrency(kh.tong_thao)}`;
+                q('[data-field="bill_tong_hot"]').textContent = formatCurrency(kh.bill_tong_hot); 
+                q('[data-field="tong_tham"]').textContent = `Tổng Thăm: ${formatCurrency(kh.tong_tham)}`; 
+                q('[data-field="tong_thao"]').textContent = `Tổng Thảo: ${formatCurrency(kh.tong_thao)}`;
                 
                 const banner = q('[data-field="footer_banner"]'); 
                 const tongDong = kh.bill_tong_dong || 0; 
@@ -412,15 +411,12 @@
                 qrContainer.innerHTML = "";
 
                 if (tongDong > tongHot) { 
-                    if(banner) {
-                        banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; 
-                        banner.style.backgroundColor = '#d90000'; 
-                    }
-                    
-                    const elFinalTextLabel = q('[data-field="final_text_label"]'); if (elFinalTextLabel) elFinalTextLabel.textContent = 'Phải Đóng:'; 
+                    banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; 
+                    banner.style.backgroundColor = '#d90000'; 
+                    q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; 
                     const amount = tongDong - tongHot;
-                    const elFinalAmount = q('[data-field="final_amount"]'); if (elFinalAmount) elFinalAmount.textContent = formatCurrency(amount); 
-                    const elFinalFormula = q('[data-field="final_formula_text"]'); if (elFinalFormula) elFinalFormula.textContent = '=(1)-(2)'; 
+                    q('[data-field="final_amount"]').textContent = formatCurrency(amount); 
+                    q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; 
                     
                     const qrRawData = kh.qr_bill_url; 
                     if (qrRawData) {
@@ -434,15 +430,12 @@
                     totalThu += amount;
 
                 } else { 
-                    if(banner) {
-                        banner.textContent = 'Hụi Viên được nhận tiền'; 
-                        banner.style.backgroundColor = '#00b050'; 
-                    }
-                    
-                    const elFinalTextLabel = q('[data-field="final_text_label"]'); if (elFinalTextLabel) elFinalTextLabel.textContent = 'Được Nhận:'; 
+                    banner.textContent = 'Hụi Viên được nhận tiền'; 
+                    banner.style.backgroundColor = '#00b050'; 
+                    q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; 
                     const amountPayable = tongHot - tongDong;
-                    const elFinalAmount = q('[data-field="final_amount"]'); if (elFinalAmount) elFinalAmount.textContent = formatCurrency(amountPayable); 
-                    const elFinalFormula = q('[data-field="final_formula_text"]'); if (elFinalFormula) elFinalFormula.textContent = '=(2)-(1)'; 
+                    q('[data-field="final_amount"]').textContent = formatCurrency(amountPayable); 
+                    q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; 
                     qrContainer.style.display = 'none';
                     
                     listGiao.push({ name: kh.hoi_vien, amount: amountPayable });
@@ -462,7 +455,6 @@
             if (listThu.length > 0 || listGiao.length > 0) {
                 document.getElementById('dashboard-panel').style.display = 'block';
                 
-                // Thu
                 document.getElementById('total-receivable').textContent = formatCurrency(totalThu);
                 listThu.sort((a, b) => b.amount - a.amount);
                 let strThu = "DANH SÁCH PHẢI THU (BILL ĐÓNG):\n";
@@ -474,7 +466,6 @@
                     navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!'));
                 };
 
-                // Giao
                 document.getElementById('total-payable').textContent = formatCurrency(totalGiao);
                 listGiao.sort((a, b) => b.amount - a.amount);
                 let strGiao = "DANH SÁCH PHẢI GIAO (BILL HỐT):\n";
@@ -490,9 +481,9 @@
                 }
             }
         }
-        
+
         // =====================================================================
-        // 2. KHỐI LOGIC MỚI: TỰ ĐỘNG CHỤP VÀ TRUYỀN CUỐN CHIẾU ĐƠN LẺ CHỐNG NGHẼN
+        // 2. KHỐI LOGIC: TỰ ĐỘNG CHỤP VÀ TRUYỀN CUỐN CHIẾU ĐƠN LẺ KHÔNG GÂY ĐƠ RAM
         // =====================================================================
         let LOGIC_CUON_CHIEU = {
             dataArrayGoc: [],
@@ -512,7 +503,7 @@
             const bills = document.querySelectorAll('.bill-page');
             if (bills.length === 0) return;
 
-            // Đồng bộ dữ liệu vào cấu trúc quản lý vòng lặp toàn cục
+            // Đồng bộ bộ nhớ điều khiển toàn cục
             LOGIC_CUON_CHIEU.dataArrayGoc = dataArray;
             LOGIC_CUON_CHIEU.domBills = bills;
             LOGIC_CUON_CHIEU.chiSoHienTai = 0;
@@ -522,119 +513,130 @@
 
             LOGIC_CUON_CHIEU.buttonElement.disabled = true;
 
-            // Kích hoạt lệnh chuyển luồng trình duyệt sang Tab Zalo Web trước
+            // Chuyển màn hình sang Tab Zalo Web trước
             LOGIC_CUON_CHIEU.buttonElement.innerHTML = '🚀 Đang kết nối Zalo...';
             window.postMessage({ type: "SWITCH_TO_ZALO" }, "*");
 
-            // Trì hoãn 1.5 giây chờ tab nhận sóng rồi bốc người đầu tiên xử lý
+            // Chờ 1.5 giây cho tab sẵn sàng rồi chạy cuốn chiếu
             setTimeout(() => {
                 chupVaChuyenTienTrinhDonLe();
             }, 1500);
         }
 
-        async function chupVaChuyenTienTrinhDonLe() {
-            const i = LOGIC_CUON_CHIEU.chiSoHienTai;
-            const total = LOGIC_CUON_CHIEU.domBills.length;
+// =====================================================================
+// HÀM CHỤP VÀ TRUYỀN DỮ LIỆU CUỐN CHIẾU - DÙNG CHUNG CHO TẤT CẢ CÁC MẪU BILL
+// =====================================================================
+async function chupVaChuyenTienTrinhDonLe() {
+    // Lấy vị trí người hiện tại và tổng số người trong danh sách
+    const i = LOGIC_CUON_CHIEU.chiSoHienTai;
+    const total = LOGIC_CUON_CHIEU.domBills.length;
 
-            // Điểm dừng quy trình: Khi đã duyệt qua toàn bộ mảng khách hàng
-            if (i >= total) {
-                xuLyInBaoCaoKetThuc();
-                return;
-            }
+    // Chốt chặn 1: Nếu đã lướt hết danh sách, dừng lại và hiện báo cáo
+    if (i >= total) {
+        xuLyInBaoCaoKetThuc();
+        return;
+    }
 
-            const bill = LOGIC_CUON_CHIEU.domBills[i];
-            const kh = LOGIC_CUON_CHIEU.dataArrayGoc[i];
+    // Lấy phần tử HTML hóa đơn và dữ liệu gốc của khách hàng hiện tại
+    const bill = LOGIC_CUON_CHIEU.domBills[i];
+    const kh = LOGIC_CUON_CHIEU.dataArrayGoc[i];
+    let tenZaloRaw = kh.sdt_kh || kh.hoi_vien || "";
 
-            let tenZaloRaw = kh.sdt_kh || kh.hoi_vien || "";
-
-            // Kiểm tra bộ lọc tiền tố "zalo_" để bỏ qua người không tích hợp
-            if (!tenZaloRaw.toLowerCase().startsWith("zalo_")) {
-                console.log(`⏩ Bỏ qua: ${kh.hoi_vien} do cấu trúc không gắn nhãn 'zalo_'`);
-                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "⏭️ Bỏ qua (Không cài Zalo)" });
-                
-                // Nhảy cấp tốc sang chỉ số tiếp theo mà không dựng đồ họa ảnh
-                LOGIC_CUON_CHIEU.chiSoHienTai++;
-                chupVaChuyenTienTrinhDonLe();
-                return;
-            }
-
-            // Thực hiện chu kỳ chụp ảnh cục bộ cho hụi viên hợp lệ
-            LOGIC_CUON_CHIEU.buttonElement.innerHTML = `⏳ Đang gửi Bill ${i + 1}/${total}...`;
-            const controls = bill.querySelector('.bill-controls');
-            if (controls) controls.style.display = 'none';
-
-            try {
-                await new Promise(r => setTimeout(r, 300)); // Quãng nghỉ ngắn giải phóng CPU
-                const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true, logging: false });
-                const base64Img = canvas.toDataURL("image/png");
-
-                if (controls) controls.style.display = 'flex';
-
-                let tenZaloSach = tenZaloRaw.substring(5); // Loại bỏ chuỗi "zalo_"
-                let laNguoiCuoiCung = (i === total - 1);
-
-                // Truyền dữ liệu DUY NHẤT một gói hàng sạch sang Extension
-                window.postMessage({
-                    type: "AUTO_BILL_TRIGGER_BULK",
-                    danh_sach_bill: [{
-                        ten_app: kh.hoi_vien,
-                        ten_zalo: tenZaloSach,
-                        base64: base64Img,
-                        la_nguoi_cuoi: laNguoiCuoiCung
-                    }]
-                }, "*");
-
-            } catch (err) {
-                console.error(`Lỗi kết xuất ảnh của hụi viên ${kh.hoi_vien}:`, err);
-                if (controls) controls.style.display = 'flex';
-                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "❌ Lỗi đồ họa" });
-                
-                // Gặp sự cố đồ họa thì tự động bỏ qua để tiến tới người sau
-                LOGIC_CUON_CHIEU.chiSoHienTai++;
-                chupVaChuyenTienTrinhDonLe();
-            }
+    // Chốt chặn 2: Kiểm tra nhãn "zalo_" để bỏ qua người không dùng app nhắn tin
+    if (!tenZaloRaw.toLowerCase().startsWith("zalo_")) {
+        LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "⏭️ Bỏ qua" });
+        
+        // Nếu người không có Zalo này lại là người cuối danh sách -> Bắn lệnh dừng sang Zalo Web
+        if (i === total - 1) {
+            window.postMessage({
+                type: "AUTO_BILL_TRIGGER_BULK",
+                danh_sach_bill: [{ ten_app: kh.hoi_vien, ten_zalo: "STOP_SIGNAL", base64: "", la_nguoi_cuoi: true }]
+            }, "*");
+            await delay(500);
+            LOGIC_CUON_CHIEU.chiSoHienTai++;
+            xuLyInBaoCaoKetThuc();
+            return;
         }
 
-        // ĐĂNG KÝ BỘ NHẬN PHẢN HỒI: Chờ tín hiệu báo cáo thành công từ tab Zalo gọi về
+        // Nếu chưa phải người cuối, nhảy số tiến sang người tiếp theo
+        LOGIC_CUON_CHIEU.chiSoHienTai++;
+        chupVaChuyenTienTrinhDonLe();
+        return;
+    }
+
+    // LUỒNG SỬ LÝ CHỤP ẢNH CHÍNH (Dành cho người có Zalo hợp lệ)
+    try {
+        // Tham số điều chỉnh: Nghỉ 500ms để trình duyệt ổn định RAM trước khi chụp
+        await delay(500); 
+
+        // Kích hoạt thư viện chụp ảnh màn hình thẻ HTML hóa đơn
+        const canvas = await html2canvas(bill, { 
+            scale: 1.5,       // Độ sắc nét của ảnh (1.5 là vừa đẹp, không quá nặng)
+            useCORS: true,     // Cho phép nạp ảnh từ link bên ngoài (nếu có)
+            logging: false     // Tắt nhật ký hệ thống để tăng tốc độ chạy
+        });
+        
+        // Chuyển kết quả chụp thành chuỗi văn bản ảnh Base64
+        const base64Img = canvas.toDataURL("image/png");
+        
+        let tenZaloSach = tenZaloRaw.substring(5); // Cắt chữ "zalo_" lấy tên sạch
+        let laNguoiCuoiCung = (i === total - 1);
+
+        // Bắn gói tin chứa ảnh sang cho Extension để trung chuyển sang Zalo Web
+        window.postMessage({
+            type: "AUTO_BILL_TRIGGER_BULK",
+            danh_sach_bill: [{
+                ten_app: kh.hoi_vien,
+                ten_zalo: tenZaloSach,
+                base64: base64Img,
+                la_nguoi_cuoi: laNguoiCuoiCung
+            }]
+        }, "*");
+
+    } catch (err) {
+        console.error("Lỗi xử lý đồ họa:", err);
+        LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "❌ Lỗi đồ họa" });
+        LOGIC_CUON_CHIEU.chiSoHienTai++;
+        chupVaChuyenTienTrinhDonLe();
+    }
+}
+
+        // ĐĂNG KÝ BỘ NHẬN PHẢN HỒI TỪ ZALO
         window.addEventListener("message", function(event) {
             if (event.data && event.data.type === "NEXT_BILL_KICKSTART") {
-                console.log("♻️ Nhận tín hiệu hồi đáp: Đã hoàn tất gửi tin nhắn trên Zalo. Chuyển người tiếp theo!");
+                console.log("♻️ Nhận phản hồi từ Zalo, chuyển người!");
                 
-                // Thu nạp trạng thái thực tế từ Zalo vào mảng kết quả
                 LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push(event.data.get_qua || event.data.ket_qua);
-                
-                // Dịch chuyển chỉ số lên 1 nấc
                 LOGIC_CUON_CHIEU.chiSoHienTai++;
                 
-                // Nghỉ chân 400ms làm rỗng hàng đợi hệ thống rồi chạy tiếp cuốn chiếu
                 setTimeout(() => {
                     chupVaChuyenTienTrinhDonLe();
                 }, 400);
             }
         });
 
-        // Hàm kết xuất báo cáo thông minh gọn gàng
+        // Hàm kết xuất báo cáo thông minh dứt điểm, ẩn bill thành công
         function xuLyInBaoCaoKetThuc() {
             let soLuongThanhCong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => item.trang_thai.includes("✅")).length;
             let tongSoLuong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.length;
 
-            let chuoiBaoCaoGọn = `🏁 ĐÃ HOÀN TẤT TIẾN TRÌNH GỬI TẤT CẢ BILL!\n📊 Tổng kết: Đã gửi thành công ${soLuongThanhCong}/${tongSoLuong} bill.\n`;
+            let chuoiBaoCaoGon = `🏁 ĐÃ HOÀN TẤT TIẾN TRÌNH GỬI TẤT CẢ BILL!\n📊 Tổng kết: Đã gửi thành công ${soLuongThanhCong}/${tongSoLuong} bill.\n`;
             
             let danhSachLoi = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => !item.trang_thai.includes("✅"));
 
             if (danhSachLoi.length > 0) {
-                chuoiBaoCaoGọn += `\n⚠️ DANH SÁCH BILL CHƯA GỬI ĐƯỢC (CẦN KIỂM TRA):\n`;
+                chuoiBaoCaoGon += `\n⚠️ DANH SÁCH BILL CHƯA GỬI ĐƯỢC (CẦN KIỂM TRA):\n`;
                 danhSachLoi.forEach((item, index) => {
-                    chuoiBaoCaoGọn += `${index + 1}. ${item.ten_app}: ${item.trang_thai}\n`;
+                    chuoiBaoCaoGon += `${index + 1}. ${item.ten_app}: ${item.trang_thai}\n`;
                 });
             } else {
-                chuoiBaoCaoGọn += `\n🎉 Tuyệt vời! Tất cả hóa đơn hụi đã được gửi đi thành công mỹ mãn!`;
+                chuoiBaoCaoGon += `\n🎉 Tuyệt vời! Tất cả hóa đơn hụi đã được gửi đi thành công mỹ mãn!`;
             }
 
             LOGIC_CUON_CHIEU.buttonElement.innerHTML = LOGIC_CUON_CHIEU.textGocCuaNut;
             LOGIC_CUON_CHIEU.buttonElement.disabled = false;
 
-            alert(chuoiBaoCaoGọn);
+            alert(chuoiBaoCaoGon);
         }
 
         // =====================================================================
@@ -647,20 +649,16 @@
             const sdt = element.dataset.sdt; 
             const hoivien = element.dataset.hoivien; 
             const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png'; 
-            
             const shareBtn = element.querySelector('.share-btn'); 
             const originalText = shareBtn.textContent; 
             shareBtn.textContent = "⏳ Đang xử lý..."; 
             shareBtn.disabled = true; 
-            
             const c = element.querySelector('.bill-controls'); 
             c.style.display = 'none'; 
-            
             try { 
                 const canvas = await html2canvas(element, { scale: 1.5, useCORS: true, logging: false }); 
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
                 const file = new File([blob], filename, { type: 'image/png' }); 
-                
                 if (navigator.canShare && navigator.canShare({ files: [file] })) { 
                     await navigator.share({ files: [file] }); 
                 } else { 
@@ -685,29 +683,23 @@
             const bills = document.querySelectorAll('.bill-page'); 
             const total = bills.length; 
             if (total === 0) { alert('Không có bill nào để tải.'); return; } 
-            
             const button = document.getElementById('download-zip-btn'); 
             const originalText = button.innerHTML; 
             button.disabled = true; 
-            
             const zip = new JSZip(); 
             let successCount = 0; 
             let failList = []; 
-            
             for (let i = 0; i < total; i++) { 
                 const bill = bills[i]; 
                 const sdt = bill.dataset.sdt; 
                 const hoivien = bill.dataset.hoivien || "Khach_Hang"; 
                 const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png'; 
-                
                 button.innerHTML = `⏳ Đang chụp ${i + 1}/${total}...`; 
                 const controls = bill.querySelector('.bill-controls'); 
                 if (controls) controls.style.display = 'none'; 
-                
                 let success = false;
                 let attempts = 0;
                 const maxAttempts = 3; 
-                
                 while (!success && attempts < maxAttempts) {
                     attempts++;
                     try { 
@@ -716,7 +708,6 @@
                         const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 15000)); 
                         const canvas = await Promise.race([capturePromise, timeoutPromise]); 
                         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
-                        
                         if (blob) {
                             zip.file(fileName, blob); 
                             successCount++; 
