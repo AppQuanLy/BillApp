@@ -197,7 +197,7 @@
          </div>
     </template>
     
-    <script>
+     <script>
         // =====================================================================
         // 1. VIETQR GENERATOR
         // =====================================================================
@@ -264,20 +264,21 @@
                 if (!encodedData) { statusMessage.textContent = 'Không tìm thấy dữ liệu.'; return; }
                 const jsonData = decodeURIComponent(encodedData);
                 const data = JSON.parse(jsonData);
-                
-                // Đồng bộ nạp biến mảng 'data' đã giải mã từ URL thô để bung vẽ hóa đơn chìm
+
+                // Thống nhất nạp biến mảng 'data' đã parse để chạy đồng bộ với hàm generateBills bên dưới
                 generateBills(data);
 
                 statusMessage.style.display = 'none';
                 downloadZipBtn.style.display = 'inline-block';
                 downloadZipBtn.addEventListener('click', downloadAllAsZip);
-                
-                // --- KÍCH HOẠT HIỂN THỊ NÚT VIP AUTO ---
+
+                // --- KIỂM TRA VIP ĐỂ HIỆN NÚT AUTO TRÊN CÙNG ---
                 const autoSendBtn = document.getElementById('auto-send-all-btn');
                 if (data.length > 0 && data[0].is_vip === "Y") {
                     autoSendBtn.style.display = 'inline-block';
-                    autoSendBtn.addEventListener('click', () => autoSendAll(data));
+                    autoSendBtn.addEventListener('click', () => autoSendAll(data)); 
                 }
+
             } catch (error) { statusMessage.textContent = 'Lỗi dữ liệu bill.'; console.error(error); }
         };
 
@@ -301,14 +302,13 @@
                 q('[data-field="sdt"]').textContent = kh.sdt || ''; 
                 q('[data-field="bank_info"]').textContent = kh.bank_info || ''; 
                 const chuTkRow = q('.chu-tk-row');
-                    if (kh.chu_tk && kh.chu_tk.trim() !== '') {
-                        q('[data-field="chu_tk"]').textContent = kh.chu_tk;
-                        if (chuTkRow) chuTkRow.style.display = 'block'; 
-                    }
+                if (kh.chu_tk && kh.chu_tk.trim() !== '') {
+                    q('[data-field="chu_tk"]').textContent = kh.chu_tk;
+                    if (chuTkRow) chuTkRow.style.display = 'block'; 
+                }
                 q('[data-field="ngay_tao_bill"]').textContent = kh.ngay_tao_bill || ''; 
                 q('[data-field="dia_chi"]').textContent = kh.dia_chi || ''; 
 
-                // --- XỬ LÝ MÀU GHI CHÚ TƯƠNG THÍCH NGƯỢC ---
                 const gc1 = q('[data-field="ghi_chu_1"]');
                 gc1.textContent = kh.ghi_chu_1 || ''; 
                 if (kh.color_ghi_chu_1 && kh.color_ghi_chu_1.trim() !== '' && !kh.color_ghi_chu_1.includes("_color")) {
@@ -338,17 +338,6 @@
                 loiNhuanCell.textContent = formatCurrency(loiNhuanValue); 
                 if (loiNhuanValue > 0) { loiNhuanCell.classList.add('text-green'); } else if (loiNhuanValue < 0) { loiNhuanCell.classList.add('text-red'); }
                 
-                // --- KIỂM TRA HIỂN THỊ WATERMARK ---
-                const watermarkEl = q('[data-field="watermark_img"]');
-                if (kh.logo_watermark && kh.logo_watermark.trim() !== '') {
-                    watermarkEl.src = kh.logo_watermark; 
-                    watermarkEl.style.display = 'block'; 
-                } else if (watermarkEl.src && !watermarkEl.src.includes('ĐIỀN_MÃ') && watermarkEl.getAttribute('src') !== '') {
-                    watermarkEl.style.display = 'block';
-                } else {
-                    watermarkEl.style.display = 'none';
-                }
-
                 const detailsBody = q('[data-field="details_tbody"]');
                 const allDetails = [].concat(kh.chan_hui_details || []).concat(kh.hui_1_1_details || []).concat(kh.ghi_no_details || []).concat(kh.tien_gop_details || []);
                 
@@ -357,7 +346,7 @@
                     allDetails.forEach(d => {
                         const row = document.createElement('tr');
                         if ((d.khui || '').toLowerCase().includes('nợ')) {
-                            row.style.backgroundColor = 'rgba(255, 240, 240, 0.8)'; 
+                            row.style.backgroundColor = '#fff0f0';
                             row.innerHTML = `<td colspan="8" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
                         } else {
                             row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${d.dup || 0}</td>`;
@@ -424,7 +413,6 @@
             if (listThu.length > 0 || listGiao.length > 0) {
                 document.getElementById('dashboard-panel').style.display = 'block';
                 
-                // Thu
                 document.getElementById('total-receivable').textContent = formatCurrency(totalThu);
                 listThu.sort((a, b) => b.amount - a.amount);
                 let strThu = "DANH SÁCH PHẢI THU (BILL ĐÓNG):\n";
@@ -436,7 +424,6 @@
                     navigator.clipboard.writeText(globalSummaryTextReceivable).then(() => alert('Đã copy danh sách phải THU!'));
                 };
 
-                // Giao
                 document.getElementById('total-payable').textContent = formatCurrency(totalGiao);
                 listGiao.sort((a, b) => b.amount - a.amount);
                 let strGiao = "DANH SÁCH PHẢI GIAO (BILL HỐT):\n";
@@ -452,9 +439,9 @@
                 }
             }
         }
-        
+
         // =====================================================================
-        // 2. KHỐI LOGIC MỚI: TỰ ĐỘNG CHỤP VÀ TRUYỀN CUỐN CHIẾU ĐƠN LẺ CHỐNG NGHẼN
+        // 2. KHỐI LOGIC: TỰ ĐỘNG CHỤP VÀ TRUYỀN CUỐN CHIẾU ĐƠN LẺ KHÔNG GÂY ĐƠ RAM
         // =====================================================================
         let LOGIC_CUON_CHIEU = {
             dataArrayGoc: [],
@@ -474,6 +461,7 @@
             const bills = document.querySelectorAll('.bill-page');
             if (bills.length === 0) return;
 
+            // Đồng bộ bộ nhớ điều khiển toàn cục
             LOGIC_CUON_CHIEU.dataArrayGoc = dataArray;
             LOGIC_CUON_CHIEU.domBills = bills;
             LOGIC_CUON_CHIEU.chiSoHienTai = 0;
@@ -483,101 +471,130 @@
 
             LOGIC_CUON_CHIEU.buttonElement.disabled = true;
 
+            // Chuyển màn hình sang Tab Zalo Web trước
             LOGIC_CUON_CHIEU.buttonElement.innerHTML = '🚀 Đang kết nối Zalo...';
             window.postMessage({ type: "SWITCH_TO_ZALO" }, "*");
 
+            // Chờ 1.5 giây cho tab sẵn sàng rồi chạy cuốn chiếu
             setTimeout(() => {
                 chupVaChuyenTienTrinhDonLe();
             }, 1500);
         }
 
-        async function chupVaChuyenTienTrinhDonLe() {
-            const i = LOGIC_CUON_CHIEU.chiSoHienTai;
-            const total = LOGIC_CUON_CHIEU.domBills.length;
+// =====================================================================
+// HÀM CHỤP VÀ TRUYỀN DỮ LIỆU CUỐN CHIẾU - DÙNG CHUNG CHO TẤT CẢ CÁC MẪU BILL
+// =====================================================================
+async function chupVaChuyenTienTrinhDonLe() {
+    // Lấy vị trí người hiện tại và tổng số người trong danh sách
+    const i = LOGIC_CUON_CHIEU.chiSoHienTai;
+    const total = LOGIC_CUON_CHIEU.domBills.length;
 
-            if (i >= total) {
-                xuLyInBaoCaoKetThuc();
-                return;
-            }
+    // Chốt chặn 1: Nếu đã lướt hết danh sách, dừng lại và hiện báo cáo
+    if (i >= total) {
+        xuLyInBaoCaoKetThuc();
+        return;
+    }
 
-            const bill = LOGIC_CUON_CHIEU.domBills[i];
-            const kh = LOGIC_CUON_CHIEU.dataArrayGoc[i];
+    // Lấy phần tử HTML hóa đơn và dữ liệu gốc của khách hàng hiện tại
+    const bill = LOGIC_CUON_CHIEU.domBills[i];
+    const kh = LOGIC_CUON_CHIEU.dataArrayGoc[i];
+    let tenZaloRaw = kh.sdt_kh || kh.hoi_vien || "";
 
-            let tenZaloRaw = kh.sdt_kh || kh.hoi_vien || "";
-
-            if (!tenZaloRaw.toLowerCase().startsWith("zalo_")) {
-                console.log(`⏩ Bỏ qua: ${kh.hoi_vien} do không chứa nhãn zalo_`);
-                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "⏭️ Bỏ qua (Không cài Zalo)" });
-                
-                LOGIC_CUON_CHIEU.chiSoHienTai++;
-                chupVaChuyenTienTrinhDonLe();
-                return;
-            }
-
-            LOGIC_CUON_CHIEU.buttonElement.innerHTML = `⏳ Đang gửi Bill ${i + 1}/${total}...`;
-            const controls = bill.querySelector('.bill-controls');
-            if (controls) controls.style.display = 'none';
-
-            try {
-                await new Promise(r => setTimeout(r, 300)); 
-                const canvas = await html2canvas(bill, { scale: 1.5, useCORS: true, logging: false });
-                const base64Img = canvas.toDataURL("image/png");
-
-                if (controls) controls.style.display = 'flex';
-
-                let tenZaloSach = tenZaloRaw.substring(5); 
-                let laNguoiCuoiCung = (i === total - 1);
-
-                window.postMessage({
-                    type: "AUTO_BILL_TRIGGER_BULK",
-                    danh_sach_bill: [{
-                        ten_app: kh.hoi_vien,
-                        ten_zalo: tenZaloSach,
-                        base64: base64Img,
-                        la_nguoi_cuoi: laNguoiCuoiCung
-                    }]
-                }, "*");
-
-            } catch (err) {
-                console.error(`Lỗi kết xuất ảnh của ${kh.hoi_vien}:`, err);
-                if (controls) controls.style.display = 'flex';
-                LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "❌ Lỗi đồ họa" });
-                
-                LOGIC_CUON_CHIEU.chiSoHienTai++;
-                chupVaChuyenTienTrinhDonLe();
-            }
+    // Chốt chặn 2: Kiểm tra nhãn "zalo_" để bỏ qua người không dùng app nhắn tin
+    if (!tenZaloRaw.toLowerCase().startsWith("zalo_")) {
+        LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "⏭️ Bỏ qua" });
+        
+        // Nếu người không có Zalo này lại là người cuối danh sách -> Bắn lệnh dừng sang Zalo Web
+        if (i === total - 1) {
+            window.postMessage({
+                type: "AUTO_BILL_TRIGGER_BULK",
+                danh_sach_bill: [{ ten_app: kh.hoi_vien, ten_zalo: "STOP_SIGNAL", base64: "", la_nguoi_cuoi: true }]
+            }, "*");
+            await delay(500);
+            LOGIC_CUON_CHIEU.chiSoHienTai++;
+            xuLyInBaoCaoKetThuc();
+            return;
         }
 
+        // Nếu chưa phải người cuối, nhảy số tiến sang người tiếp theo
+        LOGIC_CUON_CHIEU.chiSoHienTai++;
+        chupVaChuyenTienTrinhDonLe();
+        return;
+    }
+
+    // LUỒNG SỬ LÝ CHỤP ẢNH CHÍNH (Dành cho người có Zalo hợp lệ)
+    try {
+        // Tham số điều chỉnh: Nghỉ 500ms để trình duyệt ổn định RAM trước khi chụp
+        await delay(500); 
+
+        // Kích hoạt thư viện chụp ảnh màn hình thẻ HTML hóa đơn
+        const canvas = await html2canvas(bill, { 
+            scale: 1.5,       // Độ sắc nét của ảnh (1.5 là vừa đẹp, không quá nặng)
+            useCORS: true,     // Cho phép nạp ảnh từ link bên ngoài (nếu có)
+            logging: false     // Tắt nhật ký hệ thống để tăng tốc độ chạy
+        });
+        
+        // Chuyển kết quả chụp thành chuỗi văn bản ảnh Base64
+        const base64Img = canvas.toDataURL("image/png");
+        
+        let tenZaloSach = tenZaloRaw.substring(5); // Cắt chữ "zalo_" lấy tên sạch
+        let laNguoiCuoiCung = (i === total - 1);
+
+        // Bắn gói tin chứa ảnh sang cho Extension để trung chuyển sang Zalo Web
+        window.postMessage({
+            type: "AUTO_BILL_TRIGGER_BULK",
+            danh_sach_bill: [{
+                ten_app: kh.hoi_vien,
+                ten_zalo: tenZaloSach,
+                base64: base64Img,
+                la_nguoi_cuoi: laNguoiCuoiCung
+            }]
+        }, "*");
+
+    } catch (err) {
+        console.error("Lỗi xử lý đồ họa:", err);
+        LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push({ ten_app: kh.hoi_vien, trang_thai: "❌ Lỗi đồ họa" });
+        LOGIC_CUON_CHIEU.chiSoHienTai++;
+        chupVaChuyenTienTrinhDonLe();
+    }
+}
+
+        // ĐĂNG KÝ BỘ NHẬN PHẢN HỒI TỪ ZALO
         window.addEventListener("message", function(event) {
             if (event.data && event.data.type === "NEXT_BILL_KICKSTART") {
-                console.log("♻️ Nhận phản hồi chuyển tiếp đơn lẻ tự động...");
+                console.log("♻️ Nhận phản hồi từ Zalo, chuyển người!");
+                
                 LOGIC_CUON_CHIEU.mangBaoCaoTongHop.push(event.data.get_qua || event.data.ket_qua);
                 LOGIC_CUON_CHIEU.chiSoHienTai++;
+                
                 setTimeout(() => {
                     chupVaChuyenTienTrinhDonLe();
                 }, 400);
             }
         });
 
+        // Hàm kết xuất báo cáo thông minh dứt điểm, ẩn bill thành công
         function xuLyInBaoCaoKetThuc() {
             let soLuongThanhCong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => item.trang_thai.includes("✅")).length;
             let tongSoLuong = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.length;
 
-            let chuoiBaoCaoGọn = `🏁 ĐÃ HOÀN TẤT TIẾN TRÌNH GỬI TẤT CẢ BILL!\n📊 Tổng kết: Đã gửi thành công ${soLuongThanhCong}/${tongSoLuong} bill.\n`;
+            let chuoiBaoCaoGon = `🏁 ĐÃ HOÀN TẤT TIẾN TRÌNH GỬI TẤT CẢ BILL!\n📊 Tổng kết: Đã gửi thành công ${soLuongThanhCong}/${tongSoLuong} bill.\n`;
+            
             let danhSachLoi = LOGIC_CUON_CHIEU.mangBaoCaoTongHop.filter(item => !item.trang_thai.includes("✅"));
 
             if (danhSachLoi.length > 0) {
-                chuoiBaoCaoGọn += `\n⚠️ DANH SÁCH BILL CHƯA GỬI ĐƯỢC (CẦN KIỂM TRA):\n`;
+                chuoiBaoCaoGon += `\n⚠️ DANH SÁCH BILL CHƯA GỬI ĐƯỢC (CẦN KIỂM TRA):\n`;
                 danhSachLoi.forEach((item, index) => {
-                    chuoiBaoCaoGọn += `${index + 1}. ${item.ten_app}: ${item.trang_thai}\n`;
+                    chuoiBaoCaoGon += `${index + 1}. ${item.ten_app}: ${item.trang_thai}\n`;
                 });
             } else {
-                chuoiBaoCaoGọn += `\n🎉 Tuyệt vời! Tất cả hóa đơn hụi đã được gửi đi thành công mỹ mãn!`;
+                chuoiBaoCaoGon += `\n🎉 Tuyệt vời! Tất cả hóa đơn hụi đã được gửi đi thành công mỹ mãn!`;
             }
 
             LOGIC_CUON_CHIEU.buttonElement.innerHTML = LOGIC_CUON_CHIEU.textGocCuaNut;
             LOGIC_CUON_CHIEU.buttonElement.disabled = false;
-            alert(chuoiBaoCaoGọn);
+
+            alert(chuoiBaoCaoGon);
         }
 
         // =====================================================================
@@ -585,8 +602,115 @@
         // =====================================================================
         function copyBillAsImage(element) { const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { canvas.toBlob(blob => { try { window.focus(); navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => alert('Đã copy ảnh bill vào bộ nhớ tạm!')).catch(err => { console.error(err); alert('Lỗi khi copy: ' + err); }); } catch (e) { alert("Trình duyệt không hỗ trợ"); } }); c.style.display = 'flex'; }).catch(err => { console.error('Lỗi html2canvas:', err); c.style.display = 'flex'; }); }
         function downloadBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien.replace(/\s+/g, '_')}`) + '.png'; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; html2canvas(element, { scale: 1.5, useCORS: true }).then(canvas => { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL("image/png"); link.click(); c.style.display = 'flex'; }).catch(err => { console.error(err); alert('Lỗi tạo ảnh.'); c.style.display = 'flex'; }); }
-        async function shareBillAsImage(element) { const sdt = element.dataset.sdt; const hoivien = element.dataset.hoivien; const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png'; const shareBtn = element.querySelector('.share-btn'); const originalText = shareBtn.textContent; shareBtn.textContent = "⏳ Đang xử lý..."; shareBtn.disabled = true; const c = element.querySelector('.bill-controls'); c.style.display = 'none'; try { const tryShare = async (scale) => { const canvas = await html2canvas(element, { scale: scale, useCORS: true, logging: false }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); const file = new File([blob], filename, { type: 'image/png' }); if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); } else { throw new Error('No Share API'); } }; try { await tryShare(1.5); } catch (e) { console.log("Thử lại chất lượng thấp"); await tryShare(1.0); } } catch (error) { if(!error.message.includes('No Share API')) alert('Lỗi gửi bill. Hãy thử Tải Bill.'); else alert('Trình duyệt này không hỗ trợ chia sẻ file.'); } finally { c.style.display = 'flex'; shareBtn.textContent = originalText; shareBtn.disabled = false; } }
-        async function downloadAllAsZip() { const bills = document.querySelectorAll('.bill-page'); const total = bills.length; if (total === 0) { alert('Không có bill nào để tải.'); return; } const button = document.getElementById('download-zip-btn'); const originalText = button.innerHTML; button.disabled = true; const zip = new JSZip(); let successCount = 0; let failList = []; for (let i = 0; i < total; i++) { const bill = bills[i]; const sdt = bill.dataset.sdt; const hoivien = bill.dataset.hoivien || "Khach_Hang"; const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png'; button.innerHTML = `⏳ Đang chụp ${i + 1}/${total}...`; const controls = bill.querySelector('.bill-controls'); if (controls) controls.style.display = 'none'; let success = false; let attempts = 0; const maxAttempts = 3; while (!success && attempts < maxAttempts) { attempts++; try { await new Promise(r => setTimeout(r, 500)); const capturePromise = html2canvas(bill, { scale: 1.5, useCORS: true, logging: false }); const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 15000)); const canvas = await Promise.race([capturePromise, timeoutPromise]); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); if (blob) { zip.file(fileName, blob); successCount++; success = true; } else { throw new Error("Không tạo được ảnh"); } } catch (error) { console.warn(`Lần thử ${attempts} thất bại cho bill ${fileName}:`, error); if (attempts >= maxAttempts) { console.error(`Đã bỏ qua bill ${fileName} sau ${maxAttempts} lần thử.`); failList.push(hoivien); } await new Promise(r => setTimeout(r, 1000)); } } if (controls) controls.style.display = 'flex'; } if (successCount > 0) { button.innerHTML = '📦 Đang nén ZIP (Đợi 1 chút)...'; await new Promise(r => setTimeout(r, 500)); try { const content = await zip.generateAsync({ type: "blob" }); const link = document.createElement('a'); link.href = URL.createObjectURL(content); const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-'); link.download = `Tat_ca_bill_${today}.zip`; document.body.appendChild(link); link.click(); document.body.removeChild(link); if (successCount < total) { alert(`⚠️ HOÀN TẤT NHƯNG CÓ LỖI:\nChỉ tải được ${successCount}/${total} bill.\n\n❌ Các bill bị thiếu:\n${failList.join(', ')}\n\n👉 Giải pháp: RAM máy tính đang bị đầy. Hãy F5 tải lại trang, tắt bớt tab khác hoặc bấm "Tải Bill" lẻ cho những người bị thiếu.`); } else { button.innerHTML = '✅ Đã tải xong!'; await new Promise(r => setTimeout(r, 2000)); } } catch (zipError) { alert("Lỗi khi nén file Zip: Trình duyệt bị hết RAM. Hãy chia nhỏ số lượng người trước khi tải."); } } else { alert('Lỗi: Không thể tải được bill nào. Vui lòng kiểm tra lại!'); } button.innerHTML = originalText; button.disabled = false; }    
+        
+        async function shareBillAsImage(element) { 
+            const sdt = element.dataset.sdt; 
+            const hoivien = element.dataset.hoivien; 
+            const filename = (sdt ? sdt : `Bill_${hoivien}`) + '.png'; 
+            const shareBtn = element.querySelector('.share-btn'); 
+            const originalText = shareBtn.textContent; 
+            shareBtn.textContent = "⏳ Đang xử lý..."; 
+            shareBtn.disabled = true; 
+            const c = element.querySelector('.bill-controls'); 
+            c.style.display = 'none'; 
+            try { 
+                const canvas = await html2canvas(element, { scale: 1.5, useCORS: true, logging: false }); 
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
+                const file = new File([blob], filename, { type: 'image/png' }); 
+                if (navigator.canShare && navigator.canShare({ files: [file] })) { 
+                    await navigator.share({ files: [file] }); 
+                } else { 
+                    alert('Điện thoại này chặn gửi ảnh trực tiếp. Hệ thống sẽ tự động TẢI BILL về máy, bạn mở thư viện ảnh để gửi nhé!');
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                } 
+            } catch (error) { 
+                if(!error.message.includes('No Share API') && error.name !== 'AbortError') {
+                    alert("Điện thoại xử lý quá lâu. Bạn vui lòng dùng nút TẢI BILL nhé.");
+                }
+            } finally { 
+                c.style.display = 'flex'; 
+                shareBtn.textContent = originalText; 
+                shareBtn.disabled = false; 
+            } 
+        }
+        
+        async function downloadAllAsZip() { 
+            const bills = document.querySelectorAll('.bill-page'); 
+            const total = bills.length; 
+            if (total === 0) { alert('Không có bill nào để tải.'); return; } 
+            const button = document.getElementById('download-zip-btn'); 
+            const originalText = button.innerHTML; 
+            button.disabled = true; 
+            const zip = new JSZip(); 
+            let successCount = 0; 
+            let failList = []; 
+            for (let i = 0; i < total; i++) { 
+                const bill = bills[i]; 
+                const sdt = bill.dataset.sdt; 
+                const hoivien = bill.dataset.hoivien || "Khach_Hang"; 
+                const fileName = (sdt ? sdt : `${hoivien.replace(/\s+/g, '_')}`) + '.png'; 
+                button.innerHTML = `⏳ Đang chụp ${i + 1}/${total}...`; 
+                const controls = bill.querySelector('.bill-controls'); 
+                if (controls) controls.style.display = 'none'; 
+                let success = false;
+                let attempts = 0;
+                const maxAttempts = 3; 
+                while (!success && attempts < maxAttempts) {
+                    attempts++;
+                    try { 
+                        await new Promise(r => setTimeout(r, 500));
+                        const capturePromise = html2canvas(bill, { scale: 1.5, useCORS: true, logging: false }); 
+                        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 15000)); 
+                        const canvas = await Promise.race([capturePromise, timeoutPromise]); 
+                        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
+                        if (blob) {
+                            zip.file(fileName, blob); 
+                            successCount++; 
+                            success = true; 
+                        } else {
+                            throw new Error("Không tạo được ảnh");
+                        }
+                    } catch (error) { 
+                        console.warn(`Lần thử ${attempts} thất bại cho bill ${fileName}:`, error); 
+                        if (attempts >= maxAttempts) {
+                            console.error(`Đã bỏ qua bill ${fileName} sau ${maxAttempts} lần thử.`);
+                            failList.push(hoivien); 
+                        }
+                        await new Promise(r => setTimeout(r, 1000));
+                    } 
+                } 
+                if (controls) controls.style.display = 'flex'; 
+            } 
+            if (successCount > 0) { 
+                button.innerHTML = '📦 Đang nén ZIP (Đợi 1 chút)...'; 
+                await new Promise(r => setTimeout(r, 500));
+                try {
+                    const content = await zip.generateAsync({ type: "blob" }); 
+                    const link = document.createElement('a'); 
+                    link.href = URL.createObjectURL(content); 
+                    const today = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-'); 
+                    link.download = `Tat_ca_bill_${today}.zip`; 
+                    document.body.appendChild(link); 
+                    link.click(); 
+                    document.body.removeChild(link); 
+                    if (successCount < total) {
+                        alert(`⚠️ HOÀN TẤT NHƯNG CÓ LỖI:\nChỉ tải được ${successCount}/${total} bill.\n\n❌ Các bill bị thiếu:\n${failList.join(', ')}\n\n👉 Giải pháp: RAM máy tính đang bị đầy. Hãy F5 tải lại trang, tắt bớt tab khác hoặc bấm "Tải Bill" lẻ cho những người bị thiếu.`);
+                    } else {
+                        button.innerHTML = '✅ Đã tải xong!';
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                } catch (zipError) {
+                    alert("Lỗi khi nén file Zip: Trình duyệt bị hết RAM. Hãy chia nhỏ số lượng người trước khi tải.");
+                }
+            } else {
+                alert('Lỗi: Không thể tải được bill nào. Vui lòng kiểm tra lại!');
+            }
+            button.innerHTML = originalText; 
+            button.disabled = false; 
+        }    
     </script>
 </body>
 </html>
