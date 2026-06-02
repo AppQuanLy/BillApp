@@ -458,7 +458,7 @@
         }
 
         // =====================================================================
-        // 2. KHỐI LOGIC CHUẨN: TỰ ĐỘNG CHỤP VÀ TRUYỀN CUỐN CHIẾU ĐƠN LẺ AN TOÀN RAM
+        // 2. KHỐI LOGIC CHUẨN: TỰ ĐỘNG CHỤP VÀ TRUYỀN CUỐN CHIẾU CÓ BỘ ĐẾM BILL
         // =====================================================================
         let LOGIC_CUON_CHIEU = {
             dataArrayGoc: [],
@@ -504,6 +504,11 @@
                 return;
             }
 
+            // ĐÃ KHÔI PHỤC: Cập nhật trạng thái đếm số Bill nhảy tanh tách trên nút bấm VIP
+            if (LOGIC_CUON_CHIEU.buttonElement) {
+                LOGIC_CUON_CHIEU.buttonElement.innerHTML = `⏳ Đang gửi Bill ${i + 1}/${total}...`;
+            }
+
             const bill = LOGIC_CUON_CHIEU.domBills[i];
             const kh = LOGIC_CUON_CHIEU.dataArrayGoc[i];
             let tenZaloRaw = kh.sdt_kh || kh.hoi_vien || "";
@@ -528,7 +533,7 @@
             }
 
             try {
-                // ĐÃ ĐỒNG BỘ: Chờ 800ms để kết xuất các layer đồ họa Theme/Summer nặng
+                // CHỐNG LỖI ĐỒ HỌA: Nghỉ 800ms để kết xuất các layer ảnh nền / watermark mượt mà
                 await delay(800); 
 
                 const canvas = await html2canvas(bill, { 
@@ -559,7 +564,7 @@
             }
         }
 
-        // ĐĂNG KÝ BỘ NHẬN PHẢN HỒI (ĐÃ ĐỒNG BỘ CHỮ KET_QUA)
+        // ĐĂNG KÝ BỘ NHẬN PHẢN HỒI (Đã sửa lỗi chính tả đồng bộ key ket_qua)
         window.addEventListener("message", function(event) {
             if (event.data && event.data.type === "NEXT_BILL_KICKSTART") {
                 console.log("♻️ Nhận phản hồi từ Zalo, chuyển người!");
