@@ -33,10 +33,7 @@
         .customer-name { font-size: 15pt; font-weight: bold; margin-bottom: 15px; }
         table { width: 100%; border-collapse: collapse; font-size: 13pt;FONT-WEIGHT: bold; }
         th, td { border: 1px solid #888; padding: 5px; text-align: center; vertical-align: middle; }
-        
-        /* Đặt ID cho th để lát nữa ép màu bằng JavaScript dễ dàng */
         th { background-color: #d9e2f3; font-weight: bold; color: #000; } 
-        
         td { background-color: #f2f2f2; }
         tr.total-row { font-weight: bold; font-size: 16pt; background-color: #fce4d6; }
         .text-red { color: #ff0000; }
@@ -128,7 +125,7 @@
                 billData = JSON.parse(jsonData); 
                 generateBill(billData);
                 
-                // 🔥 KÍCH HOẠT HÀM THAY ĐỔI MÀU ĐỘNG TỪ APPSHEET TRUYỀN SANG
+                // Áp dụng màu sắc động từ AppSheet truyền sang
                 apDungMauSacDong(billData);
 
             } catch (error) {
@@ -137,14 +134,11 @@
             }
         };
 
-        // Hàm kiểm tra định dạng mã màu HEX hợp lệ nhằm chống lỗi code khi Appsheet truyền sai dạng màu
         function kiemTraMaMauHopLe(colorStr) {
             return /^#[0-9A-F]{6}$/i.test(colorStr);
         }
 
-        // Hàm bóc tách JSON màu để ép đè lên giao diện đồ họa
         function apDungMauSacDong(data) {
-            // 1. Áp dụng màu cho chữ của Header (Mặc định nếu lỗi/không có là màu đen #000000)
             if (data.mau_header && kiemTraMaMauHopLe(data.mau_header.trim())) {
                 const headerSection = document.getElementById('bill-header-section');
                 if (headerSection) {
@@ -152,11 +146,20 @@
                 }
             }
 
-            // 2. Áp dụng màu nền cho các thẻ <th> (Mặc định nếu lỗi/không có là màu xanh nhạt #d9e2f3)
+            // Lấy danh sách tất cả các ô tiêu đề <th>
+            const tatCaTheTH = document.querySelectorAll('#table-header-row th');
+
+            // 1. Áp dụng màu nền cho <th>
             if (data.mau_th_bg && kiemTraMaMauHopLe(data.mau_th_bg.trim())) {
-                const tatCaTheTH = document.querySelectorAll('#table-header-row th');
                 tatCaTheTH.forEach(th => {
                     th.style.backgroundColor = data.mau_th_bg.trim();
+                });
+            }
+
+            // 2. 🔥 ÁP DỤNG THÊM MÀU CHỮ CHO <th> (Mới bổ sung theo yêu cầu)
+            if (data.mau_th_chu && kiemTraMaMauHopLe(data.mau_th_chu.trim())) {
+                tatCaTheTH.forEach(th => {
+                    th.style.color = data.mau_th_chu.trim();
                 });
             }
         }
