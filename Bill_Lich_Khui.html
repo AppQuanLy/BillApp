@@ -74,7 +74,7 @@
             text-align: left;
         }
         .col-day-hui {
-            width: 35%;
+            width: 30%;
         }
         .bill-controls {
             position: absolute;
@@ -129,6 +129,7 @@
                     <th>KỲ HẠN</th>
                     <th>KỲ</th>
                     <th class="text-right">TIỀN HỤI</th>
+                    <th>TRẠNG THÁI</th>
                 </tr>
             </thead>
             <tbody id="details-tbody">
@@ -156,9 +157,6 @@
         return new Date(parts[2], parts[1] - 1, parts[0]);
     }
 
-    /**
-     * HÀM ADDPERIOD ĐÃ ĐƯỢC SỬA LỖI ĐỂ TÍNH THÁNG CHÍNH XÁC
-     */
     function addPeriod(startDate, value, unit) {
         const date = new Date(startDate.getTime()); // Tạo bản sao để không thay đổi ngày gốc
         const numericValue = parseInt(value) || 0;
@@ -166,15 +164,11 @@
 
         if ((unit || '').toLowerCase().includes('tháng')) {
             const originalDay = date.getDate();
-            // Đặt ngày về mùng 1 để tránh lỗi tràn ngày khi cộng tháng
             date.setDate(1);
             date.setMonth(date.getMonth() + numericValue);
-            // Lấy ngày cuối cùng của tháng mới
             const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-            // Đặt lại ngày, chọn ngày nhỏ hơn giữa ngày gốc và ngày cuối tháng mới
             date.setDate(Math.min(originalDay, lastDayOfNewMonth));
         } else {
-            // Giữ nguyên cách tính cho Ngày và Tuần
             date.setDate(date.getDate() + numericValue);
         }
         return date;
@@ -221,7 +215,8 @@
                             gio_dau: hui.gio_dau,
                             ky_han_text: hui.ky_han_text,
                             ky: `${ky}/${maxKy}`,
-                            tien_hui: hui.tien_hui
+                            tien_hui: hui.tien_hui,
+                            trang_thai: hui.trang_thai // Nhận biến trạng thái truyền vào từ JSON mới
                         });
                         break;
                     }
@@ -232,7 +227,7 @@
         todaysHuis.sort((a, b) => (a.gio_dau || '').localeCompare(b.gio_dau || ''));
 
         if(todaysHuis.length === 0){
-             tbody.innerHTML = `<tr><td colspan="7">Không có lịch khui hụi trong ngày.</td></tr>`;
+             tbody.innerHTML = `<tr><td colspan="8">Không có lịch khui hụi trong ngày.</td></tr>`;
         } else {
             todaysHuis.forEach((item, index) => {
                 const row = document.createElement('tr');
@@ -244,7 +239,9 @@
                     <td>${item.ky_han_text}</td>
                     <td>${item.ky}</td>
                     <td class="text-right">${formatCurrency(item.tien_hui)}</td>
+                    <td>${item.trang_thai || ""}</td>
                 `;
+                // Toán tử `item.trang_thai || ""` đảm bảo nếu ứng dụng phiên bản cũ không gửi trường này sang, ô vẫn hiển thị trống rỗng sạch sẽ, không bị lỗi undefined.
                 tbody.appendChild(row);
             });
         }
@@ -260,7 +257,7 @@
         try {
             const encodedData = window.location.hash.substring(1);
             if (!encodedData) {
-                const sampleData = { "chu_hui_ten": "Lê Minh", "chu_hui_sdt": "0938338272", "ngay_in_bill": "22/09/2025", "danh_sach_day_hui": [ { "ten_hui": "HH36", "ngay_khui": "22/08/2025", "gio_dau": "15:00", "ky_han_text": "Tháng", "ky_han_value": 1, "so_ky_toi_da": 12, "tien_hui": 5000000 } ] };
+                const sampleData = { "chu_hui_ten": "Lê Minh", "chu_hui_sdt": "0938338272", "ngay_in_bill": "22/09/2025", "danh_sach_day_hui": [ { "ten_hui": "HH36", "ngay_khui": "22/08/2025", "gio_dau": "15:00", "ky_han_text": "Tháng", "ky_han_value": 1, "so_ky_toi_da": 12, "tien_hui": 5000000, "trang_thai": "Đã Khui" } ] };
                 generateBill(sampleData);
                 return;
             }
@@ -273,55 +270,55 @@
         }
     };
 
-        async function captureBill(element, callback) {
-            const controls = element.querySelector('.bill-controls');
-            if (controls) controls.style.display = 'none';
+    async function captureBill(element, callback) {
+        const controls = element.querySelector('.bill-controls');
+        if (controls) controls.style.display = 'none';
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+            await callback(canvas);
+        } catch (error) {
+            console.error('Lỗi khi tạo ảnh:', error);
+            alert('Đã có lỗi xảy ra khi tạo ảnh.');
+        } finally {
+            if (controls) controls.style.display = 'flex';
+        }
+    }
+
+    function downloadBillAsImage(element) {
+        const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+        captureBill(element, canvas => {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+
+    function copyBillAsImage(element) {
+        captureBill(element, canvas => {
+            canvas.toBlob(blob => {
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                .catch(err => alert('Lỗi khi copy.'));
+            });
+        });
+    }
+
+    async function shareBillAsImage(element) {
+        const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+        const textshare = `Lịch khui hụi ngày ${billData.ngay_in_bill}.`;
+        if (!navigator.share) {
+            alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
+            return;
+        }
+        captureBill(element, async canvas => {
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            const file = new File([blob], filename, { type: 'image/png' });
             try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-                await callback(canvas);
-            } catch (error) {
-                console.error('Lỗi khi tạo ảnh:', error);
-                alert('Đã có lỗi xảy ra khi tạo ảnh.');
-            } finally {
-                if (controls) controls.style.display = 'flex';
-            }
-        }
-
-        function downloadBillAsImage(element) {
-            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
-            captureBill(element, canvas => {
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            });
-        }
-
-        function copyBillAsImage(element) {
-            captureBill(element, canvas => {
-                canvas.toBlob(blob => {
-                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
-                    .catch(err => alert('Lỗi khi copy.'));
-                });
-            });
-        }
-
-        async function shareBillAsImage(element) {
-            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
-            const textshare = `Lịch khui hụi ngày ${billData.ngay_in_bill}.`;
-            if (!navigator.share) {
-                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
-                return;
-            }
-            captureBill(element, async canvas => {
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                const file = new File([blob], filename, { type: 'image/png' });
-                try {
-                    await navigator.share({ title: `Lịch Khui Hụi`, text: textshare, files: [file] });
-                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
-            });
-        }
-    </script>
+                await navigator.share({ title: `Lịch Khui Hụi`, text: textshare, files: [file] });
+            } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
+        });
+    }
+</script>
 </body>
 </html>
