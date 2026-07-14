@@ -228,7 +228,6 @@
     }
 
     function generateBill(data) {
-        // Đổ dữ liệu cơ bản từ data-field nguyên bản
         for (const key in data) {
             if (key !== 'danh_sach_chan' && key !== 'danh_sach_chan_1' && key !== 'danh_sach_chan_2' && key !== 'tham_san' && key !== 'tien_hui') {
                 const element = document.querySelector(`[data-field="${key}"]`);
@@ -236,7 +235,6 @@
             }
         }
         
-        // --- XỬ LÝ ẨN/HIỆN THĂM SÀN ---
         const rowThamSan = document.getElementById('row_tham_san');
         if (data.tham_san && data.tham_san.toString().trim() !== "") {
             const valThamSan = isNaN(data.tham_san) ? data.tham_san : formatCurrency(Number(data.tham_san));
@@ -244,7 +242,6 @@
             rowThamSan.style.display = 'block';
         }
 
-        // --- XỬ LÝ ẨN/HIỆN HỐT CHÓT ---
         const rowHotChot = document.getElementById('row_hot_chot');
         if (data.tien_hui && data.tien_hui.toString().trim() !== "") {
             let soKyNum = 0;
@@ -267,7 +264,6 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-            // Sắp xếp danh sách: Đã hốt (X, C) lên trước xếp theo Kỳ tăng dần, Chưa hốt (V) xuống dưới
             data.danh_sach_chan.sort((a, b) => {
                 const isUnallocatedA = (!a.ky || a.ky === "" || a.status === 'V');
                 const isUnallocatedB = (!b.ky || b.ky === "" || b.status === 'V');
@@ -283,7 +279,6 @@
             const ngayMo = data.ngay_mo;
             const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
 
-            // Thuật toán: Tìm kỳ lớn nhất đã khui thực tế để làm mốc tính
             let maxKyDaKhui = 0;
             data.danh_sach_chan.forEach(chan => {
                 if (chan.status !== 'V' && chan.ky) {
@@ -299,26 +294,35 @@
                 manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
             }
 
-            // Biến đếm tịnh tiến cho chân chưa hốt
             let indexChuaHot = 0; 
 
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
                 const statusText = chan.status; 
                 let statusClass = 'dead'; 
-                let kyHienThi = chan.ky || "";
+                let kyHienThi = chan.ky || ""; // Sử dụng chính dữ liệu kỳ từ AppSheet nếu có
                 let ngayHienThi = chan.ngay; 
 
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive'; 
-                    // Tính kỳ và ngày tịnh tiến dựa trên Kỳ lớn nhất đã khui + vị trí chân chưa hốt
-                    const kyGoiY = maxKyDaKhui + 1 + indexChuaHot;
-                    kyHienThi = kyGoiY.toString();
                     
-                    const periodsToAdd = (kyGoiY - 1) * kyHanValueFloat;
-                    ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                    // NÂNG CẤP: Chỉ tự động tính ngày gợi ý, còn KỲ nếu AppSheet không truyền (rỗng) -> giữ rỗng ""
+                    if (!chan.ky || chan.ky === "") {
+                        kyHienThi = ""; 
+                    }
                     
-                    indexChuaHot++;
+                    // Để hiển thị ngày gợi ý cho chuẩn chu kỳ của kỳ tiếp theo
+                    let kyGoiYDeTinhNgay = parseInt(chan.ky) || (maxKyDaKhui + 1 + indexChuaHot);
+                    const periodsToAdd = (kyGoiYDeTinhNgay - 1) * kyHanValueFloat;
+                    
+                    // Nếu AppSheet không truyền ngày sang mới dùng ngày gợi ý
+                    if (!ngayHienThi || ngayHienThi === "") {
+                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                    }
+                    
+                    if (!chan.ky || chan.ky === "") {
+                        indexChuaHot++;
+                    }
                 } else if (statusText === 'C') {
                     statusClass = 'c-status'; 
                 }
@@ -375,6 +379,7 @@
         }
     }
 
+    /* Các hàm xử lý ảnh giữ nguyên bản của bạn */
     function downloadBillAsImage(element) {
         const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
         captureBill(element, canvas => {
