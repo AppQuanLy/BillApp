@@ -27,27 +27,6 @@
             padding-bottom: 80px; 
         }
         
-        /* --- CSS WATERMARK LOGO CHÌM --- */
-        .watermark-logo {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 450px; 
-            height: auto;
-            opacity: 0.15; 
-            z-index: 1; 
-            pointer-events: none; 
-            display: none; 
-        }
-        
-        /* Đảm bảo nội dung nổi lên trên hình mờ */
-        .header, .title-section, .info-grid, table {
-            position: relative;
-            z-index: 2; 
-        }
-        /* ------------------------------- */
-
         .header {
             display: flex;
             justify-content: space-between;
@@ -143,9 +122,6 @@
 <body>
     <div class="container" id="bill-to-capture">
 
-        <!-- THÊM ẢNH WATERMARK VÀO ĐÂY -->
-        <img class="watermark-logo" id="watermark_img" src="ĐIỀN_MÃ_BASE64_VÀO_ĐÂY" alt="">
-
         <div class="header">
             <div class="left">
                 Chủ Hụi: <span data-field="chu_hui_ten" class="font-bold"></span><br>
@@ -170,7 +146,6 @@
                 <span data-field="tham_san" class="value text-red"></span>
             </div>
             
-            <!-- THÊM DÒNG HỐT CHÓT (Mặc định ẩn) -->
             <div class="info-item" id="row_hot_chot" style="display: none;">
                 <span class="label">Hốt Cuối:</span>
                 <span data-field="hot_chot" class="value text-green"></span>
@@ -253,18 +228,6 @@
     }
 
     function generateBill(data) {
-        // --- XỬ LÝ HIỂN THỊ LOGO MỜ (WATERMARK) ---
-        const watermarkEl = document.getElementById('watermark_img');
-        if (data.logo_watermark && data.logo_watermark.trim() !== '') {
-            watermarkEl.src = data.logo_watermark; 
-            watermarkEl.style.display = 'block'; 
-        } else if (watermarkEl.src && !watermarkEl.src.includes('ĐIỀN_MÃ') && watermarkEl.getAttribute('src') !== '') {
-            watermarkEl.style.display = 'block';
-        } else {
-            watermarkEl.style.display = 'none';
-        }
-
-        // Đổ dữ liệu cơ bản
         for (const key in data) {
             if (key !== 'danh_sach_chan' && key !== 'danh_sach_chan_1' && key !== 'danh_sach_chan_2' && key !== 'tham_san' && key !== 'tien_hui') {
                 const element = document.querySelector(`[data-field="${key}"]`);
@@ -272,7 +235,6 @@
             }
         }
         
-        // --- XỬ LÝ ẨN/HIỆN THĂM SÀN ---
         const rowThamSan = document.getElementById('row_tham_san');
         if (data.tham_san && data.tham_san.toString().trim() !== "") {
             const valThamSan = isNaN(data.tham_san) ? data.tham_san : formatCurrency(Number(data.tham_san));
@@ -280,18 +242,16 @@
             rowThamSan.style.display = 'block';
         }
 
-        // --- XỬ LÝ ẨN/HIỆN HỐT CHÓT (Chống lỗi phiên bản cũ) ---
         const rowHotChot = document.getElementById('row_hot_chot');
         if (data.tien_hui && data.tien_hui.toString().trim() !== "") {
-            // Lấy riêng phần số từ chữ "12 Kỳ"
             let soKyNum = 0;
             if (data.so_ky) {
-                const match = data.so_ky.toString().match(/\d+/); // Bóc tách số bằng Regex
+                const match = data.so_ky.toString().match(/\d+/);
                 if (match) soKyNum = parseInt(match[0]);
             }
             
             if (soKyNum > 0) {
-                const tienHuiNumber = Number(data.tien_hui.toString().replace(/\D/g, '')); // Lọc bỏ ký tự thừa nếu có
+                const tienHuiNumber = Number(data.tien_hui.toString().replace(/\D/g, ''));
                 const giaTriHotChot = tienHuiNumber * (soKyNum - 1);
                 
                 document.querySelector('[data-field="hot_chot"]').textContent = formatCurrency(giaTriHotChot);
@@ -305,13 +265,27 @@
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
             data.danh_sach_chan.sort((a, b) => {
-                const kyA = parseInt(a.ky) || Infinity;
-                const kyB = parseInt(b.ky) || Infinity;
-                return kyA - kyB;
+                const isUnallocatedA = (!a.ky || a.ky === "" || a.status === 'V');
+                const isUnallocatedB = (!b.ky || b.ky === "" || b.status === 'V');
+                
+                if (isUnallocatedA && !isUnallocatedB) return 1;
+                if (!isUnallocatedA && isUnallocatedB) return -1;
+                if (!isUnallocatedA && !isUnallocatedB) {
+                    return (parseInt(a.ky) || 0) - (parseInt(b.ky) || 0);
+                }
+                return 0;
             });
 
             const ngayMo = data.ngay_mo;
             const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
+
+            let maxKyDaKhui = 0;
+            data.danh_sach_chan.forEach(chan => {
+                if (chan.status !== 'V' && chan.ky) {
+                    const k = parseInt(chan.ky) || 0;
+                    if (k > maxKyDaKhui) maxKyDaKhui = k;
+                }
+            });
 
             const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
             if (manKyDuKienEl) {
@@ -320,24 +294,42 @@
                 manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
             }
 
+            let indexChuaHot = 0; 
+
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
-                const kyHienThi = chan.ky || ""; 
-                const row = document.createElement('tr');
-                let ngayHienThi = chan.ngay; 
                 const statusText = chan.status; 
                 let statusClass = 'dead'; 
+                let kyHienThi = chan.ky || ""; // Sử dụng chính dữ liệu kỳ từ AppSheet nếu có
+                let ngayHienThi = chan.ngay; 
 
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive'; 
-                    const periodsToAdd = (stt - 1) * kyHanValueFloat;
-                    ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                    
+                    // NÂNG CẤP: Chỉ tự động tính ngày gợi ý, còn KỲ nếu AppSheet không truyền (rỗng) -> giữ rỗng ""
+                    if (!chan.ky || chan.ky === "") {
+                        kyHienThi = ""; 
+                    }
+                    
+                    // Để hiển thị ngày gợi ý cho chuẩn chu kỳ của kỳ tiếp theo
+                    let kyGoiYDeTinhNgay = parseInt(chan.ky) || (maxKyDaKhui + 1 + indexChuaHot);
+                    const periodsToAdd = (kyGoiYDeTinhNgay - 1) * kyHanValueFloat;
+                    
+                    // Nếu AppSheet không truyền ngày sang mới dùng ngày gợi ý
+                    if (!ngayHienThi || ngayHienThi === "") {
+                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                    }
+                    
+                    if (!chan.ky || chan.ky === "") {
+                        indexChuaHot++;
+                    }
                 } else if (statusText === 'C') {
                     statusClass = 'c-status'; 
                 }
                 
-                const ngayClass = (statusText !== 'V' && statusText !== 'S') ? 'text-red' : '';
+                const ngayClass = (statusText === 'V' || statusText === 'S') ? '' : 'text-red';
                 
+                const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${stt}</td>
                     <td style="text-align: left;">${chan.ten_hui_vien}</td>
@@ -387,6 +379,7 @@
         }
     }
 
+    /* Các hàm xử lý ảnh giữ nguyên bản của bạn */
     function downloadBillAsImage(element) {
         const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
         captureBill(element, canvas => {
