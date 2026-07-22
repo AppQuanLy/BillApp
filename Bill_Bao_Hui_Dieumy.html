@@ -87,7 +87,10 @@
         /* KHỐI CHỨA BẢNG DỮ LIỆU Ở GIỮA */
         .bill-body-content {
             padding: 0 20px; 
-            min-height: 180px;
+            height: auto; 
+            min-height: unset; 
+            display: flex;
+            flex-direction: column;
         }
         
         table { width: 100%; border-collapse: collapse; margin-bottom: 10px; color: #111; }
