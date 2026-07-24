@@ -140,7 +140,6 @@
         .totals-table td { padding: 5px 7px; font-size: 16pt; }
         .footer-notes { font-size: 14pt; font-weight: bold; text-align: center; margin-top: 10px; color: red; }
 
-      
         .warning-box {
             background-color: rgba(255, 255, 255, 0.95);
             border: 2px solid #d90000;
@@ -176,8 +175,8 @@
         }
         .warning-col { flex: 1; text-align: center; }
         .warning-divider { width: 2px; height: 50px; background-color: #eee; margin: 0 10px; }
-        .warning-label { font-size: 12pt; color: #555; font-weight: bold; margin-bottom: 5px;}
-        .warning-value { font-size: 20pt; color: #d90000; font-weight: bold; }
+        .warning-label { font-size: 11pt; color: #555; font-weight: bold; margin-bottom: 5px;}
+        .warning-value { font-size: 18pt; color: #d90000; font-weight: bold; }
         
         .warning-alert {
             background-image: linear-gradient(to right, #b82220, #e53935);
@@ -306,9 +305,16 @@
                         <div class="warning-label">ÂM HIỆN TẠI</div>
                         <div class="warning-value" data-field="am_hien_tai_text">0</div>
                     </div>
+                    <div class="warning-divider"></div>
+                    <div class="warning-col">
+                        <div class="warning-label">MỨC ÂM VƯỢT</div>
+                        <div class="warning-value" data-field="muc_am_vuot_text">0</div>
+                    </div>
                 </div>
                 <div class="warning-alert">ĐÃ VƯỢT QUÁ MỨC ÂM CHO PHÉP</div>
-                <div class="warning-footer">Vui lòng tất toán sớm để cân bằng Âm - Dương !</div>
+                <div class="warning-footer">
+                    Vui lòng tất toán ít nhất <span data-field="muc_am_vuot_text_footer" style="color: #d90000; font-weight: 900; font-size: 15pt;"></span> sớm để cân bằng Âm - Dương !
+                </div>
             </div>
         </div>
     </template>
@@ -449,15 +455,22 @@
                 if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } 
                               
             const warningBox = q('.warning-box');
-            const mucAmChoPhep = Number(kh.muc_am_cho_phep) || 0; 
+            const mucAmChoPhep = Math.abs(Number(kh.muc_am_cho_phep)) || 0; 
             
             if (amDuongValue < 0) {
-                const soTienNoHienTai = Math.abs(amDuongValue); // Đổi số âm thành số dương để dễ so sánh độ lớn
+                const soTienNoHienTai = Math.abs(amDuongValue); // Đổi số âm thành số dương để dễ tính toán
                 
                 if (soTienNoHienTai > mucAmChoPhep && mucAmChoPhep > 0) {
                     warningBox.style.display = 'block';
+                    
+                    const mucAmVuot = soTienNoHienTai - mucAmChoPhep;
+                    const formattedMucAmVuot = formatCurrency(mucAmVuot);
+                    
                     q('[data-field="muc_am_cho_phep_text"]').textContent = formatCurrency(mucAmChoPhep);
                     q('[data-field="am_hien_tai_text"]').textContent = formatCurrency(soTienNoHienTai);
+                    q('[data-field="muc_am_vuot_text"]').textContent = formattedMucAmVuot;
+                    q('[data-field="muc_am_vuot_text_footer"]').textContent = formattedMucAmVuot;
+                    
                 } else {
                     warningBox.style.display = 'none';
                 }
