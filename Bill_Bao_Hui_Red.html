@@ -70,16 +70,18 @@
         .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
         .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
         
-        /* --- CSS KHỐI CẢNH BÁO ÂM HỤI VỪA THÊM --- */
         .warning-box {
-            background-color: #fdf5f5; 
+            background-color: rgba(255, 255, 255, 0.95);
             border: 2px solid #d90000;
             border-radius: 12px;
             padding: 15px;
-            margin-bottom: 20px;
+            margin-top: 15px;
+            margin-bottom: 25px;
             text-align: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             color: #111;
+            margin-left: 20px;
+            margin-right: 20px;
         }
         .warning-header {
             color: #d90000;
@@ -99,12 +101,12 @@
             border-radius: 8px;
             padding: 10px;
             margin-bottom: 12px;
-            border: 1px solid #fbd0d0;
+            border: 1px solid #ffcdd2;
         }
-        .warning-col { flex: 1; }
+        .warning-col { flex: 1; text-align: center; }
         .warning-divider { width: 2px; height: 50px; background-color: #eee; margin: 0 10px; }
-        .warning-label { font-size: 12pt; color: #555; font-weight: bold; margin-bottom: 5px;}
-        .warning-value { font-size: 20pt; color: #d90000; font-weight: bold; }
+        .warning-label { font-size: 11pt; color: #555; font-weight: bold; margin-bottom: 5px;}
+        .warning-value { font-size: 18pt; color: #d90000; font-weight: bold; }
         
         .warning-alert {
             background-image: linear-gradient(to right, #b82220, #e53935);
@@ -246,9 +248,16 @@
                         <div class="warning-label">ÂM HIỆN TẠI</div>
                         <div class="warning-value" data-field="am_hien_tai_text">0</div>
                     </div>
+                    <div class="warning-divider"></div>
+                    <div class="warning-col">
+                        <div class="warning-label">MỨC ÂM VƯỢT</div>
+                        <div class="warning-value" data-field="muc_am_vuot_text">0</div>
+                    </div>
                 </div>
                 <div class="warning-alert">ĐÃ VƯỢT QUÁ MỨC ÂM CHO PHÉP</div>
-                <div class="warning-footer">Vui lòng tất toán sớm để cân bằng Âm - Dương !</div>
+                <div class="warning-footer">
+                    Vui lòng tất toán ít nhất <span data-field="muc_am_vuot_text_footer" style="color: #d90000; font-weight: 900; font-size: 15pt;"></span> sớm để cân bằng Âm - Dương !
+                </div>
             </div>
         </div>
      </div>
@@ -372,26 +381,30 @@
                 amDuongCell.textContent = formatCurrency(amDuongValue); 
                 if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } 
                 
-                const warningBox = q('.warning-box');
-                const mucAmChoPhep = Number(kh.muc_am_cho_phep) || 0; // AppSheet truyền số dương hạn mức (ví dụ: 20000000)
-
-                // BƯỚC 1: Chỉ kiểm tra khi am_duong là số âm (khách đang nợ tiền)
-                if (amDuongValue < 0) {
-                    const soTienNoHienTai = Math.abs(amDuongValue); // Chuyển số âm thành số dương để so sánh độ lớn nợ
+            const warningBox = q('.warning-box');
+            const mucAmChoPhep = Math.abs(Number(kh.muc_am_cho_phep)) || 0; 
+            
+            if (amDuongValue < 0) {
+                const soTienNoHienTai = Math.abs(amDuongValue); 
+                
+                if (soTienNoHienTai > mucAmChoPhep && mucAmChoPhep > 0) {
+                    warningBox.style.display = 'block';
                     
-                    // BƯỚC 2: So sánh xem số tiền nợ thực tế có lớn hơn hạn mức nợ tối đa hay không
-                    if (soTienNoHienTai > mucAmChoPhep && mucAmChoPhep > 0) {
-                        warningBox.style.display = 'block';
-                        q('[data-field="muc_am_cho_phep_text"]').textContent = formatCurrency(mucAmChoPhep);
-                        q('[data-field="am_hien_tai_text"]').textContent = formatCurrency(soTienNoHienTai);
-                    } else {
-                        warningBox.style.display = 'none';
-                    }
+                    const mucAmVuot = soTienNoHienTai - mucAmChoPhep;
+                    const formattedMucAmVuot = formatCurrency(mucAmVuot);
+                    
+                    q('[data-field="muc_am_cho_phep_text"]').textContent = formatCurrency(mucAmChoPhep);
+                    q('[data-field="am_hien_tai_text"]').textContent = formatCurrency(soTienNoHienTai);
+                    q('[data-field="muc_am_vuot_text"]').textContent = formattedMucAmVuot;
+                    q('[data-field="muc_am_vuot_text_footer"]').textContent = formattedMucAmVuot;
+                    
                 } else {
-                    // Nếu khách dư tiền hoặc bằng 0 (am_duong >= 0), ẩn cảnh báo ngay lập tức
                     warningBox.style.display = 'none';
                 }
-                // --------------------------------------------------------
+            } else {
+                warningBox.style.display = 'none';
+            }
+            // --------------------------------------------------------
 
                 const loiNhuanCell = q('[data-field="loi_nhuan"]'); 
                 const loiNhuanValue = Number(kh.loi_nhuan) || 0; 
