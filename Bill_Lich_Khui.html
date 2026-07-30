@@ -144,29 +144,50 @@
     </div>
 
 <script>
-    let billData = {}; // Biến toàn cục để lưu dữ liệu
+    let billData = {}; // Biến toàn cục lưu dữ liệu
 
     // --- CÁC HÀM TIỆN ÍCH ---
+    
+    // HÀM PARSE DATE THÔNG MINH (XỬ LÝ CẢ DD/MM/YYYY VÀ MM/DD/YYYY)
     function parseDate(dateString) {
         if (!dateString) return null;
         if (typeof dateString !== 'string') return null;
         
-        // Làm sạch khoảng trắng thừa
-        const cleanStr = dateString.trim();
+        // Dọn sạch khoảng trắng thừa
+        const cleanStr = dateString.trim().replace(/\s+/g, '');
         
+        // Trọng trường hợp dạng ISO YYYY-MM-DD
         if (cleanStr.includes('-')) {
             const parts = cleanStr.split('-');
-            return new Date(parts[0], parts[1] - 1, parts[2]);
+            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
         }
+        
+        // Trường hợp dạng có dấu gạch chéo A/B/C
         if (cleanStr.includes('/')) {
             const parts = cleanStr.split('/');
-            return new Date(parts[2], parts[1] - 1, parts[0]);
+            if (parts.length < 3) return null;
+            
+            const v1 = parseInt(parts[0]);
+            const v2 = parseInt(parts[1]);
+            const v3 = parseInt(parts[2]);
+            
+            // Nếu phần đầu tiên > 12 -> Chuẩn dạng DD/MM/YYYY (Ví dụ 30/07/2026)
+            if (v1 > 12) {
+                return new Date(v3, v2 - 1, v1);
+            }
+            // Nếu phần thứ hai > 12 -> Chuẩn dạng MM/DD/YYYY (Ví dụ 07/30/2026 từ AppSheet gửi qua)
+            if (v2 > 12) {
+                return new Date(v3, v1 - 1, v2);
+            }
+            
+            // Mặc định ưu tiên DD/MM/YYYY nếu cả v1, v2 <= 12
+            return new Date(v3, v2 - 1, v1);
         }
         return null;
     }
 
     function addPeriod(startDate, value, unit) {
-        const date = new Date(startDate.getTime()); // Tạo bản sao để không thay đổi ngày gốc
+        const date = new Date(startDate.getTime());
         const numericValue = parseInt(value) || 0;
         if (numericValue === 0) return date;
 
@@ -194,26 +215,25 @@
         return num.toLocaleString('vi-VN');
     }
 
-    // --- HÀM NÂNG CẤP: ĐỐI SOÁT CHUẨN XÁC DẠNG NGÀY DATE CHO TRẠNG THÁI ĐÃ KHUI ---
+    // --- HÀM KIỂM TRA ĐỐI SOÁT NGÀY ĐÃ KHUI ---
     function checkDaKhui(targetDateStr, phieuDaKhuiInput) {
         if (!phieuDaKhuiInput) return "";
         
-        // 1. Tương thích ngược: Nếu AppSheet truyền trực tiếp chuỗi "Đã Khui"
+        // Tương thích ngược nếu truyền chuỗi "Đã Khui"
         if (phieuDaKhuiInput === "Đã Khui") return "Đã Khui";
 
-        // 2. Chuyển đổi ngày in bill về đối tượng Date
         const targetDate = parseDate(targetDateStr);
         if (!targetDate) return "";
 
-        // 3. Tách chuỗi phiếu đã khui thành danh sách các ngày lẻ (nếu AppSheet truyền dạng chuỗi có dấu phẩy hay gạch đứng)
+        // Tách danh sách phiếu đã khui theo dấu phẩy hoặc gạch đứng
         let listNgayDaKhui = [];
         if (Array.isArray(phieuDaKhuiInput)) {
             listNgayDaKhui = phieuDaKhuiInput;
         } else if (typeof phieuDaKhuiInput === 'string') {
-            listNgayDaKhui = phieuDaKhuiInput.split(/[,|]/); // Tách theo dấu phẩy hoặc dấu gạch đứng
+            listNgayDaKhui = phieuDaKhuiInput.split(/[,|\n]/);
         }
 
-        // 4. So sánh từng ngày trong mảng với targetDate theo đối tượng Date thực sự
+        // So sánh đối tượng Date thực sự
         const isMatched = listNgayDaKhui.some(ngayItem => {
             const dateObj = parseDate(String(ngayItem));
             return areDatesEqual(dateObj, targetDate);
@@ -247,7 +267,6 @@
                     
                     if (areDatesEqual(currentDate, targetDate)) {
                         
-                        // TỰ ĐỘNG ĐỐI SOÁT VỚI MẢNG PHIẾU ĐÃ KHUI HOẶC TRƯỜNG TRẠNG THÁI
                         let trangThaiKhui = checkDaKhui(data.ngay_in_bill, hui.phieu_da_khui || hui.trang_thai);
 
                         todaysHuis.push({
