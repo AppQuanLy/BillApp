@@ -150,12 +150,19 @@
     function parseDate(dateString) {
         if (!dateString) return null;
         if (typeof dateString !== 'string') return null;
-        if (dateString.includes('-')) {
-            const parts = dateString.split('-');
+        
+        // Làm sạch khoảng trắng thừa
+        const cleanStr = dateString.trim();
+        
+        if (cleanStr.includes('-')) {
+            const parts = cleanStr.split('-');
             return new Date(parts[0], parts[1] - 1, parts[2]);
         }
-        const parts = dateString.split('/');
-        return new Date(parts[2], parts[1] - 1, parts[0]);
+        if (cleanStr.includes('/')) {
+            const parts = cleanStr.split('/');
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+        return null;
     }
 
     function addPeriod(startDate, value, unit) {
@@ -176,6 +183,7 @@
     }
     
     function areDatesEqual(date1, date2) {
+        if (!date1 || !date2) return false;
         return date1.getFullYear() === date2.getFullYear() &&
                date1.getMonth() === date2.getMonth() &&
                date1.getDate() === date2.getDate();
@@ -186,31 +194,32 @@
         return num.toLocaleString('vi-VN');
     }
 
-    // --- HÀM MỚI: KIỂM TRA NGÀY IN BILL CÓ NẰM TRONG MẢNG PHIẾU ĐÃ KHUI KHÔNG ---
+    // --- HÀM NÂNG CẤP: ĐỐI SOÁT CHUẨN XÁC DẠNG NGÀY DATE CHO TRẠNG THÁI ĐÃ KHUI ---
     function checkDaKhui(targetDateStr, phieuDaKhuiInput) {
         if (!phieuDaKhuiInput) return "";
         
         // 1. Tương thích ngược: Nếu AppSheet truyền trực tiếp chuỗi "Đã Khui"
         if (phieuDaKhuiInput === "Đã Khui") return "Đã Khui";
 
-        // 2. Chuẩn hóa Ngày in bill về dạng DD/MM/YYYY chuẩn để so sánh
+        // 2. Chuyển đổi ngày in bill về đối tượng Date
         const targetDate = parseDate(targetDateStr);
         if (!targetDate) return "";
 
-        const day = String(targetDate.getDate()).padStart(2, '0');
-        const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-        const year = targetDate.getFullYear();
-        const formattedTargetDate = `${day}/${month}/${year}`;
-
-        // 3. Kiểm tra nếu phieuDaKhuiInput là Mảng (Array) hoặc Chuỗi (String)
+        // 3. Tách chuỗi phiếu đã khui thành danh sách các ngày lẻ (nếu AppSheet truyền dạng chuỗi có dấu phẩy hay gạch đứng)
+        let listNgayDaKhui = [];
         if (Array.isArray(phieuDaKhuiInput)) {
-            const match = phieuDaKhuiInput.some(item => String(item).includes(formattedTargetDate));
-            return match ? "Đã Khui" : "";
+            listNgayDaKhui = phieuDaKhuiInput;
         } else if (typeof phieuDaKhuiInput === 'string') {
-            return phieuDaKhuiInput.includes(formattedTargetDate) ? "Đã Khui" : "";
+            listNgayDaKhui = phieuDaKhuiInput.split(/[,|]/); // Tách theo dấu phẩy hoặc dấu gạch đứng
         }
 
-        return "";
+        // 4. So sánh từng ngày trong mảng với targetDate theo đối tượng Date thực sự
+        const isMatched = listNgayDaKhui.some(ngayItem => {
+            const dateObj = parseDate(String(ngayItem));
+            return areDatesEqual(dateObj, targetDate);
+        });
+
+        return isMatched ? "Đã Khui" : "";
     }
 
     // --- HÀM XỬ LÝ CHÍNH ---
@@ -238,7 +247,7 @@
                     
                     if (areDatesEqual(currentDate, targetDate)) {
                         
-                        // TỰ ĐỘNG ĐỐI SOÁT NGÀY IN BILL VỚI MẢNG PHIẾU ĐÃ KHUI
+                        // TỰ ĐỘNG ĐỐI SOÁT VỚI MẢNG PHIẾU ĐÃ KHUI HOẶC TRƯỜNG TRẠNG THÁI
                         let trangThaiKhui = checkDaKhui(data.ngay_in_bill, hui.phieu_da_khui || hui.trang_thai);
 
                         todaysHuis.push({
@@ -248,7 +257,7 @@
                             ky_han_text: hui.ky_han_text,
                             ky: `${ky}/${maxKy}`,
                             tien_hui: hui.tien_hui,
-                            trang_thai: trangThaiKhui // Hiển thị "Đã Khui" nếu khớp ngày in bill
+                            trang_thai: trangThaiKhui
                         });
                         break;
                     }
