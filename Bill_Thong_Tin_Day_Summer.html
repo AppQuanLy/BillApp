@@ -333,9 +333,19 @@
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
             
             data.danh_sach_chan.sort((a, b) => {
-                const kyA = parseInt(a.ky) || Infinity;
-                const kyB = parseInt(b.ky) || Infinity;
-                return kyA - kyB;
+                const kyA = parseInt(a.ky) || 0;
+                const kyB = parseInt(b.ky) || 0;
+                
+                const hasKyA = (kyA > 0);
+                const hasKyB = (kyB > 0);
+
+                if (hasKyA && !hasKyB) return -1;
+                if (!hasKyA && hasKyB) return 1;
+
+                if (hasKyA && hasKyB) {
+                    return kyA - kyB;
+                }
+                return 0;
             });
 
             const ngayMo = data.ngay_mo;
