@@ -378,13 +378,17 @@
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
             data.danh_sach_chan.sort((a, b) => {
-                const isUnallocatedA = (!a.ky || a.ky === "" || a.status === 'V');
-                const isUnallocatedB = (!b.ky || b.ky === "" || b.status === 'V');
+                const kyA = parseInt(a.ky) || 0;
+                const kyB = parseInt(b.ky) || 0;
                 
-                if (isUnallocatedA && !isUnallocatedB) return 1;
-                if (!isUnallocatedA && isUnallocatedB) return -1;
-                if (!isUnallocatedA && !isUnallocatedB) {
-                    return (parseInt(a.ky) || 0) - (parseInt(b.ky) || 0);
+                const hasKyA = (kyA > 0);
+                const hasKyB = (kyB > 0);
+
+                if (hasKyA && !hasKyB) return -1;
+                if (!hasKyA && hasKyB) return 1;
+
+                if (hasKyA && hasKyB) {
+                    return kyA - kyB;
                 }
                 return 0;
             });
