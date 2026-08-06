@@ -48,7 +48,7 @@
 
         /* Block thông tin chủ hụi nổi trên Header */
         .header-info-box {
-            background-color: rgba(255, 255, 255, 0.85); /* Đổi màu nền hộp thông tin cho dễ đọc */
+            background-color: 3fdeac6cc;
             padding: 15px;
             border-radius: 15px;
             margin-bottom: 20px;
@@ -60,21 +60,22 @@
         /* Vùng chứa Ảnh Header (Giữ nguyên) */
         .img-title-container {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             position: relative; /* Cần thiết nếu muốn căn chỉnh chính xác */
         }
         .img-title-container img {
             width: 100%;
-            max-width: 550px;
+            max-width: 500px;
             height: auto;
             filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
             margin: -40px auto -30px auto;
         }
         .img-title-container .date {
             text-align: center;
-            font-size: 15pt;
+            font-size: 20pt;
+            color: #f6c85c;
             font-weight: bold;
-            margin-top: -10px; /* Giữ nguyên thủ thuật kéo chữ ngày lên trên ảnh */
+            margin-top: -55px; /* Giữ nguyên thủ thuật kéo chữ ngày lên trên ảnh */
             position: relative;
             z-index: 2;
         }
@@ -102,8 +103,8 @@
         th, td { border: 1px solid #cfd8dc; padding: 6px; text-align: center; vertical-align: middle; }
         
         th { 
-            background-color: #18739f; 
-            color: #ffca30; 
+            background-color: #00367f; 
+            color: #f6c85c; 
             font-weight: bold; 
             text-transform: uppercase;
         }
@@ -281,7 +282,7 @@
                         <td class="text-right">${formatCurrency(item.so_tien)}</td>
                         <td class="khui-col">${item.khui}</td>
                         <td>${item.ky}</td>
-                        <td class="text-red">${item.ky_hot || ''}</td
+                        <td class="text-red">${item.ky_hot || ''}</td>
                         <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
                         <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
                         <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
@@ -320,8 +321,8 @@
             const balanceRow = document.createElement('tr');
             balanceRow.className = 'total-row'; 
             balanceRow.innerHTML = `
-                <td colspan="7" style="background-color: rgba(255, 249, 196, 0.85); color: #111;">Cân Bằng Hụi (Âm/Dương)</td>
-                <td colspan="2" class="${balanceClass}" style="background-color: rgba(255, 249, 196, 0.85); font-size: 18pt;">${formatCurrency(balance)}</td>
+                <td colspan="7" style="background-color: #fdeac6cc; color: #111;">Cân Bằng Hụi (Âm/Dương)</td>
+                <td colspan="2" class="${balanceClass}" style="background-color: #fdeac6cc; font-size: 18pt;">${formatCurrency(balance)}</td>
             `;
             tbody.appendChild(balanceRow);
 
