@@ -311,10 +311,16 @@
         }
     };
 
-    function formatCurrency(num) {
-        if (typeof num !== 'number' || num === null) return '';
-        return num.toLocaleString('vi-VN');
-    }
+        function formatCurrency(num) {
+            if (typeof num !== 'number' || num === null || num === 0) return '';
+            return num.toLocaleString('vi-VN');
+        }
+        
+        // 2. Hàm dùng cho dòng TỔNG CỘNG và THÔNG TIN PHỤ (Nếu bằng 0 vẫn HIỆN SỐ 0)
+        function formatTotalCurrency(num) {
+            if (typeof num !== 'number' || num === null) return '0';
+            return num.toLocaleString('vi-VN');
+        }
 
     function addPeriod(dateString, value, unit) {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
@@ -466,9 +472,9 @@
         totalRow.className = 'total-row';
         totalRow.innerHTML = `
             <td colspan="5" style="text-align: center; font-size: 14pt;">TỔNG:</td>
-            <td class="text-blue">${formatCurrency(tongTham)}</td>
-            <td>${formatCurrency(tongTienDong)}</td> 
-            <td class="text-red">${formatCurrency(tongTienHot)}</td>
+            <td class="text-blue">${formatTotalCurrency(tongTham)}</td>
+            <td>${formatTotalCurrency(tongTienDong)}</td> 
+            <td class="text-red">${formatTotalCurrency(tongTienHot)}</td>
         `;
         tbody.appendChild(totalRow);
         
