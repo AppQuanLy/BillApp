@@ -487,23 +487,31 @@
             const allDetails = [].concat(kh.chan_hui_details || []).concat(kh.hui_1_1_details || []).concat(kh.ghi_no_details || []).concat(kh.tien_gop_details || []);
             
             if (allDetails.length > 0) {
-                let sttCounter = 1;
-                allDetails.forEach(d => {
-                    const row = document.createElement('tr');
-                    if ((d.khui || '').toLowerCase().includes('nợ')) {
-                        row.style.backgroundColor = '#fff0f0';
-                        row.innerHTML = `<td colspan="8" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatTotalCurrency(d.tien_dong)}</td><td colspan="3"></td>`;
-                    } else {
-                        const valSong = (d.song && d.song !== 0) ? d.song : '';
-                        const valChet = (d.chet && d.chet !== 0) ? d.chet : '';
-                        const valDup = (d.dup && d.dup !== 0) ? d.dup : '';
-
-                        row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${valSong}</td><td>${valChet}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td><td>${formatCurrency(d.thao)}</td><td>${valDup}</td>`;
-                        sttCounter++;
-                    }
-                    detailsBody.appendChild(row);
-                });
-            }
+            let sttCounter = 1;
+            allDetails.forEach(d => {
+                const row = document.createElement('tr');
+                
+                const valSong = (d.song && d.song !== 0) ? d.song : '';
+                const valChet = (d.chet && d.chet !== 0) ? d.chet : '';
+                const valDup  = (d.dup && d.dup !== 0) ? d.dup : '';
+        
+                row.innerHTML = `
+                    <td>${sttCounter}</td>
+                    <td>${d.day_hui || ''}</td>
+                    <td>${d.ky || ''}</td>
+                    <td class="font-bold text-red">${d.khui || ''}</td>
+                    <td>${valSong}</td>
+                    <td>${valChet}</td>
+                    <td>${formatCurrency(d.tien_hot)}</td>
+                    <td>${formatCurrency(d.tien_dong)}</td>
+                    <td class="font-bold text-red">${formatCurrency(d.tham)}</td>
+                    <td>${formatCurrency(d.thao)}</td>
+                    <td>${valDup}</td>
+                `;
+                sttCounter++;
+                detailsBody.appendChild(row);
+            });
+        }
             
             q('[data-field="footer_hoi_vien"]').textContent = kh.hoi_vien || ''; 
             q('[data-field="bill_tong_dong"]').textContent = formatTotalCurrency(kh.bill_tong_dong); 
