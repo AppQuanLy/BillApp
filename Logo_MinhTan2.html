@@ -350,7 +350,6 @@
             return num.toLocaleString('vi-VN');
         }
         
-        // 2. Hàm dùng cho dòng TỔNG CỘNG và THÔNG TIN PHỤ (Nếu bằng 0 vẫn HIỆN SỐ 0)
         function formatTotalCurrency(num) {
             if (typeof num !== 'number' || num === null) return '0';
             return num.toLocaleString('vi-VN');
@@ -383,7 +382,7 @@
 
     function generateBill(data) {
         for (const key in data) {
-            if (key !== 'danh_sach_chan' && key !== 'danh_sach_chan_1' && key !== 'danh_sach_chan_2' && key !== 'tham_san') {
+            if (key !== 'danh_sach_chan' && key !== 'danh_sach_chan_1' && key !== 'danh_sach_chan_2' && key !== 'tham_san' && key !== 'tien_hui') {
                 const element = document.querySelector(`[data-field="${key}"]`);
                 if (element) element.textContent = data[key];
             }
@@ -418,6 +417,7 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
+
             data.danh_sach_chan.sort((a, b) => {
                 const kyA = parseInt(a.ky) || 0;
                 const kyB = parseInt(b.ky) || 0;
@@ -458,19 +458,22 @@
                 const stt = index + 1;
                 const statusText = chan.status; 
                 let statusClass = 'dead'; 
-                let kyHienThi = chan.ky || ""; 
+                let kyHienThi = chan.ky || ""; // Sử dụng chính dữ liệu kỳ từ AppSheet nếu có
                 let ngayHienThi = chan.ngay; 
 
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive'; 
                     
+                    // NÂNG CẤP: Chỉ tự động tính ngày gợi ý, còn KỲ nếu AppSheet không truyền (rỗng) -> giữ rỗng ""
                     if (!chan.ky || chan.ky === "") {
                         kyHienThi = ""; 
                     }
                     
+                    // Để hiển thị ngày gợi ý cho chuẩn chu kỳ của kỳ tiếp theo
                     let kyGoiYDeTinhNgay = parseInt(chan.ky) || (maxKyDaKhui + 1 + indexChuaHot);
                     const periodsToAdd = (kyGoiYDeTinhNgay - 1) * kyHanValueFloat;
                     
+                    // Nếu AppSheet không truyền ngày sang mới dùng ngày gợi ý
                     if (!ngayHienThi || ngayHienThi === "") {
                         ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
                     }
@@ -521,7 +524,6 @@
     async function captureBill(element, callback) {
         const controls = element.querySelector('.bill-controls');
         if (controls) controls.style.display = 'none';
-        
         await new Promise(resolve => setTimeout(resolve, 500));
         
         try {
@@ -535,6 +537,7 @@
         }
     }
 
+    /* Các hàm xử lý ảnh giữ nguyên bản của bạn */
     function downloadBillAsImage(element) {
         const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
         captureBill(element, canvas => {
@@ -581,19 +584,11 @@
                 if (!blob) throw new Error("Không tạo được ảnh");
                 const file = new File([blob], filename, { type: 'image/png' });
                 
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ title: `Thông Tin Dây Hụi`, text: textshare, files: [file] });
-                } else {
-                    alert('Điện thoại này chặn gửi ảnh trực tiếp. Hệ thống sẽ tự động TẢI BILL về máy, bạn mở thư viện ảnh để gửi nhé!');
-                    const link = document.createElement('a');
-                    link.download = filename;
-                    link.href = URL.createObjectURL(blob);
-                    link.click();
-                }
+                await navigator.share({ title: `Thông Tin Dây Hụi`, text: textshare, files: [file] });
             } catch (error) { 
                 if (error.name !== 'AbortError' && !error.message.includes('Share API')) {
                     console.error('Lỗi Share:', error);
-                    alert("Điện thoại xử lý quá lâu. Vui lòng sử dụng nút TẢI BILL.");
+                    alert("Có lỗi khi chia sẻ, vui lòng thử Tải Bill.");
                 }
             } finally {
                 shareBtn.textContent = originalText;
