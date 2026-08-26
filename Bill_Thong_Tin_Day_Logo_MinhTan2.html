@@ -32,6 +32,8 @@
             padding: 0; /* Xóa padding để header/footer bám lề */
             overflow: hidden;
 
+            /* MÀU NỀN VÀ HỌA TIẾT LẶP LẠI (THÂN) */
+            background-color: #fdfdfd; 
             background-image: url('BASE64_HÌNH_NỀN_LẶP_LẠI_Ở_ĐÂY');
             background-repeat: repeat;
             background-size: 100%;
@@ -146,7 +148,7 @@
             grid-template-columns: 1.5fr 1fr 1fr;
             gap: 10px 5px;
             margin-bottom: 20px;
-            background-color: rgba(255, 255, 255, 0.85);
+            background-color: rgba(255, 255, 255, 0.85); /* Lót nền trắng mờ cho khối info */
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -333,6 +335,7 @@
             const jsonData = decodeURIComponent(encodedData);
             billData = JSON.parse(jsonData);
 
+            // Gộp danh sách từ nhiều mảng (hỗ trợ cả AppSheet cũ và mới)
             let arrOld = billData.danh_sach_chan || [];
             let arr1 = billData.danh_sach_chan_1 || [];
             let arr2 = billData.danh_sach_chan_2 || [];
@@ -345,21 +348,19 @@
         }
     };
 
-        function formatCurrency(num) {
-            if (typeof num !== 'number' || num === null || num === 0) return '';
-            return num.toLocaleString('vi-VN');
-        }
-        
-        // 2. Hàm dùng cho dòng TỔNG CỘNG và THÔNG TIN PHỤ (Nếu bằng 0 vẫn HIỆN SỐ 0)
-        function formatTotalCurrency(num) {
-            if (typeof num !== 'number' || num === null) return '0';
-            return num.toLocaleString('vi-VN');
-        }
+    function formatCurrency(num) {
+        if (typeof num !== 'number' || num === null) return '';
+        return num.toLocaleString('vi-VN');
+    }
 
     function addPeriod(dateString, value, unit) {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
+        
         const daysToAdd = Math.floor(parseFloat(value) || 0); 
-        if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) return dateString;
+        
+        if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) {
+             return dateString;
+        }
 
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
@@ -382,13 +383,27 @@
     }
 
     function generateBill(data) {
+        // --- XỬ LÝ HIỂN THỊ LOGO MỜ (WATERMARK) ---
+        const watermarkEl = document.getElementById('watermark_img');
+        if (data.logo_watermark && data.logo_watermark.trim() !== '') {
+            watermarkEl.src = data.logo_watermark; 
+            watermarkEl.style.display = 'block'; 
+        } else if (watermarkEl.src && !watermarkEl.src.includes('ĐIỀN_MÃ') && watermarkEl.getAttribute('src') !== '') {
+            watermarkEl.style.display = 'block';
+        } else {
+            watermarkEl.style.display = 'none';
+        }
+        // ------------------------------------------
+
         for (const key in data) {
+            // Không tự động gán tham_san để xử lý riêng biệt bên dưới
             if (key !== 'danh_sach_chan' && key !== 'danh_sach_chan_1' && key !== 'danh_sach_chan_2' && key !== 'tham_san') {
                 const element = document.querySelector(`[data-field="${key}"]`);
                 if (element) element.textContent = data[key];
             }
         }
         
+        // --- XỬ LÝ ẨN/HIỆN THĂM SÀN THÔNG MINH ---
         const rowThamSan = document.getElementById('row_tham_san');
         if (data.tham_san && data.tham_san.toString().trim() !== "") {
             const valThamSan = isNaN(data.tham_san) ? data.tham_san : formatCurrency(Number(data.tham_san));
@@ -396,6 +411,7 @@
             rowThamSan.style.display = 'block';
         }
 
+        // --- XỬ LÝ ẨN/HIỆN HỐT CHÓT ---
         const rowHotChot = document.getElementById('row_hot_chot');
         if (data.tien_hui && data.tien_hui.toString().trim() !== "") {
             let soKyNum = 0;
@@ -418,32 +434,15 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
+            
             data.danh_sach_chan.sort((a, b) => {
-                const kyA = parseInt(a.ky) || 0;
-                const kyB = parseInt(b.ky) || 0;
-                
-                const hasKyA = (kyA > 0);
-                const hasKyB = (kyB > 0);
-
-                if (hasKyA && !hasKyB) return -1;
-                if (!hasKyA && hasKyB) return 1;
-
-                if (hasKyA && hasKyB) {
-                    return kyA - kyB;
-                }
-                return 0;
+                const kyA = parseInt(a.ky) || Infinity;
+                const kyB = parseInt(b.ky) || Infinity;
+                return kyA - kyB;
             });
 
             const ngayMo = data.ngay_mo;
             const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
-
-            let maxKyDaKhui = 0;
-            data.danh_sach_chan.forEach(chan => {
-                if (chan.status !== 'V' && chan.ky) {
-                    const k = parseInt(chan.ky) || 0;
-                    if (k > maxKyDaKhui) maxKyDaKhui = k;
-                }
-            });
 
             const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
             if (manKyDuKienEl) {
@@ -452,39 +451,26 @@
                 manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
             }
 
-            let indexChuaHot = 0; 
-
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
+                const kyHienThi = chan.ky || ""; 
+                
+                const row = document.createElement('tr');
+                let ngayHienThi = chan.ngay; 
+
                 const statusText = chan.status; 
                 let statusClass = 'dead'; 
-                let kyHienThi = chan.ky || ""; 
-                let ngayHienThi = chan.ngay; 
 
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive'; 
-                    
-                    if (!chan.ky || chan.ky === "") {
-                        kyHienThi = ""; 
-                    }
-                    
-                    let kyGoiYDeTinhNgay = parseInt(chan.ky) || (maxKyDaKhui + 1 + indexChuaHot);
-                    const periodsToAdd = (kyGoiYDeTinhNgay - 1) * kyHanValueFloat;
-                    
-                    if (!ngayHienThi || ngayHienThi === "") {
-                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
-                    }
-                    
-                    if (!chan.ky || chan.ky === "") {
-                        indexChuaHot++;
-                    }
+                    const periodsToAdd = (stt - 1) * kyHanValueFloat;
+                    ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
                 } else if (statusText === 'C') {
                     statusClass = 'c-status'; 
                 }
                 
-                const ngayClass = (statusText === 'V' || statusText === 'S') ? '' : 'text-red';
+                const ngayClass = (statusText !== 'V' && statusText !== 'S') ? 'text-red' : '';
                 
-                const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${stt}</td>
                     <td style="text-align: left;">${chan.ten_hui_vien}</td>
@@ -506,9 +492,9 @@
         totalRow.className = 'total-row';
         totalRow.innerHTML = `
             <td colspan="5" style="text-align: center; font-size: 14pt;">TỔNG:</td>
-            <td class="text-blue">${formatTotalCurrency(tongTham)}</td>
-            <td>${formatTotalCurrency(tongTienDong)}</td> 
-            <td class="text-red">${formatTotalCurrency(tongTienHot)}</td>
+            <td class="text-blue">${formatCurrency(tongTham)}</td>
+            <td>${formatCurrency(tongTienDong)}</td> 
+            <td class="text-red">${formatCurrency(tongTienHot)}</td>
         `;
         tbody.appendChild(totalRow);
         
