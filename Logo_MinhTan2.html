@@ -29,9 +29,11 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             box-sizing: border-box;
             position: relative;
-            padding: 0; /* Xóa padding để header/footer bám lề */
+            padding: 0;
             overflow: hidden;
 
+            /* MÀU NỀN VÀ HỌA TIẾT LẶP LẠI (THÂN) */
+            background-color: #fdfdfd; 
             background-image: url('BASE64_HÌNH_NỀN_LẶP_LẠI_Ở_ĐÂY');
             background-repeat: repeat;
             background-size: 100%;
@@ -41,19 +43,17 @@
         .watermark-logo {
             position: absolute;
             top: 50%;
-            left: 65%; /* Trả về 50% để logo nằm giữa bảng */
+            left: 65%;
             transform: translate(-50%, -50%);
             width: 550px; 
             height: auto;
-            opacity: 0.75; /* Giảm độ mờ để không rối chữ */
+            opacity: 0.75;
             z-index: 1; 
             pointer-events: none; 
             display: none; 
         }
 
-        /* =======================================================
-           KHỐI 1: HEADER (BACKGROUND)
-           ======================================================= */
+        /* KHỐI 1: HEADER (BACKGROUND) */
         .header-section {
             position: relative;
             min-height: 250px;
@@ -68,16 +68,14 @@
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: center; /* Căn giữa theo chiều dọc */
+            align-items: center;
             font-weight: bold;
             margin-bottom: 20px;
-            background-color: rgba(255, 255, 255, 0.85); /* Nền trắng mờ để nổi bật */
+            background-color: rgba(255, 255, 255, 0.85);
             padding: 15px;
             border-radius: 15px;
-         /*   box-shadow: 0 2px 10px rgba(0,0,0,0.1);*/
         }
 
-        /* --- CSS HEADER LEFT (LOGO 120PX) --- */
         .header-left {
             display: flex;
             align-items: center;
@@ -97,9 +95,7 @@
             line-height: 1.5;
         }
 
-        /* =======================================================
-           TIÊU ĐỀ CHỮ (DÙNG CSS CHUẨN CỦA BẠN)
-           ======================================================= */
+        /* TIÊU ĐỀ CHỮ */
         .text-title-container {
             position: absolute;
             left: 50%;
@@ -131,9 +127,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* =======================================================
-           KHỐI 2: NỘI DUNG Ở GIỮA (Nằm trên nền lặp lại)
-           ======================================================= */
+        /* KHỐI 2: NỘI DUNG Ở GIỮA */
         .content-section {
             padding: 0 25px;
             min-height: 150px;
@@ -160,7 +154,7 @@
             width: 100%;
             border-collapse: collapse;
             font-weight: bold;
-            margin-bottom: 0; /* Xóa margin đáy để nối liền phần footer-section */
+            margin-bottom: 0;
         }
         th, td {
             border: 1px solid #cfd8dc;
@@ -175,7 +169,7 @@
             text-transform: uppercase;
         }
         td {
-            background-color: rgba(255, 255, 255, 0.85); /* Nền ô trắng mờ */
+            background-color: rgba(255, 255, 255, 0.85);
         }
 
         /* TRẠNG THÁI S/C/V */
@@ -197,20 +191,17 @@
         
         .total-row td {
             font-weight: bold;
-            background-color: rgba(255, 249, 196, 0.9) !important; /* Dòng tổng màu vàng */
+            background-color: rgba(255, 249, 196, 0.9) !important;
         }
         .text-blue { color: #0070c0; }
         .text-red { color: #d90000 !important; font-weight: bold; }
+        .text-green { color: #00b050; }
         .font-bold { font-weight: bold; }
         
-        /* =======================================================
-           KHỐI 3: FOOTER (BACKGROUND)
-           ======================================================= */
+        /* KHỐI 3: FOOTER (BACKGROUND) */
         .footer-section {
             position: relative;
-          /*  min-height: 80px;*/
             padding: 20px;
-          /*  padding-bottom: 80px; */
             background-image: url('BASE64_NỀN_FOOTER_Ở_ĐÂY');
             background-size: 100%;
             background-position: bottom center;
@@ -345,15 +336,17 @@
         }
     };
 
-        function formatCurrency(num) {
-            if (typeof num !== 'number' || num === null || num === 0) return '';
-            return num.toLocaleString('vi-VN');
-        }
-        
-        function formatTotalCurrency(num) {
-            if (typeof num !== 'number' || num === null) return '0';
-            return num.toLocaleString('vi-VN');
-        }
+    // Hàm ẩn ô có giá trị bằng 0
+    function formatCurrency(num) {
+        if (typeof num !== 'number' || num === null || num === 0) return '';
+        return num.toLocaleString('vi-VN');
+    }
+
+    // Hàm cho dòng tổng (vẫn hiển thị 0 nếu tổng = 0)
+    function formatTotalCurrency(num) {
+        if (typeof num !== 'number' || num === null) return '0';
+        return num.toLocaleString('vi-VN');
+    }
 
     function addPeriod(dateString, value, unit) {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
@@ -381,6 +374,16 @@
     }
 
     function generateBill(data) {
+        const watermarkEl = document.getElementById('watermark_img');
+        if (data.logo_watermark && data.logo_watermark.trim() !== '') {
+            watermarkEl.src = data.logo_watermark; 
+            watermarkEl.style.display = 'block'; 
+        } else if (watermarkEl.src && !watermarkEl.src.includes('ĐIỀN_MÃ') && watermarkEl.getAttribute('src') !== '') {
+            watermarkEl.style.display = 'block';
+        } else {
+            watermarkEl.style.display = 'none';
+        }
+
         for (const key in data) {
             if (key !== 'danh_sach_chan' && key !== 'danh_sach_chan_1' && key !== 'danh_sach_chan_2' && key !== 'tham_san' && key !== 'tien_hui') {
                 const element = document.querySelector(`[data-field="${key}"]`);
@@ -418,6 +421,7 @@
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
 
+            // Sắp xếp chân đã khui (có kỳ) lên trước, chân sống (chưa khui) ra sau
             data.danh_sach_chan.sort((a, b) => {
                 const kyA = parseInt(a.ky) || 0;
                 const kyB = parseInt(b.ky) || 0;
@@ -437,6 +441,7 @@
             const ngayMo = data.ngay_mo;
             const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
 
+            // Tìm kỳ lớn nhất đã khui
             let maxKyDaKhui = 0;
             data.danh_sach_chan.forEach(chan => {
                 if (chan.status !== 'V' && chan.ky) {
@@ -458,22 +463,19 @@
                 const stt = index + 1;
                 const statusText = chan.status; 
                 let statusClass = 'dead'; 
-                let kyHienThi = chan.ky || ""; // Sử dụng chính dữ liệu kỳ từ AppSheet nếu có
+                let kyHienThi = chan.ky || ""; 
                 let ngayHienThi = chan.ngay; 
 
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive'; 
                     
-                    // NÂNG CẤP: Chỉ tự động tính ngày gợi ý, còn KỲ nếu AppSheet không truyền (rỗng) -> giữ rỗng ""
                     if (!chan.ky || chan.ky === "") {
                         kyHienThi = ""; 
                     }
                     
-                    // Để hiển thị ngày gợi ý cho chuẩn chu kỳ của kỳ tiếp theo
                     let kyGoiYDeTinhNgay = parseInt(chan.ky) || (maxKyDaKhui + 1 + indexChuaHot);
                     const periodsToAdd = (kyGoiYDeTinhNgay - 1) * kyHanValueFloat;
                     
-                    // Nếu AppSheet không truyền ngày sang mới dùng ngày gợi ý
                     if (!ngayHienThi || ngayHienThi === "") {
                         ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
                     }
@@ -524,6 +526,7 @@
     async function captureBill(element, callback) {
         const controls = element.querySelector('.bill-controls');
         if (controls) controls.style.display = 'none';
+        
         await new Promise(resolve => setTimeout(resolve, 500));
         
         try {
@@ -537,7 +540,6 @@
         }
     }
 
-    /* Các hàm xử lý ảnh giữ nguyên bản của bạn */
     function downloadBillAsImage(element) {
         const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
         captureBill(element, canvas => {
@@ -584,11 +586,19 @@
                 if (!blob) throw new Error("Không tạo được ảnh");
                 const file = new File([blob], filename, { type: 'image/png' });
                 
-                await navigator.share({ title: `Thông Tin Dây Hụi`, text: textshare, files: [file] });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ title: `Thông Tin Dây Hụi`, text: textshare, files: [file] });
+                } else {
+                    alert('Điện thoại này chặn gửi ảnh trực tiếp. Hệ thống sẽ tự động TẢI BILL về máy, bạn mở thư viện ảnh để gửi nhé!');
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                }
             } catch (error) { 
                 if (error.name !== 'AbortError' && !error.message.includes('Share API')) {
                     console.error('Lỗi Share:', error);
-                    alert("Có lỗi khi chia sẻ, vui lòng thử Tải Bill.");
+                    alert("Điện thoại xử lý quá lâu. Vui lòng sử dụng nút TẢI BILL.");
                 }
             } finally {
                 shareBtn.textContent = originalText;
