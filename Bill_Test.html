@@ -321,80 +321,95 @@
         return num.toLocaleString('vi-VN');
     }
 
-function addFixedTwoDays(baseDateStr, kyIndex, mocNgayStr) {
-    if (!baseDateStr || !mocNgayStr) return baseDateStr;
-    const parts = baseDateStr.split('/');
-    if (parts.length !== 3) return baseDateStr;
+    // =====================================================================
+    // 1. HÀM TÍNH NGÀY CỐ ĐỊNH 2 MỐC TRONG THÁNG (CHUẨN DD/MM/YYYY)
+    // =====================================================================
+    function addFixedTwoDays(baseDateStr, kyIndex, mocNgayStr) {
+        if (!baseDateStr || typeof baseDateStr !== 'string') return "";
+        const parts = baseDateStr.trim().split('/');
+        if (parts.length !== 3) return baseDateStr;
 
-    let curDay = parseInt(parts[0], 10);
-    let curMonth = parseInt(parts[1], 10) - 1; // Tháng trong JS tính từ 0 - 11
-    let curYear = parseInt(parts[2], 10);
+        const curDay = parseInt(parts[0], 10);
+        const curMonth = parseInt(parts[1], 10) - 1; // Tháng trong JS từ 0 - 11
+        const curYear = parseInt(parts[2], 10);
 
-    // Bóc tách và tự động sắp xếp 2 mốc ngày (Xử lý an toàn chuỗi dạng "9 , 25")
-    let arrMoc = mocNgayStr.toString().split(',')
-        .map(n => parseInt(n.trim(), 10))
-        .filter(n => !isNaN(n))
-        .sort((a, b) => a - b);
+        // Lấy chuỗi mốc ngày từ tham số hoặc dữ liệu toàn cục billData
+        const strMoc = mocNgayStr || (billData && billData.moc_ngay) || "";
+        const arrMoc = strMoc.toString().split(',')
+            .map(n => parseInt(n.trim(), 10))
+            .filter(n => !isNaN(n))
+            .sort((a, b) => a - b);
 
-    if (arrMoc.length < 2) return baseDateStr;
+        if (arrMoc.length < 2) return baseDateStr;
 
-    let d1 = arrMoc[0]; // Mốc nhỏ (VD: 9)
-    let d2 = arrMoc[1]; // Mốc lớn (VD: 25)
+        const d1 = arrMoc[0]; // Mốc ngày nhỏ (VD: 9)
+        const d2 = arrMoc[1]; // Mốc ngày lớn (VD: 25)
 
-    let startFromD1 = (curDay <= d1);
-    let targetDay = 0;
-    let monthsToAdd = 0;
+        const startFromD1 = (curDay <= d1);
+        let targetDay = 0;
+        let monthsToAdd = 0;
 
-    if (startFromD1) {
-        // Mở từ mốc nhỏ: Kỳ lẻ lấy d1, Kỳ chẵn lấy d2 cùng tháng
-        monthsToAdd = Math.floor((kyIndex - 1) / 2);
-        targetDay = (kyIndex % 2 === 1) ? d1 : d2;
-    } else {
-        // Mở từ mốc lớn: Kỳ 1 lấy d2, Kỳ 2 nhảy sang d1 tháng sau
-        monthsToAdd = Math.floor(kyIndex / 2);
-        targetDay = (kyIndex % 2 === 1) ? d2 : d1;
+        if (startFromD1) {
+            // Mở từ mốc nhỏ: Kỳ lẻ lấy d1, Kỳ chẵn lấy d2 cùng tháng
+            monthsToAdd = Math.floor((kyIndex - 1) / 2);
+            targetDay = (kyIndex % 2 === 1) ? d1 : d2;
+        } else {
+            // Mở từ mốc lớn: Kỳ 1 lấy d2, Kỳ 2 nhảy sang d1 tháng sau
+            monthsToAdd = Math.floor(kyIndex / 2);
+            targetDay = (kyIndex % 2 === 1) ? d2 : d1;
+        }
+
+        const targetDate = new Date(curYear, curMonth + monthsToAdd, targetDay);
+        const dayFormatted = String(targetDate.getDate()).padStart(2, '0');
+        const monthFormatted = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const yearFormatted = targetDate.getFullYear();
+
+        return `${dayFormatted}/${monthFormatted}/${yearFormatted}`;
     }
 
-    let targetDate = new Date(curYear, curMonth + monthsToAdd, targetDay);
-    const dayFormatted = String(targetDate.getDate()).padStart(2, '0');
-    const monthFormatted = String(targetDate.getMonth() + 1).padStart(2, '0');
-    const yearFormatted = targetDate.getFullYear();
+    // =====================================================================
+    // 2. HÀM TÍNH NGÀY ĐA NĂNG
+    // =====================================================================
+    function addPeriod(dateString, value, unit, kyIndex = 1, mocNgay = "") {
+        if (!dateString || typeof dateString !== 'string') return "";
 
-    return `${dayFormatted}/${monthFormatted}/${yearFormatted}`;
-}
+        const kyHanText = (billData && billData.ky_han_text) ? billData.ky_han_text : (unit || '');
+        const strMoc = mocNgay || (billData && billData.moc_ngay) || "";
 
-function addPeriod(dateString, value, unit, kyIndex = 1, mocNgay = "") {
-    if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
+        // Kiểm tra loại kỳ hạn Cố định Tháng/2 Lần
+        if (kyHanText.includes('Cố định Tháng/2 Lần') || strMoc.toString().includes(',')) {
+            return addFixedTwoDays(dateString, kyIndex, strMoc);
+        }
 
-    // Chỉ kiểm tra đúng tên chuẩn "Cố định Tháng/2 Lần" hoặc khi có chuỗi moc_ngay hợp lệ
-    const cleanUnit = (unit || '').trim();
-    if (cleanUnit === 'Cố định Tháng/2 Lần' || (mocNgay && mocNgay.toString().includes(','))) {
-        return addFixedTwoDays(dateString, kyIndex, mocNgay);
+        // Logic cộng ngày hoặc cộng tháng thông thường cũ
+        const parts = dateString.trim().split('/');
+        if (parts.length !== 3) return "";
+
+        const date = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+        const daysToAdd = Math.floor(parseFloat(value) || 0); 
+        const cleanUnit = (unit || '').toLowerCase();
+
+        if (daysToAdd === 0 && !cleanUnit.includes('tháng')) return dateString;
+
+        if (cleanUnit.includes('tháng')) {
+            const originalDay = date.getDate();
+            date.setDate(1);
+            date.setMonth(date.getMonth() + daysToAdd);
+            const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+            date.setDate(Math.min(originalDay, lastDayOfNewMonth));
+        } else {
+            date.setDate(date.getDate() + daysToAdd);
+        }
+        
+        const newDay = String(date.getDate()).padStart(2, '0');
+        const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+        const newYear = date.getFullYear();
+        return `${newDay}/${newMonth}/${newYear}`;
     }
 
-    // Luồng xử lý các kỳ hạn thông thường (Ngày, Tuần, Tháng, 4 Tháng...)
-    const daysToAdd = Math.floor(parseFloat(value) || 0); 
-    if (daysToAdd === 0 && !cleanUnit.toLowerCase().includes('tháng')) return dateString;
-
-    const [day, month, year] = dateString.split('/');
-    const date = new Date(+year, +month - 1, +day);
-    if (isNaN(date.getTime())) return "";
-
-    if (cleanUnit.toLowerCase().includes('tháng')) {
-        const originalDay = date.getDate();
-        date.setDate(1);
-        date.setMonth(date.getMonth() + daysToAdd);
-        const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-        date.setDate(Math.min(originalDay, lastDayOfNewMonth));
-    } else {
-        date.setDate(date.getDate() + daysToAdd);
-    }
-    
-    const newDay = String(date.getDate()).padStart(2, '0');
-    const newMonth = String(date.getMonth() + 1).padStart(2, '0');
-    const newYear = date.getFullYear();
-    return `${newDay}/${newMonth}/${newYear}`;
-}
+    // =====================================================================
+    // 3. HÀM HIỂN THỊ DỮ LIỆU BILL
+    // =====================================================================
     function generateBill(data) {
         for (const key in data) {
             if (key !== 'danh_sach_chan' && key !== 'danh_sach_chan_1' && key !== 'danh_sach_chan_2' && key !== 'tham_san') {
@@ -435,38 +450,25 @@ function addPeriod(dateString, value, unit, kyIndex = 1, mocNgay = "") {
             data.danh_sach_chan.sort((a, b) => {
                 const kyA = parseInt(a.ky) || 0;
                 const kyB = parseInt(b.ky) || 0;
-                
                 const hasKyA = (kyA > 0);
                 const hasKyB = (kyB > 0);
 
                 if (hasKyA && !hasKyB) return -1;
                 if (!hasKyA && hasKyB) return 1;
-
-                if (hasKyA && hasKyB) {
-                    return kyA - kyB;
-                }
+                if (hasKyA && hasKyB) return kyA - kyB;
                 return 0;
             });
 
-            const ngayMo = data.ngay_mo;
+            const ngayMo = data.ngay_mo || data.ngay_khui;
             const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
+            const soKyInt = parseInt(data.so_ky || data.so_ky_toi_da) || 0;
 
-            let maxKyDaKhui = 0;
-            data.danh_sach_chan.forEach(chan => {
-                if (chan.status !== 'V' && chan.ky) {
-                    const k = parseInt(chan.ky) || 0;
-                    if (k > maxKyDaKhui) maxKyDaKhui = k;
-                }
-            });
-
+            // Tính Mãn Kỳ dự kiến chuẩn theo số kỳ tối đa
             const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
             if (manKyDuKienEl) {
-                const soKyInt = parseInt(data.so_ky) || 0;
                 const periodsToAdd = (soKyInt - 1) * kyHanValueFloat;
-                manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit, soKyInt, data.moc_ngay);
+                manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_text || data.ky_han_unit, soKyInt, data.moc_ngay);
             }
-
-            let indexChuaHot = 0; 
 
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
@@ -475,22 +477,19 @@ function addPeriod(dateString, value, unit, kyIndex = 1, mocNgay = "") {
                 let kyHienThi = chan.ky || ""; 
                 let ngayHienThi = chan.ngay; 
 
+                // Gán đúng chỉ số kỳ thực tế theo số thứ tự dòng
+                const kyThucTe = parseInt(chan.ky) || stt;
+
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive'; 
-                    
                     if (!chan.ky || chan.ky === "") {
                         kyHienThi = ""; 
                     }
                     
-                    let kyGoiYDeTinhNgay = parseInt(chan.ky) || (maxKyDaKhui + 1 + indexChuaHot);
-                    const periodsToAdd = (kyGoiYDeTinhNgay - 1) * kyHanValueFloat;
-                    
+                    // Tính ngày dự kiến cho chân sống chưa khui
                     if (!ngayHienThi || ngayHienThi === "") {
-                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit, kyGoiYDeTinhNgay, data.moc_ngay);
-                    }
-                    
-                    if (!chan.ky || chan.ky === "") {
-                        indexChuaHot++;
+                        const periodsToAdd = (kyThucTe - 1) * kyHanValueFloat;
+                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_text || data.ky_han_unit, kyThucTe, data.moc_ngay);
                     }
                 } else if (statusText === 'C') {
                     statusClass = 'c-status'; 
@@ -535,9 +534,7 @@ function addPeriod(dateString, value, unit, kyIndex = 1, mocNgay = "") {
     async function captureBill(element, callback) {
         const controls = element.querySelector('.bill-controls');
         if (controls) controls.style.display = 'none';
-        
         await new Promise(resolve => setTimeout(resolve, 500));
-        
         try {
             const canvas = await html2canvas(element, { scale: 1.5, useCORS: true, allowTaint: false });
             await callback(canvas);
@@ -576,7 +573,6 @@ function addPeriod(dateString, value, unit, kyIndex = 1, mocNgay = "") {
     async function shareBillAsImage(element) {
         const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
         const textshare = `Thông tin dây hụi ${billData.day_ten}.`;
-        
         const shareBtn = document.querySelector('.share-btn');
         const originalText = shareBtn.textContent;
         shareBtn.textContent = "⏳ Đang tạo...";
