@@ -322,40 +322,42 @@
     }
 
     // =====================================================================
-    // HÀM TÍNH TOÁN NGÀY THEO KỲ CHUẨN XÁC VÀ AN TOÀN TUYỆT ĐỐI
+    // HÀM TÍNH TOÁN NGÀY THEO KỲ
     // =====================================================================
-function calculateKyDate(baseDateStr, kyIndex, data) {
+    function calculateKyDate(baseDateStr, kyIndex, data) {
         if (!baseDateStr || typeof baseDateStr !== 'string') return "";
         const parts = baseDateStr.trim().split('/');
         if (parts.length !== 3) return baseDateStr;
 
         const startDay = parseInt(parts[0], 10);
-        const startMonth = parseInt(parts[1], 10) - 1; // 0 - 11
+        const startMonth = parseInt(parts[1], 10) - 1;
         const startYear = parseInt(parts[2], 10);
 
-        const m1 = parseInt(data.moc_1, 10) || 0;
-        const m2 = parseInt(data.moc_2, 10) || 0;
+        // Đọc trực tiếp moc_1 và moc_2 từ JSON
+        let d1 = parseInt(data.moc_1, 10) || 0;
+        let d2 = parseInt(data.moc_2, 10) || 0;
+
+        // Dự phòng tương thích nếu app cũ gửi chuỗi moc_ngay
+        if ((d1 === 0 || d2 === 0) && data.moc_ngay && data.moc_ngay.toString().includes(',')) {
+            let arrMoc = data.moc_ngay.toString().split(',')
+                .map(n => parseInt(n.trim(), 10))
+                .filter(n => !isNaN(n))
+                .sort((a, b) => a - b);
+            if (arrMoc.length >= 2) {
+                d1 = arrMoc[0];
+                d2 = arrMoc[1];
+            }
+        }
+
         const kyHanText = (data.ky_han_text || '').trim();
 
-        // 1. TRƯỜNG HỢP: CỐ ĐỊNH THÁNG/2 LẦN
-        if ((m1 > 0 && m2 > 0) || kyHanText.includes('Cố định Tháng/2 Lần')) {
-            let d1 = m1;
-            let d2 = m2;
-
-            if (d1 === 0 && data.moc_ngay && data.moc_ngay.toString().includes(',')) {
-                let arrMoc = data.moc_ngay.toString().split(',')
-                    .map(n => parseInt(n.trim(), 10))
-                    .filter(n => !isNaN(n))
-                    .sort((a, b) => a - b);
-                if (arrMoc.length >= 2) {
-                    d1 = arrMoc[0];
-                    d2 = arrMoc[1];
-                }
-            }
-
-            if (d1 === 0 || d2 === 0) {
-                d1 = (startDay <= 15) ? startDay : (startDay - 15);
-                d2 = (startDay <= 15) ? (startDay + 15) : startDay;
+        // 1. XỬ LÝ KỲ HẠN: CỐ ĐỊNH THÁNG/2 LẦN
+        if ((d1 > 0 && d2 > 0) || kyHanText.includes('Cố định Tháng/2 Lần')) {
+            // Đảm bảo d1 luôn nhỏ hơn d2
+            if (d1 > d2) {
+                let temp = d1;
+                d1 = d2;
+                d2 = temp;
             }
 
             let startFromD1 = (startDay <= d1);
@@ -370,7 +372,7 @@ function calculateKyDate(baseDateStr, kyIndex, data) {
                 targetDay = (kyIndex % 2 === 1) ? d2 : d1;
             }
 
-            // Đặt giờ là 12:00:00 trưa để chống lệch múi giờ làm lùi ngày
+            // Dùng mốc 12:00 trưa để không bao giờ bị lệch ngày do múi giờ
             let resultDate = new Date(startYear, startMonth + monthsToAdd, targetDay, 12, 0, 0);
             const d = String(resultDate.getDate()).padStart(2, '0');
             const m = String(resultDate.getMonth() + 1).padStart(2, '0');
@@ -378,12 +380,11 @@ function calculateKyDate(baseDateStr, kyIndex, data) {
             return `${d}/${m}/${y}`;
         }
 
-        // 2. TRƯỜNG HỢP: CÁC KỲ HẠN CŨ (NGÀY, TUẦN, THÁNG...)
+        // 2. XỬ LÝ CÁC LOẠI KỲ HẠN CŨ (NGÀY, TUẦN, THÁNG...)
         const kyHanValue = parseFloat(data.ky_han_value) || 1;
         const periodsToAdd = (kyIndex - 1) * kyHanValue;
         const unit = (data.ky_han_unit || '').toLowerCase();
 
-        // Đặt giờ là 12:00:00 trưa
         let targetDate = new Date(startYear, startMonth, startDay, 12, 0, 0);
 
         if (unit.includes('tháng') || kyHanText.toLowerCase().includes('tháng')) {
@@ -403,7 +404,7 @@ function calculateKyDate(baseDateStr, kyIndex, data) {
     }
 
     // =====================================================================
-    // HÀM HIỂN THỊ DỮ LIỆU BILL
+    // HÀM HIỂN THỊ BILL
     // =====================================================================
     function generateBill(data) {
         for (const key in data) {
@@ -454,25 +455,21 @@ function calculateKyDate(baseDateStr, kyIndex, data) {
                 return 0;
             });
 
-            // Tự động đọc chính xác ngày mở gốc (hỗ trợ cả ngay_khui và ngay_mo)
             const ngayMo = data.ngay_khui || data.ngay_mo || "";
             const soKyInt = parseInt(data.so_ky || data.so_ky_toi_da) || 0;
 
-            // 1. TÍNH MÃN KỲ DỰ KIẾN: Tính theo số kỳ tối đa (soKyInt)
+            // Tính ngày Mãn Kỳ
             const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
             if (manKyDuKienEl && soKyInt > 0) {
                 manKyDuKienEl.textContent = calculateKyDate(ngayMo, soKyInt, data);
             }
 
-            // 2. DUYỆT TỪNG DÒNG DỮ LIỆU ĐỂ HIỂN THỊ
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
                 const statusText = chan.status; 
                 let statusClass = 'dead'; 
                 let kyHienThi = chan.ky || ""; 
                 let ngayHienThi = chan.ngay; 
-
-                // Gán đúng chỉ số kỳ thực tế theo số thứ tự dòng
                 const kyThucTe = parseInt(chan.ky) || stt;
 
                 if (statusText === 'V' || statusText === 'S') {
@@ -480,8 +477,6 @@ function calculateKyDate(baseDateStr, kyIndex, data) {
                     if (!chan.ky || chan.ky === "") {
                         kyHienThi = ""; 
                     }
-                    
-                    // Nếu chân chưa khui (chưa có ngày) -> Tự động tính ngày
                     if (!ngayHienThi || ngayHienThi === "") {
                         ngayHienThi = calculateKyDate(ngayMo, kyThucTe, data);
                     }
