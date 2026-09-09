@@ -311,21 +311,66 @@
         }
     };
 
-        function formatCurrency(num) {
-            if (typeof num !== 'number' || num === null || num === 0) return '';
-            return num.toLocaleString('vi-VN');
-        }
-        
-        // 2. Hàm dùng cho dòng TỔNG CỘNG và THÔNG TIN PHỤ (Nếu bằng 0 vẫn HIỆN SỐ 0)
-        function formatTotalCurrency(num) {
-            if (typeof num !== 'number' || num === null) return '0';
-            return num.toLocaleString('vi-VN');
+    function formatCurrency(num) {
+        if (typeof num !== 'number' || num === null || num === 0) return '';
+        return num.toLocaleString('vi-VN');
+    }
+    
+    function formatTotalCurrency(num) {
+        if (typeof num !== 'number' || num === null) return '0';
+        return num.toLocaleString('vi-VN');
+    }
+
+    // HÀM TÍNH NGÀY CHO DÂY CỐ ĐỊNH 2 NGÀY TRONG THÁNG
+    function addFixedTwoDays(baseDateStr, kyIndex, mocNgayStr) {
+        if (!baseDateStr || !mocNgayStr) return baseDateStr;
+        const parts = baseDateStr.split('/');
+        if (parts.length !== 3) return baseDateStr;
+
+        let curDay = parseInt(parts[0], 10);
+        let curMonth = parseInt(parts[1], 10) - 1;
+        let curYear = parseInt(parts[2], 10);
+
+        let arrMoc = mocNgayStr.toString().split(',')
+            .map(n => parseInt(n.trim(), 10))
+            .filter(n => !isNaN(n))
+            .sort((a, b) => a - b);
+
+        if (arrMoc.length < 2) return baseDateStr;
+
+        let d1 = arrMoc[0];
+        let d2 = arrMoc[1];
+
+        let startFromD1 = (curDay <= d1);
+        let targetDay = 0;
+        let monthsToAdd = 0;
+
+        if (startFromD1) {
+            monthsToAdd = Math.floor((kyIndex - 1) / 2);
+            targetDay = (kyIndex % 2 === 1) ? d1 : d2;
+        } else {
+            monthsToAdd = Math.floor(kyIndex / 2);
+            targetDay = (kyIndex % 2 === 1) ? d2 : d1;
         }
 
-    function addPeriod(dateString, value, unit) {
+        let targetDate = new Date(curYear, curMonth + monthsToAdd, targetDay);
+        const dayFormatted = String(targetDate.getDate()).padStart(2, '0');
+        const monthFormatted = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const yearFormatted = targetDate.getFullYear();
+
+        return `${dayFormatted}/${monthFormatted}/${yearFormatted}`;
+    }
+
+    // HÀM TÍNH NGÀY ĐA NĂNG
+    function addPeriod(dateString, value, unit, kyIndex = 1, mocNgay = "") {
         if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
+
+        if ((unit || '').includes('2 ngày') || (mocNgay && mocNgay.toString().includes(','))) {
+            return addFixedTwoDays(dateString, kyIndex, mocNgay);
+        }
+
         const daysToAdd = Math.floor(parseFloat(value) || 0); 
-        if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) return dateString;
+        if (daysToAdd === 0 && !(unit || '').toLowerCase().includes('tháng')) return dateString;
 
         const [day, month, year] = dateString.split('/');
         const date = new Date(+year, +month - 1, +day);
@@ -415,7 +460,7 @@
             if (manKyDuKienEl) {
                 const soKyInt = parseInt(data.so_ky) || 0;
                 const periodsToAdd = (soKyInt - 1) * kyHanValueFloat;
-                manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit, soKyInt, data.moc_ngay);
             }
 
             let indexChuaHot = 0; 
@@ -438,7 +483,7 @@
                     const periodsToAdd = (kyGoiYDeTinhNgay - 1) * kyHanValueFloat;
                     
                     if (!ngayHienThi || ngayHienThi === "") {
-                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit, kyGoiYDeTinhNgay, data.moc_ngay);
                     }
                     
                     if (!chan.ky || chan.ky === "") {
