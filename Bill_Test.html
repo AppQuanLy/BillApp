@@ -321,26 +321,23 @@
         return num.toLocaleString('vi-VN');
     }
 
-    // =====================================================================
-    // HÀM TÍNH TOÁN NGÀY CHUẨN XÁC TUYỆT ĐỐI BẰNG GHÉP CHUỖI TOÁN HỌC
-    // (Triệt tiêu hoàn toàn lỗi múi giờ và lệch ngày)
-    // =====================================================================
-    function calculateKyDate(baseDateStr, kyIndex, data) {
-        if (!baseDateStr || typeof baseDateStr !== 'string') return "";
-        const parts = baseDateStr.trim().split('/');
-        if (parts.length !== 3) return baseDateStr;
+function calculateKyDate(baseDateStr, kyIndex, data) {
+    if (!baseDateStr || typeof baseDateStr !== 'string') return "";
+    const parts = baseDateStr.trim().split('/');
+    if (parts.length !== 3) return baseDateStr;
 
-        const startDay = parseInt(parts[0], 10);
-        const startMonth = parseInt(parts[1], 10); // Tháng 1 - 12
-        const startYear = parseInt(parts[2], 10);
+    const startDay = parseInt(parts[0], 10);
+    const startMonth = parseInt(parts[1], 10);
+    const startYear = parseInt(parts[2], 10);
 
-        // Đọc trực tiếp moc_1 và moc_2
-        let d1 = parseInt(data.moc_1, 10) || 0;
-        let d2 = parseInt(data.moc_2, 10) || 0;
+    let d1 = parseInt(data.moc_1, 10) || 0;
+    let d2 = parseInt(data.moc_2, 10) || 0;
 
-        // Dự phòng nếu app cũ gửi chuỗi moc_ngay
-        if ((d1 === 0 || d2 === 0) && data.moc_ngay) {
-            let arr = data.moc_ngay.toString().split(',')
+    // Quét dự phòng từ chuỗi moc_ngay nếu moc_1/moc_2 bị thiếu
+    if (d1 === 0 || d2 === 0) {
+        const rawMoc = (data.moc_ngay || data['MOC NGAY'] || '').toString();
+        if (rawMoc.includes(',')) {
+            const arr = rawMoc.split(',')
                 .map(n => parseInt(n.trim(), 10))
                 .filter(n => !isNaN(n) && n > 0)
                 .sort((a, b) => a - b);
@@ -349,68 +346,55 @@
                 d2 = arr[1];
             }
         }
-
-        const kyHanText = (data.ky_han_text || '').trim();
-
-        // 1. TRƯỜNG HỢP: CỐ ĐỊNH THÁNG/2 LẦN
-        if ((d1 > 0 && d2 > 0) || kyHanText.includes('Cố định Tháng/2 Lần')) {
-            // Đảm bảo d1 luôn nhỏ hơn d2
-            if (d1 > d2) {
-                let temp = d1; d1 = d2; d2 = temp;
-            }
-
-            // Nếu không có mốc hợp lệ, dự phòng an toàn
-            if (d1 === 0 || d2 === 0) {
-                d1 = (startDay <= 15) ? startDay : (startDay - 15);
-                d2 = (startDay <= 15) ? (startDay + 15) : startDay;
-            }
-
-            let startFromD1 = (startDay <= d1);
-            let targetDay = 0;
-            let monthsToAdd = 0;
-
-            if (startFromD1) {
-                // Mở từ mốc nhỏ: Kỳ lẻ lấy d1, Kỳ chẵn lấy d2 cùng tháng
-                monthsToAdd = Math.floor((kyIndex - 1) / 2);
-                targetDay = (kyIndex % 2 === 1) ? d1 : d2;
-            } else {
-                // Mở từ mốc lớn: Kỳ 1 lấy d2, Kỳ 2 sang d1 tháng sau
-                monthsToAdd = Math.floor(kyIndex / 2);
-                targetDay = (kyIndex % 2 === 1) ? d2 : d1;
-            }
-
-            // TÍNH TOÁN THÁNG VÀ NĂM THUẦN TÚY BẰNG TOÁN HỌC (Không qua new Date)
-            let totalMonths = (startMonth - 1) + monthsToAdd;
-            let finalYear = startYear + Math.floor(totalMonths / 12);
-            let finalMonth = (totalMonths % 12) + 1;
-
-            const dFormatted = String(targetDay).padStart(2, '0');
-            const mFormatted = String(finalMonth).padStart(2, '0');
-            return `${dFormatted}/${mFormatted}/${finalYear}`;
-        }
-
-        // 2. TRƯỜNG HỢP: CÁC KỲ HẠN THÔNG THƯỜNG (NGÀY, TUẦN, THÁNG, 4 THÁNG...)
-        const kyHanValue = parseFloat(data.ky_han_value) || 1;
-        const periodsToAdd = (kyIndex - 1) * kyHanValue;
-        const unit = (data.ky_han_unit || '').toLowerCase();
-
-        let targetDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
-
-        if (unit.includes('tháng') || kyHanText.toLowerCase().includes('tháng')) {
-            const originalDay = targetDate.getDate();
-            targetDate.setDate(1);
-            targetDate.setMonth(targetDate.getMonth() + Math.floor(periodsToAdd));
-            const lastDay = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
-            targetDate.setDate(Math.min(originalDay, lastDay));
-        } else {
-            targetDate.setDate(targetDate.getDate() + Math.floor(periodsToAdd));
-        }
-
-        const d = String(targetDate.getDate()).padStart(2, '0');
-        const m = String(targetDate.getMonth() + 1).padStart(2, '0');
-        const y = targetDate.getFullYear();
-        return `${d}/${m}/${y}`;
     }
+
+    const kyHanText = (data.ky_han_text || '').trim();
+
+    // XỬ LÝ KỲ HẠN: CỐ ĐỊNH THÁNG/2 LẦN
+    if ((d1 > 0 && d2 > 0) || kyHanText.includes('Cố định Tháng/2 Lần')) {
+        // Luôn đảm bảo d1 là mốc nhỏ, d2 là mốc lớn
+        if (d1 > d2) {
+            const temp = d1; d1 = d2; d2 = temp;
+        }
+
+        const startFromD1 = (startDay <= d1);
+        let targetDay = 0;
+        let monthsToAdd = 0;
+
+        if (startFromD1) {
+            monthsToAdd = Math.floor((kyIndex - 1) / 2);
+            targetDay = (kyIndex % 2 === 1) ? d1 : d2;
+        } else {
+            monthsToAdd = Math.floor(kyIndex / 2);
+            targetDay = (kyIndex % 2 === 1) ? d2 : d1;
+        }
+
+        const totalMonths = (startMonth - 1) + monthsToAdd;
+        const finalYear = startYear + Math.floor(totalMonths / 12);
+        const finalMonth = (totalMonths % 12) + 1;
+
+        return `${String(targetDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
+    }
+
+    // XỬ LÝ CÁC KỲ HẠN THƯỜNG (NGÀY, TUẦN, THÁNG...)
+    const kyHanValue = parseFloat(data.ky_han_value) || 1;
+    const periodsToAdd = (kyIndex - 1) * kyHanValue;
+    const unit = (data.ky_han_unit || '').toLowerCase();
+
+    let targetDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
+
+    if (unit.includes('tháng') || kyHanText.toLowerCase().includes('tháng')) {
+        const originalDay = targetDate.getDate();
+        targetDate.setDate(1);
+        targetDate.setMonth(targetDate.getMonth() + Math.floor(periodsToAdd));
+        const lastDay = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
+        targetDate.setDate(Math.min(originalDay, lastDay));
+    } else {
+        targetDate.setDate(targetDate.getDate() + Math.floor(periodsToAdd));
+    }
+
+    return `${String(targetDate.getDate()).padStart(2, '0')}/${String(targetDate.getMonth() + 1).padStart(2, '0')}/${targetDate.getFullYear()}`;
+}
 
     // =====================================================================
     // HÀM HIỂN THỊ DỮ LIỆU BILL
