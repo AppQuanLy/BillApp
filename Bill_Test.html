@@ -322,93 +322,91 @@
     }
 
     // =====================================================================
-    // 1. HÀM TÍNH NGÀY CỐ ĐỊNH 2 MỐC TRONG THÁNG (CHUẨN DD/MM/YYYY)
+    // HÀM TÍNH TOÁN NGÀY THEO KỲ CHUẨN XÁC VÀ AN TOÀN TUYỆT ĐỐI
     // =====================================================================
-    function addFixedTwoDays(baseDateStr, kyIndex, mocNgayStr) {
+    function calculateKyDate(baseDateStr, kyIndex, data) {
         if (!baseDateStr || typeof baseDateStr !== 'string') return "";
         const parts = baseDateStr.trim().split('/');
         if (parts.length !== 3) return baseDateStr;
 
-        const curDay = parseInt(parts[0], 10);
-        const curMonth = parseInt(parts[1], 10) - 1; // Tháng trong JS từ 0 - 11
-        const curYear = parseInt(parts[2], 10);
+        const startDay = parseInt(parts[0], 10);
+        const startMonth = parseInt(parts[1], 10) - 1; // Tháng trong JavaScript từ 0 - 11
+        const startYear = parseInt(parts[2], 10);
 
-        // Lấy chuỗi mốc ngày từ tham số hoặc dữ liệu toàn cục billData
-        const strMoc = mocNgayStr || (billData && billData.moc_ngay) || "";
-        const arrMoc = strMoc.toString().split(',')
-            .map(n => parseInt(n.trim(), 10))
-            .filter(n => !isNaN(n))
-            .sort((a, b) => a - b);
+        const m1 = parseInt(data.moc_1, 10) || 0;
+        const m2 = parseInt(data.moc_2, 10) || 0;
+        const kyHanText = (data.ky_han_text || '').trim();
 
-        if (arrMoc.length < 2) return baseDateStr;
+        // 1. LUỒNG XỬ LÝ: CỐ ĐỊNH THÁNG/2 LẦN (Khi có moc_1, moc_2)
+        if ((m1 > 0 && m2 > 0) || kyHanText.includes('Cố định Tháng/2 Lần')) {
+            let d1 = m1;
+            let d2 = m2;
 
-        const d1 = arrMoc[0]; // Mốc ngày nhỏ (VD: 9)
-        const d2 = arrMoc[1]; // Mốc ngày lớn (VD: 25)
+            // Dự phòng an toàn nếu app cũ lỡ chỉ gửi moc_ngay dạng text "9 , 25"
+            if (d1 === 0 && data.moc_ngay && data.moc_ngay.toString().includes(',')) {
+                let arrMoc = data.moc_ngay.toString().split(',')
+                    .map(n => parseInt(n.trim(), 10))
+                    .filter(n => !isNaN(n))
+                    .sort((a, b) => a - b);
+                if (arrMoc.length >= 2) {
+                    d1 = arrMoc[0];
+                    d2 = arrMoc[1];
+                }
+            }
 
-        const startFromD1 = (curDay <= d1);
-        let targetDay = 0;
-        let monthsToAdd = 0;
+            // Nếu hoàn toàn không có mốc, mặc định mốc 1 và 15
+            if (d1 === 0 || d2 === 0) {
+                d1 = (startDay <= 15) ? startDay : (startDay - 15);
+                d2 = (startDay <= 15) ? (startDay + 15) : startDay;
+            }
 
-        if (startFromD1) {
-            // Mở từ mốc nhỏ: Kỳ lẻ lấy d1, Kỳ chẵn lấy d2 cùng tháng
-            monthsToAdd = Math.floor((kyIndex - 1) / 2);
-            targetDay = (kyIndex % 2 === 1) ? d1 : d2;
-        } else {
-            // Mở từ mốc lớn: Kỳ 1 lấy d2, Kỳ 2 nhảy sang d1 tháng sau
-            monthsToAdd = Math.floor(kyIndex / 2);
-            targetDay = (kyIndex % 2 === 1) ? d2 : d1;
+            // Kiểm tra ngày mở bắt đầu từ mốc nhỏ hay mốc lớn
+            let startFromD1 = (startDay <= d1);
+            let targetDay = 0;
+            let monthsToAdd = 0;
+
+            if (startFromD1) {
+                // Mở từ mốc nhỏ: Kỳ lẻ lấy d1, Kỳ chẵn lấy d2 cùng tháng
+                monthsToAdd = Math.floor((kyIndex - 1) / 2);
+                targetDay = (kyIndex % 2 === 1) ? d1 : d2;
+            } else {
+                // Mở từ mốc lớn: Kỳ 1 lấy d2, Kỳ 2 nhảy sang d1 tháng sau
+                monthsToAdd = Math.floor(kyIndex / 2);
+                targetDay = (kyIndex % 2 === 1) ? d2 : d1;
+            }
+
+            let resultDate = new Date(startYear, startMonth + monthsToAdd, targetDay);
+            const d = String(resultDate.getDate()).padStart(2, '0');
+            const m = String(resultDate.getMonth() + 1).padStart(2, '0');
+            const y = resultDate.getFullYear();
+            return `${d}/${m}/${y}`;
         }
 
-        const targetDate = new Date(curYear, curMonth + monthsToAdd, targetDay);
-        const dayFormatted = String(targetDate.getDate()).padStart(2, '0');
-        const monthFormatted = String(targetDate.getMonth() + 1).padStart(2, '0');
-        const yearFormatted = targetDate.getFullYear();
+        // 2. LUỒNG XỬ LÝ: CÁC APP CŨ HOẶC CÁC KỲ HẠN THƯỜNG (NGÀY, TUẦN, THÁNG, 4 THÁNG...)
+        const kyHanValue = parseFloat(data.ky_han_value) || 1;
+        const periodsToAdd = (kyIndex - 1) * kyHanValue;
+        const unit = (data.ky_han_unit || '').toLowerCase();
 
-        return `${dayFormatted}/${monthFormatted}/${yearFormatted}`;
+        let targetDate = new Date(startYear, startMonth, startDay);
+
+        if (unit.includes('tháng') || kyHanText.toLowerCase().includes('tháng')) {
+            const originalDay = targetDate.getDate();
+            targetDate.setDate(1);
+            targetDate.setMonth(targetDate.getMonth() + Math.floor(periodsToAdd));
+            const lastDay = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
+            targetDate.setDate(Math.min(originalDay, lastDay));
+        } else {
+            targetDate.setDate(targetDate.getDate() + Math.floor(periodsToAdd));
+        }
+
+        const d = String(targetDate.getDate()).padStart(2, '0');
+        const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const y = targetDate.getFullYear();
+        return `${d}/${m}/${y}`;
     }
 
     // =====================================================================
-    // 2. HÀM TÍNH NGÀY ĐA NĂNG
-    // =====================================================================
-    function addPeriod(dateString, value, unit, kyIndex = 1, mocNgay = "") {
-        if (!dateString || typeof dateString !== 'string') return "";
-
-        const kyHanText = (billData && billData.ky_han_text) ? billData.ky_han_text : (unit || '');
-        const strMoc = mocNgay || (billData && billData.moc_ngay) || "";
-
-        // Kiểm tra loại kỳ hạn Cố định Tháng/2 Lần
-        if (kyHanText.includes('Cố định Tháng/2 Lần') || strMoc.toString().includes(',')) {
-            return addFixedTwoDays(dateString, kyIndex, strMoc);
-        }
-
-        // Logic cộng ngày hoặc cộng tháng thông thường cũ
-        const parts = dateString.trim().split('/');
-        if (parts.length !== 3) return "";
-
-        const date = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
-        const daysToAdd = Math.floor(parseFloat(value) || 0); 
-        const cleanUnit = (unit || '').toLowerCase();
-
-        if (daysToAdd === 0 && !cleanUnit.includes('tháng')) return dateString;
-
-        if (cleanUnit.includes('tháng')) {
-            const originalDay = date.getDate();
-            date.setDate(1);
-            date.setMonth(date.getMonth() + daysToAdd);
-            const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-            date.setDate(Math.min(originalDay, lastDayOfNewMonth));
-        } else {
-            date.setDate(date.getDate() + daysToAdd);
-        }
-        
-        const newDay = String(date.getDate()).padStart(2, '0');
-        const newMonth = String(date.getMonth() + 1).padStart(2, '0');
-        const newYear = date.getFullYear();
-        return `${newDay}/${newMonth}/${newYear}`;
-    }
-
-    // =====================================================================
-    // 3. HÀM HIỂN THỊ DỮ LIỆU BILL
+    // HÀM HIỂN THỊ DỮ LIỆU BILL
     // =====================================================================
     function generateBill(data) {
         for (const key in data) {
@@ -428,8 +426,8 @@
         const rowHotChot = document.getElementById('row_hot_chot');
         if (data.tien_hui && data.tien_hui.toString().trim() !== "") {
             let soKyNum = 0;
-            if (data.so_ky) {
-                const match = data.so_ky.toString().match(/\d+/);
+            if (data.so_ky || data.so_ky_toi_da) {
+                const match = (data.so_ky || data.so_ky_toi_da).toString().match(/\d+/);
                 if (match) soKyNum = parseInt(match[0]);
             }
             
@@ -459,17 +457,17 @@
                 return 0;
             });
 
-            const ngayMo = data.ngay_mo || data.ngay_khui;
-            const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
+            // Tự động đọc chính xác ngày mở gốc (hỗ trợ cả ngay_khui và ngay_mo)
+            const ngayMo = data.ngay_khui || data.ngay_mo || "";
             const soKyInt = parseInt(data.so_ky || data.so_ky_toi_da) || 0;
 
-            // Tính Mãn Kỳ dự kiến chuẩn theo số kỳ tối đa
+            // 1. TÍNH MÃN KỲ DỰ KIẾN: Tính theo số kỳ tối đa (soKyInt)
             const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
-            if (manKyDuKienEl) {
-                const periodsToAdd = (soKyInt - 1) * kyHanValueFloat;
-                manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_text || data.ky_han_unit, soKyInt, data.moc_ngay);
+            if (manKyDuKienEl && soKyInt > 0) {
+                manKyDuKienEl.textContent = calculateKyDate(ngayMo, soKyInt, data);
             }
 
+            // 2. DUYỆT TỪNG DÒNG DỮ LIỆU ĐỂ HIỂN THỊ
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
                 const statusText = chan.status; 
@@ -486,10 +484,9 @@
                         kyHienThi = ""; 
                     }
                     
-                    // Tính ngày dự kiến cho chân sống chưa khui
+                    // Nếu chân chưa khui (chưa có ngày) -> Tự động tính ngày
                     if (!ngayHienThi || ngayHienThi === "") {
-                        const periodsToAdd = (kyThucTe - 1) * kyHanValueFloat;
-                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_text || data.ky_han_unit, kyThucTe, data.moc_ngay);
+                        ngayHienThi = calculateKyDate(ngayMo, kyThucTe, data);
                     }
                 } else if (statusText === 'C') {
                     statusClass = 'c-status'; 
