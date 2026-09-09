@@ -324,25 +324,24 @@
     // =====================================================================
     // HÀM TÍNH TOÁN NGÀY THEO KỲ CHUẨN XÁC VÀ AN TOÀN TUYỆT ĐỐI
     // =====================================================================
-    function calculateKyDate(baseDateStr, kyIndex, data) {
+function calculateKyDate(baseDateStr, kyIndex, data) {
         if (!baseDateStr || typeof baseDateStr !== 'string') return "";
         const parts = baseDateStr.trim().split('/');
         if (parts.length !== 3) return baseDateStr;
 
         const startDay = parseInt(parts[0], 10);
-        const startMonth = parseInt(parts[1], 10) - 1; // Tháng trong JavaScript từ 0 - 11
+        const startMonth = parseInt(parts[1], 10) - 1; // 0 - 11
         const startYear = parseInt(parts[2], 10);
 
         const m1 = parseInt(data.moc_1, 10) || 0;
         const m2 = parseInt(data.moc_2, 10) || 0;
         const kyHanText = (data.ky_han_text || '').trim();
 
-        // 1. LUỒNG XỬ LÝ: CỐ ĐỊNH THÁNG/2 LẦN (Khi có moc_1, moc_2)
+        // 1. TRƯỜNG HỢP: CỐ ĐỊNH THÁNG/2 LẦN
         if ((m1 > 0 && m2 > 0) || kyHanText.includes('Cố định Tháng/2 Lần')) {
             let d1 = m1;
             let d2 = m2;
 
-            // Dự phòng an toàn nếu app cũ lỡ chỉ gửi moc_ngay dạng text "9 , 25"
             if (d1 === 0 && data.moc_ngay && data.moc_ngay.toString().includes(',')) {
                 let arrMoc = data.moc_ngay.toString().split(',')
                     .map(n => parseInt(n.trim(), 10))
@@ -354,40 +353,38 @@
                 }
             }
 
-            // Nếu hoàn toàn không có mốc, mặc định mốc 1 và 15
             if (d1 === 0 || d2 === 0) {
                 d1 = (startDay <= 15) ? startDay : (startDay - 15);
                 d2 = (startDay <= 15) ? (startDay + 15) : startDay;
             }
 
-            // Kiểm tra ngày mở bắt đầu từ mốc nhỏ hay mốc lớn
             let startFromD1 = (startDay <= d1);
             let targetDay = 0;
             let monthsToAdd = 0;
 
             if (startFromD1) {
-                // Mở từ mốc nhỏ: Kỳ lẻ lấy d1, Kỳ chẵn lấy d2 cùng tháng
                 monthsToAdd = Math.floor((kyIndex - 1) / 2);
                 targetDay = (kyIndex % 2 === 1) ? d1 : d2;
             } else {
-                // Mở từ mốc lớn: Kỳ 1 lấy d2, Kỳ 2 nhảy sang d1 tháng sau
                 monthsToAdd = Math.floor(kyIndex / 2);
                 targetDay = (kyIndex % 2 === 1) ? d2 : d1;
             }
 
-            let resultDate = new Date(startYear, startMonth + monthsToAdd, targetDay);
+            // Đặt giờ là 12:00:00 trưa để chống lệch múi giờ làm lùi ngày
+            let resultDate = new Date(startYear, startMonth + monthsToAdd, targetDay, 12, 0, 0);
             const d = String(resultDate.getDate()).padStart(2, '0');
             const m = String(resultDate.getMonth() + 1).padStart(2, '0');
             const y = resultDate.getFullYear();
             return `${d}/${m}/${y}`;
         }
 
-        // 2. LUỒNG XỬ LÝ: CÁC APP CŨ HOẶC CÁC KỲ HẠN THƯỜNG (NGÀY, TUẦN, THÁNG, 4 THÁNG...)
+        // 2. TRƯỜNG HỢP: CÁC KỲ HẠN CŨ (NGÀY, TUẦN, THÁNG...)
         const kyHanValue = parseFloat(data.ky_han_value) || 1;
         const periodsToAdd = (kyIndex - 1) * kyHanValue;
         const unit = (data.ky_han_unit || '').toLowerCase();
 
-        let targetDate = new Date(startYear, startMonth, startDay);
+        // Đặt giờ là 12:00:00 trưa
+        let targetDate = new Date(startYear, startMonth, startDay, 12, 0, 0);
 
         if (unit.includes('tháng') || kyHanText.toLowerCase().includes('tháng')) {
             const originalDay = targetDate.getDate();
