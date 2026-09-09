@@ -321,83 +321,80 @@
         return num.toLocaleString('vi-VN');
     }
 
-function calculateKyDate(baseDateStr, kyIndex, data) {
-    if (!baseDateStr || typeof baseDateStr !== 'string') return "";
-    const parts = baseDateStr.trim().split('/');
-    if (parts.length !== 3) return baseDateStr;
+    // =====================================================================
+    // HÀM TÍNH LỊCH NGÀY CHUẨN XÁC TUYỆT ĐỐI
+    // =====================================================================
+    function calculateKyDate(baseDateStr, kyIndex, data) {
+        if (!baseDateStr || typeof baseDateStr !== 'string') return "";
+        const parts = baseDateStr.trim().split('/');
+        if (parts.length !== 3) return baseDateStr;
 
-    const startDay = parseInt(parts[0], 10);
-    const startMonth = parseInt(parts[1], 10);
-    const startYear = parseInt(parts[2], 10);
+        const startDay = parseInt(parts[0], 10);
+        const startMonth = parseInt(parts[1], 10); // 1 - 12
+        const startYear = parseInt(parts[2], 10);
 
-    let d1 = parseInt(data.moc_1, 10) || 0;
-    let d2 = parseInt(data.moc_2, 10) || 0;
+        let d1 = parseInt(data.moc_1, 10) || 0;
+        let d2 = parseInt(data.moc_2, 10) || 0;
+        const kyHanText = (data.ky_han_text || '').trim();
 
-    // Quét dự phòng từ chuỗi moc_ngay nếu moc_1/moc_2 bị thiếu
-    if (d1 === 0 || d2 === 0) {
-        const rawMoc = (data.moc_ngay || data['MOC NGAY'] || '').toString();
-        if (rawMoc.includes(',')) {
-            const arr = rawMoc.split(',')
-                .map(n => parseInt(n.trim(), 10))
-                .filter(n => !isNaN(n) && n > 0)
-                .sort((a, b) => a - b);
-            if (arr.length >= 2) {
-                d1 = arr[0];
-                d2 = arr[1];
+        // 1. TRƯỜNG HỢP: CỐ ĐỊNH THÁNG/2 LẦN (Khi có moc_1, moc_2)
+        if ((d1 > 0 && d2 > 0) || kyHanText.includes('Cố định Tháng/2 Lần')) {
+            if (d1 > d2) {
+                let temp = d1; d1 = d2; d2 = temp;
             }
+
+            // Nếu dữ liệu thiếu mốc, tự động dùng ngày mở và ngày mở + 15
+            if (d1 === 0 || d2 === 0) {
+                d1 = startDay;
+                d2 = (startDay <= 15) ? (startDay + 15) : (startDay - 15);
+                if (d1 > d2) { let t = d1; d1 = d2; d2 = t; }
+            }
+
+            let startFromD1 = (startDay <= d1);
+            let targetDay = 0;
+            let monthsToAdd = 0;
+
+            if (startFromD1) {
+                monthsToAdd = Math.floor((kyIndex - 1) / 2);
+                targetDay = (kyIndex % 2 === 1) ? d1 : d2;
+            } else {
+                monthsToAdd = Math.floor(kyIndex / 2);
+                targetDay = (kyIndex % 2 === 1) ? d2 : d1;
+            }
+
+            // Ghép chuỗi toán học trực tiếp
+            let totalMonths = (startMonth - 1) + monthsToAdd;
+            let finalYear = startYear + Math.floor(totalMonths / 12);
+            let finalMonth = (totalMonths % 12) + 1;
+
+            return `${String(targetDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
         }
-    }
 
-    const kyHanText = (data.ky_han_text || '').trim();
+        // 2. TRƯỜNG HỢP: CÁC KỲ HẠN CŨ (NGÀY, TUẦN, THÁNG...)
+        const kyHanValue = parseFloat(data.ky_han_value) || 1;
+        const periodsToAdd = (kyIndex - 1) * kyHanValue;
+        const unit = (data.ky_han_unit || '').toLowerCase();
 
-    // XỬ LÝ KỲ HẠN: CỐ ĐỊNH THÁNG/2 LẦN
-    if ((d1 > 0 && d2 > 0) || kyHanText.includes('Cố định Tháng/2 Lần')) {
-        // Luôn đảm bảo d1 là mốc nhỏ, d2 là mốc lớn
-        if (d1 > d2) {
-            const temp = d1; d1 = d2; d2 = temp;
-        }
+        let targetDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
 
-        const startFromD1 = (startDay <= d1);
-        let targetDay = 0;
-        let monthsToAdd = 0;
-
-        if (startFromD1) {
-            monthsToAdd = Math.floor((kyIndex - 1) / 2);
-            targetDay = (kyIndex % 2 === 1) ? d1 : d2;
+        if (unit.includes('tháng') || kyHanText.toLowerCase().includes('tháng')) {
+            const originalDay = targetDate.getDate();
+            targetDate.setDate(1);
+            targetDate.setMonth(targetDate.getMonth() + Math.floor(periodsToAdd));
+            const lastDay = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
+            targetDate.setDate(Math.min(originalDay, lastDay));
         } else {
-            monthsToAdd = Math.floor(kyIndex / 2);
-            targetDay = (kyIndex % 2 === 1) ? d2 : d1;
+            targetDate.setDate(targetDate.getDate() + Math.floor(periodsToAdd));
         }
 
-        const totalMonths = (startMonth - 1) + monthsToAdd;
-        const finalYear = startYear + Math.floor(totalMonths / 12);
-        const finalMonth = (totalMonths % 12) + 1;
-
-        return `${String(targetDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
+        const d = String(targetDate.getDate()).padStart(2, '0');
+        const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const y = targetDate.getFullYear();
+        return `${d}/${m}/${y}`;
     }
-
-    // XỬ LÝ CÁC KỲ HẠN THƯỜNG (NGÀY, TUẦN, THÁNG...)
-    const kyHanValue = parseFloat(data.ky_han_value) || 1;
-    const periodsToAdd = (kyIndex - 1) * kyHanValue;
-    const unit = (data.ky_han_unit || '').toLowerCase();
-
-    let targetDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
-
-    if (unit.includes('tháng') || kyHanText.toLowerCase().includes('tháng')) {
-        const originalDay = targetDate.getDate();
-        targetDate.setDate(1);
-        targetDate.setMonth(targetDate.getMonth() + Math.floor(periodsToAdd));
-        const lastDay = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
-        targetDate.setDate(Math.min(originalDay, lastDay));
-    } else {
-        targetDate.setDate(targetDate.getDate() + Math.floor(periodsToAdd));
-    }
-
-    return `${String(targetDate.getDate()).padStart(2, '0')}/${String(targetDate.getMonth() + 1).padStart(2, '0')}/${targetDate.getFullYear()}`;
-}
 
     // =====================================================================
-    // HÀM HIỂN THỊ DỮ LIỆU BILL
+    // HÀM RENDER DỮ LIỆU LÊN BILL
     // =====================================================================
     function generateBill(data) {
         for (const key in data) {
@@ -448,17 +445,20 @@ function calculateKyDate(baseDateStr, kyIndex, data) {
                 return 0;
             });
 
-            // Lấy đúng ngày mở gốc (hỗ trợ cả ngay_khui và ngay_mo)
-            const ngayMo = data.ngay_khui || data.ngay_mo || "";
+            const ngayMo = data.ngay_mo || data.ngay_khui || "";
             const soKyInt = parseInt(data.so_ky || data.so_ky_toi_da) || 0;
 
-            // 1. TÍNH MÃN KỲ DỰ KIẾN (Kỳ cuối cùng = soKyInt)
+            // 1. TÍNH MÃN KỲ: ƯU TIÊN LẤY TỪ APPSHEET ĐÃ TÍNH TRƯỚC
             const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
-            if (manKyDuKienEl && soKyInt > 0) {
-                manKyDuKienEl.textContent = calculateKyDate(ngayMo, soKyInt, data);
+            if (manKyDuKienEl) {
+                if (data.man_ky_du_kien && data.man_ky_du_kien.trim() !== "") {
+                    manKyDuKienEl.textContent = data.man_ky_du_kien;
+                } else if (soKyInt > 0) {
+                    manKyDuKienEl.textContent = calculateKyDate(ngayMo, soKyInt, data);
+                }
             }
 
-            // 2. DUYỆT TỪNG DÒNG DỮ LIỆU
+            // 2. DUYỆT TỪNG DÒNG CHÂN HỤI
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
                 const statusText = chan.status; 
