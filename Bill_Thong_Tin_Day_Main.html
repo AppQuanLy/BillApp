@@ -197,44 +197,94 @@
         }
     };
 
-        function formatCurrency(num) {
-            if (typeof num !== 'number' || num === null || num === 0) return '';
-            return num.toLocaleString('vi-VN');
-        }
-        
-        function formatTotalCurrency(num) {
-            if (typeof num !== 'number' || num === null) return '0';
-            return num.toLocaleString('vi-VN');
-        }
-
-    function addPeriod(dateString, value, unit) {
-        if (!dateString || typeof dateString !== 'string' || dateString.split('/').length !== 3) return "";
-        const daysToAdd = Math.floor(parseFloat(value) || 0); 
-        if (daysToAdd === 0 && !unit.toLowerCase().includes('tháng')) return dateString;
-
-        const [day, month, year] = dateString.split('/');
-        const date = new Date(+year, +month - 1, +day);
-        if (isNaN(date.getTime())) return "";
-
-        if ((unit || '').toLowerCase().includes('tháng')) {
-            const originalDay = date.getDate();
-            date.setDate(1);
-            date.setMonth(date.getMonth() + daysToAdd);
-            const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-            date.setDate(Math.min(originalDay, lastDayOfNewMonth));
-        } else {
-            date.setDate(date.getDate() + daysToAdd);
-        }
-        
-        const newDay = String(date.getDate()).padStart(2, '0');
-        const newMonth = String(date.getMonth() + 1).padStart(2, '0');
-        const newYear = date.getFullYear();
-        return `${newDay}/${newMonth}/${newYear}`;
+    function formatCurrency(num) {
+        if (typeof num !== 'number' || num === null || num === 0) return '';
+        return num.toLocaleString('vi-VN');
+    }
+    
+    function formatTotalCurrency(num) {
+        if (typeof num !== 'number' || num === null) return '0';
+        return num.toLocaleString('vi-VN');
     }
 
+    // =====================================================================
+    // HÀM TÍNH LỊCH NGÀY CHUẨN XÁC TUYỆT ĐỐI
+    // =====================================================================
+    function calculateKyDate(baseDateStr, kyIndex, data) {
+        if (!baseDateStr || typeof baseDateStr !== 'string') return "";
+        const parts = baseDateStr.trim().split('/');
+        if (parts.length !== 3) return baseDateStr;
+
+        const startDay = parseInt(parts[0], 10);
+        const startMonth = parseInt(parts[1], 10); // 1 - 12
+        const startYear = parseInt(parts[2], 10);
+
+        let d1 = parseInt(data.moc_1, 10) || 0;
+        let d2 = parseInt(data.moc_2, 10) || 0;
+        const kyHanText = (data.ky_han_text || '').trim();
+
+        // 1. TRƯỜNG HỢP: CỐ ĐỊNH THÁNG/2 LẦN (Khi có moc_1, moc_2)
+        if ((d1 > 0 && d2 > 0) || kyHanText.includes('Cố định Tháng/2 Lần')) {
+            if (d1 > d2) {
+                let temp = d1; d1 = d2; d2 = temp;
+            }
+
+            // Nếu dữ liệu thiếu mốc, tự động dùng ngày mở và ngày mở + 15
+            if (d1 === 0 || d2 === 0) {
+                d1 = startDay;
+                d2 = (startDay <= 15) ? (startDay + 15) : (startDay - 15);
+                if (d1 > d2) { let t = d1; d1 = d2; d2 = t; }
+            }
+
+            let startFromD1 = (startDay <= d1);
+            let targetDay = 0;
+            let monthsToAdd = 0;
+
+            if (startFromD1) {
+                monthsToAdd = Math.floor((kyIndex - 1) / 2);
+                targetDay = (kyIndex % 2 === 1) ? d1 : d2;
+            } else {
+                monthsToAdd = Math.floor(kyIndex / 2);
+                targetDay = (kyIndex % 2 === 1) ? d2 : d1;
+            }
+
+            // Ghép chuỗi toán học trực tiếp
+            let totalMonths = (startMonth - 1) + monthsToAdd;
+            let finalYear = startYear + Math.floor(totalMonths / 12);
+            let finalMonth = (totalMonths % 12) + 1;
+
+            return `${String(targetDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
+        }
+
+        // 2. TRƯỜNG HỢP: CÁC KỲ HẠN CŨ (NGÀY, TUẦN, THÁNG...)
+        const kyHanValue = parseFloat(data.ky_han_value) || 1;
+        const periodsToAdd = (kyIndex - 1) * kyHanValue;
+        const unit = (data.ky_han_unit || '').toLowerCase();
+
+        let targetDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
+
+        if (unit.includes('tháng') || kyHanText.toLowerCase().includes('tháng')) {
+            const originalDay = targetDate.getDate();
+            targetDate.setDate(1);
+            targetDate.setMonth(targetDate.getMonth() + Math.floor(periodsToAdd));
+            const lastDay = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
+            targetDate.setDate(Math.min(originalDay, lastDay));
+        } else {
+            targetDate.setDate(targetDate.getDate() + Math.floor(periodsToAdd));
+        }
+
+        const d = String(targetDate.getDate()).padStart(2, '0');
+        const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const y = targetDate.getFullYear();
+        return `${d}/${m}/${y}`;
+    }
+
+    // =====================================================================
+    // HÀM RENDER DỮ LIỆU LÊN BILL
+    // =====================================================================
     function generateBill(data) {
         for (const key in data) {
-            if (key !== 'danh_sach_chan' && key !== 'danh_sach_chan_1' && key !== 'danh_sach_chan_2' && key !== 'tham_san' && key !== 'tien_hui') {
+            if (key !== 'danh_sach_chan' && key !== 'danh_sach_chan_1' && key !== 'danh_sach_chan_2' && key !== 'tham_san') {
                 const element = document.querySelector(`[data-field="${key}"]`);
                 if (element) element.textContent = data[key];
             }
@@ -250,8 +300,8 @@
         const rowHotChot = document.getElementById('row_hot_chot');
         if (data.tien_hui && data.tien_hui.toString().trim() !== "") {
             let soKyNum = 0;
-            if (data.so_ky) {
-                const match = data.so_ky.toString().match(/\d+/);
+            if (data.so_ky || data.so_ky_toi_da) {
+                const match = (data.so_ky || data.so_ky_toi_da).toString().match(/\d+/);
                 if (match) soKyNum = parseInt(match[0]);
             }
             
@@ -269,69 +319,47 @@
         let tongTham = 0, tongTienHot = 0, tongTienDong = 0;
 
         if (data.danh_sach_chan && Array.isArray(data.danh_sach_chan)) {
-
             data.danh_sach_chan.sort((a, b) => {
                 const kyA = parseInt(a.ky) || 0;
                 const kyB = parseInt(b.ky) || 0;
-                
                 const hasKyA = (kyA > 0);
                 const hasKyB = (kyB > 0);
 
                 if (hasKyA && !hasKyB) return -1;
                 if (!hasKyA && hasKyB) return 1;
-
-                if (hasKyA && hasKyB) {
-                    return kyA - kyB;
-                }
+                if (hasKyA && hasKyB) return kyA - kyB;
                 return 0;
             });
 
-            const ngayMo = data.ngay_mo;
-            const kyHanValueFloat = parseFloat(data.ky_han_value) || 1; 
+            const ngayMo = data.ngay_mo || data.ngay_khui || "";
+            const soKyInt = parseInt(data.so_ky || data.so_ky_toi_da) || 0;
 
-            let maxKyDaKhui = 0;
-            data.danh_sach_chan.forEach(chan => {
-                if (chan.status !== 'V' && chan.ky) {
-                    const k = parseInt(chan.ky) || 0;
-                    if (k > maxKyDaKhui) maxKyDaKhui = k;
-                }
-            });
-
+            // 1. TÍNH MÃN KỲ: ƯU TIÊN LẤY TỪ APPSHEET ĐÃ TÍNH TRƯỚC
             const manKyDuKienEl = document.querySelector('[data-field="man_ky_du_kien"]');
             if (manKyDuKienEl) {
-                const soKyInt = parseInt(data.so_ky) || 0;
-                const periodsToAdd = (soKyInt - 1) * kyHanValueFloat;
-                manKyDuKienEl.textContent = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
+                if (data.man_ky_du_kien && data.man_ky_du_kien.trim() !== "") {
+                    manKyDuKienEl.textContent = data.man_ky_du_kien;
+                } else if (soKyInt > 0) {
+                    manKyDuKienEl.textContent = calculateKyDate(ngayMo, soKyInt, data);
+                }
             }
 
-            let indexChuaHot = 0; 
-
+            // 2. DUYỆT TỪNG DÒNG CHÂN HỤI
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
                 const statusText = chan.status; 
                 let statusClass = 'dead'; 
-                let kyHienThi = chan.ky || ""; // Sử dụng chính dữ liệu kỳ từ AppSheet nếu có
+                let kyHienThi = chan.ky || ""; 
                 let ngayHienThi = chan.ngay; 
+                const kyThucTe = parseInt(chan.ky) || stt;
 
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive'; 
-                    
-                    // NÂNG CẤP: Chỉ tự động tính ngày gợi ý, còn KỲ nếu AppSheet không truyền (rỗng) -> giữ rỗng ""
                     if (!chan.ky || chan.ky === "") {
                         kyHienThi = ""; 
                     }
-                    
-                    // Để hiển thị ngày gợi ý cho chuẩn chu kỳ của kỳ tiếp theo
-                    let kyGoiYDeTinhNgay = parseInt(chan.ky) || (maxKyDaKhui + 1 + indexChuaHot);
-                    const periodsToAdd = (kyGoiYDeTinhNgay - 1) * kyHanValueFloat;
-                    
-                    // Nếu AppSheet không truyền ngày sang mới dùng ngày gợi ý
                     if (!ngayHienThi || ngayHienThi === "") {
-                        ngayHienThi = addPeriod(ngayMo, periodsToAdd, data.ky_han_unit);
-                    }
-                    
-                    if (!chan.ky || chan.ky === "") {
-                        indexChuaHot++;
+                        ngayHienThi = calculateKyDate(ngayMo, kyThucTe, data);
                     }
                 } else if (statusText === 'C') {
                     statusClass = 'c-status'; 
@@ -377,7 +405,6 @@
         const controls = element.querySelector('.bill-controls');
         if (controls) controls.style.display = 'none';
         await new Promise(resolve => setTimeout(resolve, 500));
-        
         try {
             const canvas = await html2canvas(element, { scale: 1.5, useCORS: true, allowTaint: false });
             await callback(canvas);
@@ -389,7 +416,6 @@
         }
     }
 
-    /* Các hàm xử lý ảnh giữ nguyên bản của bạn */
     function downloadBillAsImage(element) {
         const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
         captureBill(element, canvas => {
@@ -417,7 +443,6 @@
     async function shareBillAsImage(element) {
         const filename = `ThongTinDay_${billData.day_ten || 'bill'}.png`;
         const textshare = `Thông tin dây hụi ${billData.day_ten}.`;
-        
         const shareBtn = document.querySelector('.share-btn');
         const originalText = shareBtn.textContent;
         shareBtn.textContent = "⏳ Đang tạo...";
@@ -436,11 +461,19 @@
                 if (!blob) throw new Error("Không tạo được ảnh");
                 const file = new File([blob], filename, { type: 'image/png' });
                 
-                await navigator.share({ title: `Thông Tin Dây Hụi`, text: textshare, files: [file] });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ title: `Thông Tin Dây Hụi`, text: textshare, files: [file] });
+                } else {
+                    alert('Điện thoại này chặn gửi ảnh trực tiếp. Hệ thống sẽ tự động TẢI BILL về máy, bạn mở thư viện ảnh để gửi nhé!');
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                }
             } catch (error) { 
                 if (error.name !== 'AbortError' && !error.message.includes('Share API')) {
                     console.error('Lỗi Share:', error);
-                    alert("Có lỗi khi chia sẻ, vui lòng thử Tải Bill.");
+                    alert("Điện thoại xử lý quá lâu. Vui lòng sử dụng nút TẢI BILL.");
                 }
             } finally {
                 shareBtn.textContent = originalText;
