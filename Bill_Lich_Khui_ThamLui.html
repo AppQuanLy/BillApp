@@ -226,7 +226,9 @@
 <script>
     let billData = {};
 
-    // 1. Phân tích chuỗi ngày an toàn (hỗ trợ cả DD/MM/YYYY, YYYY-MM-DD)
+    // --- 1. CÁC HÀM TIỆN ÍCH PHÂN TÍCH NGÀY CHUẨN XÁC ---
+
+    // Phân tích chuỗi ngày mở hụi hoặc ngày in bill (Ưu tiên DD/MM/YYYY)
     function parseCustomDate(dateStr) {
         if (!dateStr || typeof dateStr !== 'string') return null;
         const clean = dateStr.trim();
@@ -235,10 +237,12 @@
 
         let day, month, year;
         if (parts[0].length === 4) {
+            // Dạng YYYY-MM-DD
             year = parseInt(parts[0], 10);
             month = parseInt(parts[1], 10) - 1;
             day = parseInt(parts[2], 10);
         } else {
+            // Dạng DD/MM/YYYY
             day = parseInt(parts[0], 10);
             month = parseInt(parts[1], 10) - 1;
             year = parseInt(parts[2], 10);
@@ -246,12 +250,37 @@
         return { day, month, year };
     }
 
+    // Phân tích danh sách phieu_da_khui từ AppSheet (Thường là dạng MM/DD/YYYY)
+    function parseAppSheetDateItem(dateStr) {
+        if (!dateStr || typeof dateStr !== 'string') return "";
+        const clean = dateStr.trim().replace(/\s+/g, '');
+        const parts = clean.split(/[/|-]/).map(Number);
+        if (parts.length < 3) return "";
+
+        let day, month, year;
+        if (parts[0] > 1000) {
+            // YYYY-MM-DD
+            year = parts[0]; month = parts[1]; day = parts[2];
+        } else {
+            // AppSheet List mặc định: MM/DD/YYYY (parts[0] = Tháng, parts[1] = Ngày)
+            month = parts[0];
+            day = parts[1];
+            year = parts[2];
+
+            // Dự phòng nếu người dùng đã định dạng sẵn thành DD/MM/YYYY (tháng > 12)
+            if (month > 12 && day <= 12) {
+                let temp = month; month = day; day = temp;
+            }
+        }
+        return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+    }
+
     function formatCurrency(num) {
         return (typeof num === 'number' && num !== null) ? num.toLocaleString('vi-VN') : '';
     }
 
     // =====================================================================
-    // 2. HÀM TÍNH NGÀY CỦA KỲ THỨ K (HỖ TRỢ "CỐ ĐỊNH THÁNG/2 LẦN", "4 THÁNG"...)
+    // 2. HÀM TÍNH NGÀY KỲ THỨ K (ĐẦY ĐỦ: CỐ ĐỊNH 2 MỐC, 4 THÁNG, THÁNG, NGÀY...)
     // =====================================================================
     function calculateKyDateStr(hui, kyIndex) {
         const parsed = parseCustomDate(hui.ngay_khui);
@@ -314,7 +343,6 @@
             const finalYear = startYear + Math.floor(totalMonths / 12);
             const finalMonth = (totalMonths % 12) + 1;
 
-            // Chống tràn ngày (ví dụ mở ngày 31 nhưng tháng sau chỉ có 30 ngày)
             const maxDaysInNewMonth = new Date(finalYear, finalMonth, 0).getDate();
             const safeDay = Math.min(startDay, maxDaysInNewMonth);
 
@@ -327,26 +355,34 @@
         return `${String(targetDate.getDate()).padStart(2, '0')}/${String(targetDate.getMonth() + 1).padStart(2, '0')}/${targetDate.getFullYear()}`;
     }
 
-    // 3. Kiểm tra trạng thái đã khui
+    // =====================================================================
+    // 3. HÀM ĐỐI SOÁT TRẠNG THÁI "ĐÃ KHUI" (KHÔI PHỤC HOÀN TOÀN CHÍNH XÁC)
+    // =====================================================================
     function checkDaKhui(targetDateStr, phieuInput) {
         if (!phieuInput) return "";
         if (phieuInput === "Đã Khui") return "Đã Khui";
 
-        const rawList = Array.isArray(phieuInput) ? phieuInput : String(phieuInput).split(/[,|\n]/);
-        const cleanTarget = targetDateStr.trim();
+        const cleanTarget = (targetDateStr || '').trim();
+        if (!cleanTarget) return "";
 
+        // Tách chuỗi danh sách ngày khui từ AppSheet
+        const rawList = Array.isArray(phieuInput) ? phieuInput : String(phieuInput).split(/[,|\n]/);
+
+        // Đối soát trực tiếp chuỗi ngày
         const matched = rawList.some(item => {
-            const parsed = parseCustomDate(String(item).trim());
-            if (!parsed) return false;
-            const itemDateStr = `${String(parsed.day).padStart(2, '0')}/${String(parsed.month + 1).padStart(2, '0')}/${parsed.year}`;
-            return itemDateStr === cleanTarget;
+            const strItem = String(item).trim();
+            if (!strItem) return false;
+            if (strItem === "Đã Khui") return true;
+
+            const formattedDate = parseAppSheetDateItem(strItem);
+            return formattedDate === cleanTarget;
         });
 
         return matched ? "Đã Khui" : "";
     }
 
     // =====================================================================
-    // 4. HÀM RENDER DỮ LIỆU LỊCH KHUI
+    // 4. HÀM HIỂN THỊ LỊCH KHUI
     // =====================================================================
     function generateBill(data) {
         billData = data;
@@ -366,10 +402,13 @@
                     const kyDateStr = calculateKyDateStr(hui, ky);
 
                     if (kyDateStr === targetDateStr) {
+                        // Kiểm tra trạng thái đã khui từ phieu_da_khui hoặc trang_thai
+                        const trangThaiKhui = checkDaKhui(targetDateStr, hui.phieu_da_khui || hui.trang_thai);
+
                         todaysHuis.push({
                             ...hui,
                             ky: `${ky}/${maxKy}`,
-                            trang_thai: checkDaKhui(targetDateStr, hui.phieu_da_khui || hui.trang_thai)
+                            trang_thai: trangThaiKhui
                         });
                         break;
                     }
@@ -393,7 +432,7 @@
                     <td>${item.ky_han_text || ''}</td>
                     <td>${item.ky}</td>
                     <td class="text-right">${formatCurrency(item.tien_hui)}</td>
-                    <td>${item.trang_thai || ''}</td>
+                    <td style="${item.trang_thai === 'Đã Khui' ? 'color: red; font-weight: bold;' : ''}">${item.trang_thai || ''}</td>
                 </tr>
             `).join('');
         }
@@ -416,7 +455,7 @@
                     "chu_hui_sdt": "0938338272", 
                     "ngay_in_bill": "25/08/2026", 
                     "danh_sach_day_hui": [
-                        { "ten_hui": "TH 100K_Cố định Tháng/2 Lần", "ngay_khui": "09/08/2026", "gio_dau": "11:00", "ky_han_text": "Cố định Tháng/2 Lần", "moc_1": 9, "moc_2": 25, "so_ky_toi_da": 10, "tien_hui": 100000, "phieu_da_khui": "" },
+                        { "ten_hui": "TH 100K_Cố định Tháng/2 Lần", "ngay_khui": "09/08/2026", "gio_dau": "11:00", "ky_han_text": "Cố định Tháng/2 Lần", "moc_1": 9, "moc_2": 25, "so_ky_toi_da": 10, "tien_hui": 100000, "phieu_da_khui": "08/09/2026 , 08/25/2026" },
                         { "ten_hui": "TH 1Tr_4 Tháng", "ngay_khui": "25/04/2026", "gio_dau": "14:00", "ky_han_text": "4 Tháng", "ky_han_value": 4, "ky_han_unit": "tháng", "so_ky_toi_da": 5, "tien_hui": 1000000, "phieu_da_khui": "" }
                     ] 
                 };
