@@ -266,6 +266,10 @@
                     <td>Trừ Thảo:</td>
                     <td class="value" data-field="tru_thao"></td>
                 </tr>
+                <tr id="tru-dup-row">
+                    <td>Trừ Đúp:</td>
+                    <td class="value" data-field="tru_dup"></td>
+                </tr>
                 <tr class="total-row">
                     <td>Giao</td>
                     <td class="value" data-field="giao_tong_tien"></td>
@@ -321,6 +325,16 @@
                     else element.textContent = data[key];
                 }
             }
+
+                // Xử lý dòng Trừ Đúp
+            const truDupRow = document.getElementById('tru-dup-row');
+        
+            if (data.tru_dup && data.tru_dup !== "0" && data.tru_dup !== 0) {
+                truDupRow.style.display = '';
+            } else {
+                truDupRow.style.display = 'none';
+            }
+
             document.querySelector('[data-field="signer_ben_nhan"]').textContent = data.hui_vien_ten || '';
             document.querySelector('[data-field="signer_ben_giao"]').textContent = data.chu_hui_ten || '';
             
