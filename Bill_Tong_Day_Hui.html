@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Dây Hụi - Theme</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0e5ec;
+            margin: 0;
+            padding: 20px;
+            font-size: 15pt;
+            font-weight: bold;
+            color: #111;
+        }
+
+        /* --- CSS KHUNG BILL (CẤU TRÚC 3 KHỐI) --- */
+        .container {
+            width: 28cm;
+            margin: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            position: relative;
+            padding: 0;
+            overflow: hidden;
+            background-image: url('');
+            background-repeat: repeat;
+            background-size: 100%;
+        }
+
+        /* --- KHỐI 1: HEADER --- */
+        .header-section {
+            position: relative;
+            min-height: 160px;
+            padding: 20px;
+            background-image: url('');
+            background-size: 100%;
+            background-position: top center;
+            background-repeat: no-repeat;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 14pt;
+            margin-top: 15px;
+            margin-bottom: 0px;
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 15px 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 2px solid #fca202;
+        }
+
+        .img-title-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            width: 100%;
+            z-index: 5;
+        }
+        .img-title-container img {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
+            display: block;
+            margin: 0 auto -60px auto;
+        }
+        .img-title-container p {
+            margin: -20px 15px 0 auto; 
+            font-size: 18pt;
+            font-weight: bold;
+            color: #111;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- KHỐI 2: NỘI DUNG BẢNG --- */
+        .content-section {
+            margin-top: 50px;
+            padding: 0px 25px;
+            min-height: 150px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13pt;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+        th, td {
+            border: 1px solid #fca202;
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #fca202; 
+            background-image: linear-gradient(to right, #e4a508, #c68804);
+            color: #fff; 
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        td {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        .col-day-hui { width: 28%; }
+        .total-row {
+            background-color: rgba(252, 162, 2, 0.2);
+            font-size: 14pt;
+        }
+
+        /* --- KHỐI 3: FOOTER & NÚT BẤM --- */
+        .footer-section {
+            position: relative;
+            min-height: 10px;
+            padding: 20px;
+            padding-bottom: 80px;
+            background-image: url('');
+            background-size: 100%;
+            background-position: bottom center;
+            background-repeat: no-repeat;
+            margin-top: 0px;
+        }
+
+        .bill-controls {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+        .bill-controls button {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .bill-controls button:hover { transform: translateY(-2px); }
+        .download-btn { background-color: #0275d8; } .download-btn:hover { background-color: #025aa5; }
+        .copy-btn { background-color: #5bc0de; } .copy-btn:hover { background-color: #31b0d5; }
+        .share-btn { background-color: #5cb85c; } .share-btn:hover { background-color: #449d44; }
+
+        @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .bill-controls { display: none !important; }
+            body { background-color: #fff; padding: 0; margin: 0; }
+            .container { box-shadow: none; border: none; margin: auto; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="bill-container">
+        
+        <div class="header-section">
+            <div class="header">
+                <div class="header-left">Chủ Hụi: <span id="chu-hui-ten"></span></div>
+                <div class="header-right">SĐT: <span id="chu-hui-sdt"></span></div>
+            </div>
+            
+            <div class="img-title-container">
+                <img src="" alt="Danh Sách Dây Hụi">
+                <h1>LỊCH KHUI HỤI</h1>
+                <p>Ngày In: <span id="ngay-in-bill"></span></p>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th class="col-day-hui text-left">TÊN DÂY HỤI</th>
+                        <th>NGÀY MỞ</th>
+                        <th>KỲ HẠN</th>
+                        <th>KỲ</th>
+                        <th>MÃN KỲ</th>
+                        <th class="text-right">TIỀN HỤI</th>
+                        <th class="text-right">TIỀN THẢO</th>
+                    </tr>
+                </thead>
+                <tbody id="details-tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer-section">
+            <div class="bill-controls">
+                <button class="download-btn">Tải Bill</button>
+                <button class="copy-btn">Copy Bill</button>
+                <button class="share-btn">Gửi Bill</button>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    let billData = {};
+
+    function formatCurrency(num) {
+        return (typeof num === 'number' && num !== null) ? num.toLocaleString('vi-VN') : '0';
+    }
+
+    // =====================================================================
+    // HÀM HIỂN THỊ DANH SÁCH DÂY HỤI
+    // =====================================================================
+    function generateBill(data) {
+        billData = data;
+        document.getElementById('chu-hui-ten').textContent = data.chu_hui_ten || '';
+        document.getElementById('chu-hui-sdt').textContent = data.chu_hui_sdt || '';
+        document.getElementById('ngay-in-bill').textContent = data.ngay_in_bill || '';
+
+        const tbody = document.getElementById('details-tbody');
+        tbody.innerHTML = '';
+
+        let tongTienHui = 0;
+        let tongTienThao = 0;
+
+        const listHui = Array.isArray(data.danh_sach_day_hui) ? data.danh_sach_day_hui : [];
+
+        if (listHui.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8">Không có dây hụi nào đang hoạt động.</td></tr>`;
+        } else {
+            // Render từng dòng dữ liệu
+            tbody.innerHTML = listHui.map((item, idx) => {
+                const tienHui = Number(item.tien_hui) || 0;
+                const tienThao = Number(item.tien_thao) || 0;
+
+                tongTienHui += tienHui;
+                tongTienThao += tienThao;
+
+                // Lấy kỳ hiện tại và số kỳ tối đa từ AppSheet truyền sang
+                const kyHienTai = item.ky_hien_tai || 1;
+                const soKyToiDa = item.so_ky_toi_da || 1;
+                const hienThiKy = `${kyHienTai}/${soKyToiDa}`;
+
+                return `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td class="text-left">${item.ten_hui || ''}</td>
+                        <td>${item.ngay_khui || ''}</td>
+                        <td>${item.ky_han_text || ''}</td>
+                        <td>${hienThiKy}</td>
+                        <td>${item.man_ky || ''}</td>
+                        <td class="text-right">${formatCurrency(tienHui)}</td>
+                        <td class="text-right">${formatCurrency(tienThao)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Dòng Tổng Cộng cuối bảng
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td colspan="6" style="text-align: center; font-size: 14pt;">TỔNG CỘNG:</td>
+                <td class="text-right" style="color: #0275d8;">${formatCurrency(tongTienHui)}</td>
+                <td class="text-right" style="color: #d9534f;">${formatCurrency(tongTienThao)}</td>
+            `;
+            tbody.appendChild(totalRow);
+        }
+
+        // Gán sự kiện cho các nút bấm
+        const billEl = document.getElementById('bill-container');
+        document.querySelector('.download-btn').onclick = () => downloadBillAsImage(billEl);
+        document.querySelector('.copy-btn').onclick = () => copyBillAsImage(billEl);
+        document.querySelector('.share-btn').onclick = () => shareBillAsImage(billEl);
+    }
+
+    // =====================================================================
+    // KHỞI TẠO & CÁC NÚT ĐIỀU KHIỂN (TẢI, COPY, GỬI BILL)
+    // =====================================================================
+    window.onload = function () {
+        try {
+            const hash = window.location.hash.substring(1);
+            if (!hash) {
+                // Dữ liệu mẫu kiểm tra giao diện khi mở trực tiếp file
+                const sampleData = { 
+                    "chu_hui_ten": "Lê Minh", 
+                    "chu_hui_sdt": "0938338272", 
+                    "ngay_in_bill": "19/10/2026", 
+                    "danh_sach_day_hui": [
+                        { "ten_hui": "TH 100K_Cố định Tháng/2 Lần", "ngay_khui": "09/08/2026", "man_ky": "09/01/2027", "ky_han_text": "Cố định Tháng/2 Lần", "ky_hien_tai": 3, "so_ky_toi_da": 10, "tien_hui": 100000, "tien_thao": 30000 },
+                        { "ten_hui": "TH 1Tr_4 Tháng", "ngay_khui": "25/04/2026", "man_ky": "25/08/2027", "ky_han_text": "4 Tháng", "ky_hien_tai": 1, "so_ky_toi_da": 5, "tien_hui": 1000000, "tien_thao": 50000 }
+                    ] 
+                };
+                generateBill(sampleData);
+                return;
+            }
+            generateBill(JSON.parse(decodeURIComponent(hash)));
+        } catch (err) {
+            document.body.innerHTML = `<h2 style="color:red;text-align:center;">Lỗi dữ liệu!</h2><p style="text-align:center;">${err.message}</p>`;
+        }
+    };
+
+    async function captureBill(element, callback) {
+        const controls = element.querySelector('.bill-controls');
+        if (controls) controls.style.display = 'none';
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+            await callback(canvas);
+        } catch (err) {
+            console.error('Lỗi tạo ảnh:', err);
+            alert('Đã có lỗi xảy ra khi tạo ảnh.');
+        } finally {
+            if (controls) controls.style.display = 'flex';
+        }
+    }
+
+    function downloadBillAsImage(el) {
+        const name = `DanhSachDayHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+        captureBill(el, canvas => {
+            const link = document.createElement('a');
+            link.download = name;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+
+    function copyBillAsImage(el) {
+        captureBill(el, canvas => {
+            canvas.toBlob(blob => {
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+                    .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
+                    .catch(() => alert('Lỗi khi copy.'));
+            });
+        });
+    }
+
+    async function shareBillAsImage(el) {
+        if (!navigator.share) {
+            alert('Trình duyệt không hỗ trợ chia sẻ trực tiếp. Hãy dùng nút "Copy Bill".');
+            return;
+        }
+        const name = `DanhSachDayHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+        captureBill(el, async canvas => {
+            try {
+                const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                const file = new File([blob], name, { type: 'image/png' });
+                await navigator.share({ title: 'Danh Sách Dây Hụi', text: `Danh sách dây hụi ngày ${billData.ngay_in_bill}`, files: [file] });
+            } catch (e) { }
+        });
+    }
+</script>
+</body>
+</html>
