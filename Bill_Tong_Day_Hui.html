@@ -187,7 +187,7 @@
             
             <div class="img-title-container">
                <!-- <img src="" alt=""> -->
-                <h1>LỊCH KHUI HỤI</h1>
+                <h1>DANH SÁCH DÂY HỤI</h1>
                 <p>Ngày In: <span id="ngay-in-bill"></span></p>
             </div>
         </div>
@@ -200,10 +200,11 @@
                         <th class="col-day-hui text-left">TÊN DÂY HỤI</th>
                         <th>NGÀY MỞ</th>
                         <th>KỲ HẠN</th>
-                        <th>KỲ</th>
-                        <th>MÃN KỲ</th>
                         <th class="text-right">TIỀN HỤI</th>
                         <th class="text-right">TIỀN THẢO</th>
+                        <th>KỲ</th>
+                        <th>MÃN KỲ</th>
+                        <th>TRANG THÁI</th>
                     </tr>
                 </thead>
                 <tbody id="details-tbody">
@@ -259,7 +260,7 @@
                 // Lấy kỳ hiện tại và số kỳ tối đa từ AppSheet truyền sang
                 const kyHienTai = item.ky_hien_tai || 1;
                 const soKyToiDa = item.so_ky_toi_da || 1;
-                const hienThiKy = `${kyHienTai}/${soKyToiDa}`;
+                const hienThiKy = `${kyHienTai}`;
 
                 return `
                     <tr>
@@ -267,15 +268,16 @@
                         <td class="text-left">${item.ten_hui || ''}</td>
                         <td>${item.ngay_khui || ''}</td>
                         <td>${item.ky_han_text || ''}</td>
-                        <td>${hienThiKy}</td>
-                        <td>${item.man_ky || ''}</td>
                         <td class="text-right">${formatCurrency(tienHui)}</td>
                         <td class="text-right">${formatCurrency(tienThao)}</td>
+                        <td>${hienThiKy}</td>
+                        <td>${item.man_ky || ''}</td>
+                        <td>Đang Hoạt Động</td>
                     </tr>
                 `;
             }).join('');
 
-            // Dòng Tổng Cộng cuối bảng
+          /*  // Dòng Tổng Cộng cuối bảng
             const totalRow = document.createElement('tr');
             totalRow.className = 'total-row';
             totalRow.innerHTML = `
@@ -284,7 +286,7 @@
                 <td class="text-right" style="color: #d9534f;">${formatCurrency(tongTienThao)}</td>
             `;
             tbody.appendChild(totalRow);
-        }
+        } */
 
         // Gán sự kiện cho các nút bấm
         const billEl = document.getElementById('bill-container');
