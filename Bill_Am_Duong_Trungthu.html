@@ -19,7 +19,7 @@
 
 
         .container {
-            width: 28cm;
+            width: 34cm;
             margin: auto;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
@@ -190,25 +190,12 @@
 
         <div class="content-section">
             
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th class="day-hui-col">TÊN DÂY</th>
-                        <th>NGÀY KHUI</th>
-                        <th>TIỀN HỤI</th>
-                        <th class="khui-col">KỲ HẠN</th>
-                        <th>KỲ</th>
-                        <th>KỲ HỐT</th>
-                        <th>HỤI CHẾT</th>
-                        <th>HỤI SỐNG</th>
-                        <th>LỜI LỖ</th>
-                    </tr>
-                </thead>
-                <tbody id="details-tbody">
-                </tbody>
-            </table>
+        <table id="main-table">
+            <thead id="details-thead">
+            </thead>
+            <tbody id="details-tbody">
+            </tbody>
+        </table>
         </div>
 
         <div class="footer-section">
@@ -247,24 +234,62 @@
             document.querySelector('[data-field="chu_hui_sdt"]').textContent = data.chu_hui_sdt || '';
             document.querySelector('[data-field="ngay_in_bill"]').textContent = data.ngay_in_bill || '';
             document.querySelector('[data-field="hui_vien_ten"]').textContent = data.hui_vien_ten || '';
-
+        
+            const thead = document.getElementById('details-thead');
             const tbody = document.getElementById('details-tbody');
+            thead.innerHTML = '';
             tbody.innerHTML = '';
+        
             let tongHuiChet = 0;
             let tongHuiSong = 0;
             let tongLoiLo = 0;
-
-            
+        
             let allDetails = [];
-    
             if (data.details && Array.isArray(data.details)) {
                 allDetails = allDetails.concat(data.details);
             }
-            
             if (data.details_2 && Array.isArray(data.details_2)) {
                 allDetails = allDetails.concat(data.details_2);
             }
         
+            // 1. DÒNG MỚI THÊM: Tự động kiểm tra loại JSON
+            const isType2 = allDetails.some(item => item.hasOwnProperty('Tong_chan_song') || item.hasOwnProperty('Tong_chan_chet'));
+        
+            // 2. PHẦN MỚI THÊM: Vẽ tiêu đề cột linh hoạt
+            if (isType2) {
+                thead.innerHTML = `
+                    <tr>
+                        <th>STT</th>
+                        <th class="day-hui-col">TÊN DÂY</th>
+                        <th>NGÀY KHUI</th>
+                        <th>TIỀN HỤI</th>
+                        <th class="khui-col">KỲ HẠN</th>
+                        <th>KỲ</th>
+                        <th>S</th>
+                        <th>C</th>
+                        <th>HỤI CHẾT</th>
+                        <th>HỤI SỐNG</th>
+                        <th>LỜI LỖ</th>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th>STT</th>
+                        <th class="day-hui-col">TÊN DÂY</th>
+                        <th>NGÀY KHUI</th>
+                        <th>TIỀN HỤI</th>
+                        <th class="khui-col">KỲ HẠN</th>
+                        <th>KỲ</th>
+                        <th>KỲ HỐT</th>
+                        <th>HỤI CHẾT</th>
+                        <th>HỤI SỐNG</th>
+                        <th>LỜI LỖ</th>
+                    </tr>
+                `;
+            }
+        
+            // 3. DỰNG NỘI DUNG DỮ LIỆU
             if (allDetails.length > 0) {
                 allDetails.forEach((item, index) => {
                     const stt = index + 1;
@@ -276,58 +301,76 @@
                     } else if (item.loi_lo < 0) {
                         loiLoClass = 'text-red';
                     }
-
-                    row.innerHTML = `
-                        <td>${stt}</td>
-                        <td class="day-hui-col">${item.day_hui}</td>
-                        <td>${item.ngay_khui}</td>
-                        <td class="text-right">${formatCurrency(item.so_tien)}</td>
-                        <td class="khui-col">${item.khui}</td>
-                        <td>${item.ky}</td>
-                        <td class="text-red">${item.ky_hot || ''}</td>
-                        <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
-                        <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
-                        <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
-                    `;
+        
+                    if (isType2) {
+                        // Nội dung dòng cho JSON 2
+                        row.innerHTML = `
+                            <td>${stt}</td>
+                            <td class="day-hui-col">${item.day_hui || ''}</td>
+                            <td>${item.ngay_khui || ''}</td>
+                            <td class="text-right">${formatCurrency(item.so_tien)}</td>
+                            <td class="khui-col">${item.khui || ''}</td>
+                            <td>${item.ky || ''}</td>
+                            <td class="text-bold text-green">${item.Tong_chan_song || 0}</td>
+                            <td class="text-bold text-red">${item.Tong_chan_chet || 0}</td>
+                            <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
+                            <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
+                            <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
+                        `;
+                    } else {
+                        // Nội dung dòng cho JSON 1
+                        row.innerHTML = `
+                            <td>${stt}</td>
+                            <td class="day-hui-col">${item.day_hui || ''}</td>
+                            <td>${item.ngay_khui || ''}</td>
+                            <td class="text-right">${formatCurrency(item.so_tien)}</td>
+                            <td class="khui-col">${item.khui || ''}</td>
+                            <td>${item.ky || ''}</td>
+                            <td class="text-red">${item.ky_hot || ''}</td>
+                            <td class="text-right text-red text-bold">${formatCurrency(item.hui_chet)}</td>
+                            <td class="text-right text-bold">${formatCurrency(item.hui_song)}</td>
+                            <td class="text-right text-bold ${loiLoClass}">${formatCurrency(item.loi_lo)}</td>
+                        `;
+                    }
+        
                     tbody.appendChild(row);
-
+        
                     tongHuiChet += item.hui_chet || 0;
                     tongHuiSong += item.hui_song || 0;
                     tongLoiLo += item.loi_lo || 0;
                 });
             }
-            
-            // Dòng TỔNG CỘNG
+        
+            // 4. PHẦN MỚI THÊM: Tính số cột gộp (colspan) linh hoạt
+            const colspanLabel = isType2 ? 8 : 7;
+        
             let tongLoiLoClass = '';
             if(tongLoiLo > 0) tongLoiLoClass = 'text-green';
             if(tongLoiLo < 0) tongLoiLoClass = 'text-red';
-
+        
             const totalRow = document.createElement('tr');
             totalRow.className = 'total-row';
             totalRow.innerHTML = `
-                <td colspan="7" style="background-color: rgba(217, 0, 0, 0.85); color: white;">TỔNG CỘNG</td>
+                <td colspan="${colspanLabel}" style="background-color: rgba(217, 0, 0, 0.85); color: white;">TỔNG CỘNG</td>
                 <td class="text-right text-red">${formatCurrency(tongHuiChet)}</td>
                 <td class="text-right">${formatCurrency(tongHuiSong)}</td>
                 <td class="text-right ${tongLoiLoClass}">${formatCurrency(tongLoiLo)}</td>
             `;
             tbody.appendChild(totalRow);
-            
-            // Tính toán cân bằng
+        
             const balance = tongHuiSong - tongHuiChet;
-
             let balanceClass = '';
             if (balance > 0)  balanceClass = 'text-green';
             if (balance < 0)  balanceClass = 'text-red';
-            
-            // Dòng CÂN BẰNG (Đã fix lỗi thiếu colspan)
+        
             const balanceRow = document.createElement('tr');
             balanceRow.className = 'total-row'; 
             balanceRow.innerHTML = `
-                <td colspan="7" style="background-color: rgba(255, 249, 196, 0.85); color: #111;">Cân Bằng Hụi (Âm/Dương)</td>
+                <td colspan="${colspanLabel}" style="background-color: rgba(255, 249, 196, 0.85); color: #111;">Cân Bằng Hụi (Âm/Dương)</td>
                 <td colspan="2" class="${balanceClass}" style="background-color: rgba(255, 249, 196, 0.85); font-size: 18pt;">${formatCurrency(balance)}</td>
             `;
             tbody.appendChild(balanceRow);
-
+        
             const billElement = document.getElementById('bill-to-capture');
             document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
             document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
