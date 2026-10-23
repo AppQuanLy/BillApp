@@ -176,6 +176,10 @@
                     <td>Hụi Viên:</td>
                     <td style="text-align: center; font-size: 30pt;" data-field="hui_vien_ten"></td>
                 </tr>
+                <tr id="cccd-row">
+                    <td>Số CCCD:</td>
+                    <td class="value" data-field="so_cccd"></td>
+                </tr>
                 <tr>
                     <td>Ngày Hốt:</td>
                     <td class="value" data-field="ngay_hot"></td>
@@ -273,6 +277,15 @@
             } else {
                 truDupRow.style.display = 'none';
             }
+            // Xử lý dòng CCCD
+            const SoCCCDRow = document.getElementById('cccd-row');
+        
+            if (data.so_cccd && data.so_cccd !== "0" && data.so_cccd !== 0) {
+                SoCCCDRow.style.display = '';
+            } else {
+                SoCCCDRow.style.display = 'none';
+            }
+            
             
             document.querySelector('[data-field="signer_ben_nhan"]').textContent = data.hui_vien_ten || '';
             document.querySelector('[data-field="signer_ben_giao"]').textContent = data.chu_hui_ten || '';
