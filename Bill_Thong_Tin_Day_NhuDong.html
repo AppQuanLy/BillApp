@@ -20,7 +20,7 @@
 
         /* --- CSS KHUNG BILL (CẤU TRÚC 3 KHỐI) --- */
         .container {
-            width: 28cm;
+            width: 30cm;
             margin: auto;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
@@ -272,6 +272,7 @@
                         <th>THĂM</th>
                         <th>TIỀN ĐÓNG</th>
                         <th>TIỀN HỐT</th>
+                        <th>GHI CHÚ</th>
                     </tr>
                 </thead>
                 <tbody id="details-tbody">
@@ -491,6 +492,7 @@
                     <td>${formatCurrency(chan.tham)}</td>
                     <td>${formatCurrency(chan.tien_dong)}</td>
                     <td class="text-red font-bold">${formatCurrency(chan.tien_hot)}</td>
+                    <td style="text-align: left;">${chan.ghi_chu}</td>
                 `;
                 tbody.appendChild(row);
                 tongTham += chan.tham || 0;
