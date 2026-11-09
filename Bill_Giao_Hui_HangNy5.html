@@ -2,26 +2,34 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=850, user-scalable=yes">
     <title>Bill Giao Hụi - Theme</title>
     
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arimo', Arial, sans-serif;
             background-color: #e0e5ec; /* Nền ngoài trang web */
             margin: 0;
             padding: 20px;
             font-size: 17pt;
             color: #08102e;
+            -webkit-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         /* --- CSS KHUNG BILL (SUMMER THEME) --- */
         .container {
-            width: 21cm;
-            min-height: 29.7cm;
-            padding: 1cm;
+            width: 794px; 
+            min-height: 1123px; 
+            padding: 38px; 
             margin: auto;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
@@ -37,13 +45,16 @@
             background-size: 100% auto;
         }
 
-        /* Header block bo góc mềm mại */
+        /* Header block khóa kích thước và vị trí chuẩn */
         .header {
             margin: 70px 0px -170px 15px;
-            font-size: 14pt;
+            width: 260px; /* Khóa chiều rộng vùng chữ để không tràn sang chữ BILL */
+            font-size: 18.5px; /* Dùng px cố định (tương đương ~14pt trên PC) */
             font-weight: bold;
             padding: 10px;
             line-height: 1.3;
+            box-sizing: border-box;
+            white-space: nowrap; /* Giữ chữ trên 1 dòng, không bị rớt dòng đẩy lệch khung */
         }
         .header .right {
             text-align: left;
@@ -357,7 +368,15 @@
             const controls = element.querySelector('.bill-controls');
             if (controls) controls.style.display = 'none';
             try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                // Đảm bảo font chữ đã tải xong trước khi chụp
+                if (document.fonts && document.fonts.ready) {
+                    await document.fonts.ready;
+                }
+                const canvas = await html2canvas(element, { 
+                    scale: 2, 
+                    useCORS: true,
+                    windowWidth: 1200 // Ép html2canvas luôn chụp ở giao diện máy tính
+                });
                 await callback(canvas);
             } catch (error) {
                 console.error('Lỗi khi tạo ảnh:', error);
