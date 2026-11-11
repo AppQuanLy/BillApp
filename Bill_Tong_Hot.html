@@ -161,6 +161,7 @@
         tbody.innerHTML = '';
 
         let tongTienHui = 0;
+        let tongThamKeu = 0;
         let tongTienHot = 0;
 
         if (data.danh_sach && Array.isArray(data.danh_sach) && data.danh_sach.length > 0) {
@@ -184,6 +185,7 @@
                 tbody.appendChild(row);
 
                 tongTienHui += tienHui;
+                tongThamKeu += thamKeu;
                 tongTienHot += tienHot;
             });
             
@@ -193,7 +195,7 @@
             totalRow.innerHTML = `
                 <td colspan="5" style="background-color: rgb(217, 0, 0); color: white; text-align: center;">TỔNG CỘNG TẤT CẢ</td>
                 <td class="text-right">${formatCurrency(tongTienHui)}</td>
-                <td class="text-right">-</td>
+                <td class="text-right text-red">${formatCurrency(tongThamKeu)}</td>
                 <td class="text-right text-blue">${formatCurrency(tongTienHot)}</td>
             `;
             tbody.appendChild(totalRow);
