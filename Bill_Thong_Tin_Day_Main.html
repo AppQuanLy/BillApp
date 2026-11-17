@@ -344,6 +344,14 @@
                 }
             }
 
+        // Tìm kỳ lớn nhất đã khui để đếm nối tiếp cho các chân sống
+            let maxDeadKy = 0;
+            data.danh_sach_chan.forEach(c => {
+                const k = parseInt(c.ky, 10) || 0;
+                if (k > maxDeadKy) maxDeadKy = k;
+            });
+            let nextAliveKy = maxDeadKy + 1;
+
             // 2. DUYỆT TỪNG DÒNG CHÂN HỤI
             data.danh_sach_chan.forEach((chan, index) => {
                 const stt = index + 1;
@@ -351,10 +359,11 @@
                 let statusClass = 'dead'; 
                 let kyHienThi = chan.ky || ""; 
                 let ngayHienThi = chan.ngay; 
-                const kyThucTe = parseInt(chan.ky) || stt;
 
                 if (statusText === 'V' || statusText === 'S') {
                     statusClass = 'alive'; 
+                    const kyThucTe = parseInt(chan.ky, 10) || nextAliveKy++;
+
                     if (!chan.ky || chan.ky === "") {
                         kyHienThi = ""; 
                     }
