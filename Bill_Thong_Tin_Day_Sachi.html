@@ -39,7 +39,7 @@
            ======================================================= */
         .header-section {
             position: relative;
-            min-height: 185px;
+            min-height: 250px;
             padding: 20px;
             background-image: url('');
             background-size: 100%;
@@ -53,17 +53,18 @@
             font-size: 14pt;
             margin-top: 15px;
             margin-bottom: 20px;
-            background-color: rgba(255, 255, 255, 0.5); /* Nền trắng mờ để nổi bật */
+            background-color: rgba(255, 255, 255, 0.85); /* Nền trắng mờ để nổi bật */
             padding: 15px;
             border-radius: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border: 2px solid #e9091d;
+            color: #c00000;
         }
 
         .img-title-container {
             position: absolute;
             left: 54%;
-            top: 40px; /* Bạn có thể chỉnh số này để đẩy cụm tiêu đề lên/xuống */
+            top: 85px; /* Bạn có thể chỉnh số này để đẩy cụm tiêu đề lên/xuống */
             transform: translateX(-50%);
             text-align: center;
             width: 100%;
@@ -71,19 +72,20 @@
         }
         .img-title-container img {
             width: 100%;
-            max-width: 500px;
+            max-width: 670px;
             height: auto;
             filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
             display: block;
-            margin: -20px auto -74px auto; /* Ép hình ảnh luôn nằm chính giữa */
+            margin: -20px auto -30px auto; /* Ép hình ảnh luôn nằm chính giữa */
         }
         .img-title-container p {
             margin: -20px 15px 0 auto; /* Kéo nút "Ngày" lên lồng vào hình một chút cho đẹp */
-            font-size: 20pt;
+            font-size: 18pt;
             font-weight: bold;
             color: #111;
             display: inline-block;
             padding: 5px 15px;
+            background: #ffffffe6;
             border-radius: 20px;
             position: relative;
             z-index: 2;
@@ -103,7 +105,7 @@
             grid-template-columns: 1.5fr 1fr 1fr;
             gap: 10px 5px;
             margin-bottom: 20px;
-            background-color: rgba(255, 255, 255, 0); /* Lót nền trắng mờ cho khối info */
+            background-color: rgba(255, 255, 255, 0.85); /* Lót nền trắng mờ cho khối info */
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -129,7 +131,7 @@
             margin-bottom: 0; /* Xóa margin đáy để nối liền phần tổng */
         }
         th, td {
-            border: 1px solid #e9091d;
+            border: 1px solid #cfd8dc;
             padding: 6px 8px;
             text-align: center;
             vertical-align: middle;
@@ -142,7 +144,7 @@
             text-transform: uppercase;
         }
         td {
-            background-color: rgba(255, 255, 255, 0); /* Nền ô trắng mờ */
+            background-color: rgba(255, 255, 255, 0.85); /* Nền ô trắng mờ */
         }
 
         /* TRẠNG THÁI S/C/V */
@@ -175,7 +177,7 @@
            ======================================================= */
         .footer-section {
             position: relative;
-            min-height: 135px;
+            min-height: 5px;
             padding: 20px;
             padding-bottom: 80px; /* Dành không gian cho nút bấm */
             background-image: url('');
