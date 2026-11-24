@@ -148,6 +148,58 @@
             .bill-page { page-break-after: always; margin: 0; padding: 0; box-shadow: none; border: none; width: 100%; max-width: none; min-width: 0; border-radius: 0; }
             body { background-color: #fff; padding: 0; margin: 0; }
         }
+        /* --- CSS CẢNH BÁO ÂM HỤI --- */
+        .warning-box {
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 2px solid #d90000;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 20px 15px 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            color: #111;
+        }
+        .warning-header {
+            color: #d90000;
+            font-size: 18pt;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .warning-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #ffcdd2;
+        }
+        .warning-col { flex: 1; text-align: center; }
+        .warning-divider { width: 2px; height: 50px; background-color: #eee; margin: 0 10px; }
+        .warning-label { font-size: 11pt; color: #555; font-weight: bold; margin-bottom: 5px; }
+        .warning-value { font-size: 18pt; color: #d90000; font-weight: bold; }
+        .warning-alert {
+            background-image: linear-gradient(to right, #b82220, #e53935);
+            color: white;
+            font-size: 16pt;
+            font-weight: bold;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .warning-footer {
+            font-size: 14pt;
+            color: #333;
+            font-style: italic;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -211,6 +263,32 @@
                 </table>
             </div>
 
+             <div class="warning-box" style="display: none;">
+                <div class="warning-header">
+                    ⚠️ CẢNH BÁO ÂM HỤI
+                </div>
+                <div class="warning-body">
+                    <div class="warning-col">
+                        <div class="warning-label">MỨC ÂM CHO PHÉP</div>
+                        <div class="warning-value" data-field="muc_am_cho_phep_text">0</div>
+                    </div>
+                    <div class="warning-divider"></div>
+                    <div class="warning-col">
+                        <div class="warning-label">ÂM HIỆN TẠI</div>
+                        <div class="warning-value" data-field="am_hien_tai_text">0</div>
+                    </div>
+                    <div class="warning-divider"></div>
+                    <div class="warning-col">
+                        <div class="warning-label">MỨC ÂM VƯỢT</div>
+                        <div class="warning-value" data-field="muc_am_vuot_text">0</div>
+                    </div>
+                </div>
+                <div class="warning-alert">ĐÃ VƯỢT QUÁ MỨC ÂM CHO PHÉP</div>
+                <div class="warning-footer">
+                    Vui lòng tất toán ít nhất <span data-field="muc_am_vuot_text_footer" style="color: #d90000; font-weight: 900; font-size: 15pt;"></span> sớm để cân bằng Âm - Dương !
+                </div>
+            </div>
+             
             <div class="footer-section">
                 <div class="totals-center-wrapper">
                     <table class="totals-table no-border">
@@ -292,6 +370,7 @@
 
         let globalSummaryTextReceivable = ""; 
         let globalSummaryTextPayable = ""; 
+        const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
         window.onload = function() {
             const infoPanel = document.getElementById('info-panel');
@@ -374,6 +453,29 @@
                 const amDuongValue = kh.am_duong || 0; 
                 amDuongCell.textContent = formatCurrency(amDuongValue); 
                 if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } 
+                
+                const warningBox = q('.warning-box');
+                const mucAmChoPhep = Math.abs(Number(kh.muc_am_cho_phep)) || 0; 
+                
+                if (amDuongValue < 0) {
+                    const soTienNoHienTai = Math.abs(amDuongValue);
+                    
+                    if (soTienNoHienTai > mucAmChoPhep && mucAmChoPhep > 0) {
+                        warningBox.style.display = 'block';
+                        
+                        const mucAmVuot = soTienNoHienTai - mucAmChoPhep;
+                        const formattedMucAmVuot = formatCurrency(mucAmVuot);
+                        
+                        q('[data-field="muc_am_cho_phep_text"]').textContent = formatCurrency(mucAmChoPhep);
+                        q('[data-field="am_hien_tai_text"]').textContent = formatCurrency(soTienNoHienTai);
+                        q('[data-field="muc_am_vuot_text"]').textContent = formattedMucAmVuot;
+                        q('[data-field="muc_am_vuot_text_footer"]').textContent = formattedMucAmVuot;
+                    } else {
+                        warningBox.style.display = 'none';
+                    }
+                } else {
+                    warningBox.style.display = 'none';
+                }
                 
                 const loiNhuanCell = q('[data-field="loi_nhuan"]'); 
                 const loiNhuanValue = kh.loi_nhuan || 0; 
