@@ -453,6 +453,29 @@
                 const amDuongValue = kh.am_duong || 0; 
                 amDuongCell.textContent = formatCurrency(amDuongValue); 
                 if (amDuongValue > 0) { amDuongCell.classList.add('text-green'); } else if (amDuongValue < 0) { amDuongCell.classList.add('text-red'); } 
+
+                const warningBox = q('.warning-box');
+                const mucAmChoPhep = Math.abs(Number(kh.muc_am_cho_phep)) || 0; 
+                
+                if (amDuongValue < 0) {
+                    const soTienNoHienTai = Math.abs(amDuongValue);
+                    
+                    if (soTienNoHienTai > mucAmChoPhep && mucAmChoPhep > 0) {
+                        warningBox.style.display = 'block';
+                        
+                        const mucAmVuot = soTienNoHienTai - mucAmChoPhep;
+                        const formattedMucAmVuot = formatCurrency(mucAmVuot);
+                        
+                        q('[data-field="muc_am_cho_phep_text"]').textContent = formatCurrency(mucAmChoPhep);
+                        q('[data-field="am_hien_tai_text"]').textContent = formatCurrency(soTienNoHienTai);
+                        q('[data-field="muc_am_vuot_text"]').textContent = formattedMucAmVuot;
+                        q('[data-field="muc_am_vuot_text_footer"]').textContent = formattedMucAmVuot;
+                    } else {
+                        warningBox.style.display = 'none';
+                    }
+                } else {
+                    warningBox.style.display = 'none';
+                }
                 
                 const loiNhuanCell = q('[data-field="loi_nhuan"]'); 
                 const loiNhuanValue = kh.loi_nhuan || 0; 
