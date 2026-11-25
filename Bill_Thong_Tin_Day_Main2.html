@@ -321,8 +321,8 @@
         return num.toLocaleString('vi-VN');
     }
 
-    // =====================================================================
-    // HÀM TÍNH LỊCH NGÀY CHUẨN XÁC TUYỆT ĐỐI
+// =====================================================================
+    // HÀM TÍNH LỊCH NGÀY CHUẨN XÁC (HỖ TRỢ THÁNG 2-3 LẦN, TUẦN 2-3 LẦN & APP CŨ)
     // =====================================================================
     function calculateKyDate(baseDateStr, kyIndex, data) {
         if (!baseDateStr || typeof baseDateStr !== 'string') return "";
@@ -332,45 +332,67 @@
         const startDay = parseInt(parts[0], 10);
         const startMonth = parseInt(parts[1], 10); // 1 - 12
         const startYear = parseInt(parts[2], 10);
-
-        let d1 = parseInt(data.moc_1, 10) || 0;
-        let d2 = parseInt(data.moc_2, 10) || 0;
         const kyHanText = (data.ky_han_text || '').trim();
 
-        // 1. TRƯỜNG HỢP: CỐ ĐỊNH THÁNG/2 LẦN (Khi có moc_1, moc_2)
-        if ((d1 > 0 && d2 > 0) || kyHanText.includes('Cố định Tháng/2 Lần')) {
-            if (d1 > d2) {
-                let temp = d1; d1 = d2; d2 = temp;
-            }
+        const parseMocList = (val) => {
+            if (!val) return [];
+            if (Array.isArray(val)) return val.map(Number).filter(n => !isNaN(n) && n > 0).sort((a, b) => a - b);
+            return String(val).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0).sort((a, b) => a - b);
+        };
 
-            // Nếu dữ liệu thiếu mốc, tự động dùng ngày mở và ngày mở + 15
-            if (d1 === 0 || d2 === 0) {
-                d1 = startDay;
-                d2 = (startDay <= 15) ? (startDay + 15) : (startDay - 15);
-                if (d1 > d2) { let t = d1; d1 = d2; d2 = t; }
-            }
-
-            let startFromD1 = (startDay <= d1);
-            let targetDay = 0;
-            let monthsToAdd = 0;
-
-            if (startFromD1) {
-                monthsToAdd = Math.floor((kyIndex - 1) / 2);
-                targetDay = (kyIndex % 2 === 1) ? d1 : d2;
-            } else {
-                monthsToAdd = Math.floor(kyIndex / 2);
-                targetDay = (kyIndex % 2 === 1) ? d2 : d1;
-            }
-
-            // Ghép chuỗi toán học trực tiếp
-            let totalMonths = (startMonth - 1) + monthsToAdd;
-            let finalYear = startYear + Math.floor(totalMonths / 12);
-            let finalMonth = (totalMonths % 12) + 1;
-
-            return `${String(targetDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
+        // 1. CỐ ĐỊNH THÁNG / 2 LẦN HOẶC 3 LẦN (Tương thích ngược moc_1, moc_2)
+        let mocNgayList = parseMocList(data.moc_ngay);
+        if (mocNgayList.length === 0) {
+            const d1 = parseInt(data.moc_1, 10) || 0;
+            const d2 = parseInt(data.moc_2, 10) || 0;
+            if (d1 > 0 && d2 > 0) mocNgayList = [d1, d2].sort((a, b) => a - b);
         }
 
-        // 2. TRƯỜNG HỢP: CÁC KỲ HẠN CŨ (NGÀY, TUẦN, THÁNG...)
+        if (mocNgayList.length >= 2 || kyHanText.includes('Cố định Tháng/')) {
+            if (mocNgayList.length === 0) {
+                let d1 = startDay;
+                let d2 = (startDay <= 15) ? (startDay + 15) : (startDay - 15);
+                mocNgayList = [d1, d2].sort((a, b) => a - b);
+            }
+
+            const N = mocNgayList.length;
+            const startIdx = mocNgayList.filter(d => d < startDay).length;
+            const totalIdx = startIdx + (kyIndex - 1);
+            const monthsToAdd = Math.floor(totalIdx / N);
+            const targetDay = mocNgayList[totalIdx % N];
+
+            const totalMonths = (startMonth - 1) + monthsToAdd;
+            const finalYear = startYear + Math.floor(totalMonths / 12);
+            const finalMonth = (totalMonths % 12) + 1;
+
+            const lastDayOfMonth = new Date(finalYear, finalMonth, 0).getDate();
+            const safeDay = Math.min(targetDay, lastDayOfMonth);
+
+            return `${String(safeDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
+        }
+
+        // 2. TUẦN / 2 LẦN HOẶC 3 LẦN (AppSheet: 1=CN, 2=T2 ... 7=T7)
+        let mocThuList = parseMocList(data.moc_thu);
+        if (mocThuList.length >= 2 && (kyHanText.includes('Tuần/2') || kyHanText.includes('Tuần/3') || mocThuList.length > 0)) {
+            const startDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
+            const startWeekdayAS = startDate.getDay() + 1;
+
+            const N = mocThuList.length;
+            const startIdx = mocThuList.filter(w => w < startWeekdayAS).length;
+            const totalIdx = startIdx + (kyIndex - 1);
+            const weeksToAdd = Math.floor(totalIdx / N);
+            const targetWeekdayAS = mocThuList[totalIdx % N];
+
+            const daysToAdd = (weeksToAdd * 7) + (targetWeekdayAS - startWeekdayAS);
+            startDate.setDate(startDate.getDate() + daysToAdd);
+
+            const d = String(startDate.getDate()).padStart(2, '0');
+            const m = String(startDate.getMonth() + 1).padStart(2, '0');
+            const y = startDate.getFullYear();
+            return `${d}/${m}/${y}`;
+        }
+
+        // 3. CÁC KỲ HẠN CŨ (NGÀY, TUẦN, THÁNG...)
         const kyHanValue = parseFloat(data.ky_han_value) || 1;
         const periodsToAdd = (kyIndex - 1) * kyHanValue;
         const unit = (data.ky_han_unit || '').toLowerCase();
@@ -384,7 +406,7 @@
             const lastDay = new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0).getDate();
             targetDate.setDate(Math.min(originalDay, lastDay));
         } else {
-            targetDate.setDate(targetDate.getDate() + Math.floor(periodsToAdd));
+            targetDate.setDate(targetDate.getDate() + Math.floor(periodsToAdd + 0.0001));
         }
 
         const d = String(targetDate.getDate()).padStart(2, '0');
