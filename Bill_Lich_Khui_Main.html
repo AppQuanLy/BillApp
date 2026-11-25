@@ -199,8 +199,8 @@
         return (typeof num === 'number' && num !== null) ? num.toLocaleString('vi-VN') : '';
     }
 
-    // =====================================================================
-    // 2. HÀM TÍNH NGÀY KỲ THỨ K (ĐẦY ĐỦ: CỐ ĐỊNH 2 MỐC, 4 THÁNG, THÁNG, NGÀY...)
+// =====================================================================
+    // 2. HÀM TÍNH NGÀY KỲ THỨ K (THÁNG 2-3 LẦN, TUẦN 2-3 LẦN, 4 THÁNG, NGÀY... & APP CŨ)
     // =====================================================================
     function calculateKyDateStr(hui, kyIndex) {
         const parsed = parseCustomDate(hui.ngay_khui);
@@ -209,46 +209,65 @@
         const startDay = parsed.day;
         const startMonth = parsed.month + 1; // 1 - 12
         const startYear = parsed.year;
-
         const kyHanText = (hui.ky_han_text || '').trim();
 
-        // TRƯỜNG HỢP A: CỐ ĐỊNH THÁNG/2 LẦN
-        if (kyHanText.includes('Cố định Tháng/2 Lần') || (hui.moc_ngay && hui.moc_ngay.toString().includes(','))) {
-            let d1 = parseInt(hui.moc_1, 10) || 0;
-            let d2 = parseInt(hui.moc_2, 10) || 0;
+        const parseMocList = (val) => {
+            if (!val) return [];
+            if (Array.isArray(val)) return val.map(Number).filter(n => !isNaN(n) && n > 0).sort((a, b) => a - b);
+            return String(val).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0).sort((a, b) => a - b);
+        };
 
-            if ((d1 === 0 || d2 === 0) && hui.moc_ngay) {
-                let arr = hui.moc_ngay.toString().split(',')
-                    .map(n => parseInt(n.trim(), 10))
-                    .filter(n => !isNaN(n) && n > 0)
-                    .sort((a, b) => a - b);
-                if (arr.length >= 2) {
-                    d1 = arr[0];
-                    d2 = arr[1];
-                }
+        // TRƯỜNG HỢP A: CỐ ĐỊNH THÁNG / 2 LẦN HOẶC 3 LẦN (Tương thích ngược moc_1, moc_2)
+        let mocNgayList = parseMocList(hui.moc_ngay);
+        if (mocNgayList.length === 0) {
+            const d1 = parseInt(hui.moc_1, 10) || 0;
+            const d2 = parseInt(hui.moc_2, 10) || 0;
+            if (d1 > 0 && d2 > 0) mocNgayList = [d1, d2].sort((a, b) => a - b);
+        }
+
+        if (mocNgayList.length >= 2 || kyHanText.includes('Cố định Tháng/')) {
+            if (mocNgayList.length === 0) {
+                let d1 = (startDay <= 15) ? startDay : (startDay - 15);
+                let d2 = (startDay <= 15) ? (startDay + 15) : startDay;
+                mocNgayList = [d1, d2].sort((a, b) => a - b);
             }
 
-            if (d1 === 0 || d2 === 0) {
-                d1 = (startDay <= 15) ? startDay : (startDay - 15);
-                d2 = (startDay <= 15) ? (startDay + 15) : startDay;
-            }
-
-            if (d1 > d2) { let t = d1; d1 = d2; d2 = t; }
-
-            const startFromD1 = (startDay <= d1);
-            let monthsToAdd = startFromD1 ? Math.floor((kyIndex - 1) / 2) : Math.floor(kyIndex / 2);
-            let targetDay = startFromD1 
-                ? ((kyIndex % 2 === 1) ? d1 : d2)
-                : ((kyIndex % 2 === 1) ? d2 : d1);
+            const N = mocNgayList.length;
+            const startIdx = mocNgayList.filter(d => d < startDay).length;
+            const totalIdx = startIdx + (kyIndex - 1);
+            const monthsToAdd = Math.floor(totalIdx / N);
+            const targetDay = mocNgayList[totalIdx % N];
 
             const totalMonths = (startMonth - 1) + monthsToAdd;
             const finalYear = startYear + Math.floor(totalMonths / 12);
             const finalMonth = (totalMonths % 12) + 1;
 
-            return `${String(targetDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
+            // Chặn lỗi ngày 29, 30, 31 rơi vào tháng thiếu ngày
+            const maxDaysInNewMonth = new Date(finalYear, finalMonth, 0).getDate();
+            const safeDay = Math.min(targetDay, maxDaysInNewMonth);
+
+            return `${String(safeDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
         }
 
-        // TRƯỜNG HỢP B: KỲ HẠN 4 THÁNG HOẶC THÁNG
+        // TRƯỜNG HỢP B: TUẦN / 2 LẦN HOẶC 3 LẦN (AppSheet: 1=CN, 2=T2 ... 7=T7)
+        let mocThuList = parseMocList(hui.moc_thu);
+        if (mocThuList.length >= 2 && (kyHanText.includes('Tuần/2') || kyHanText.includes('Tuần/3') || mocThuList.length > 0)) {
+            const startDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
+            const startWeekdayAS = startDate.getDay() + 1; // Đổi JS (0..6) -> AppSheet (1..7)
+
+            const N = mocThuList.length;
+            const startIdx = mocThuList.filter(w => w < startWeekdayAS).length;
+            const totalIdx = startIdx + (kyIndex - 1);
+            const weeksToAdd = Math.floor(totalIdx / N);
+            const targetWeekdayAS = mocThuList[totalIdx % N];
+
+            const daysToAdd = (weeksToAdd * 7) + (targetWeekdayAS - startWeekdayAS);
+            startDate.setDate(startDate.getDate() + daysToAdd);
+
+            return `${String(startDate.getDate()).padStart(2, '0')}/${String(startDate.getMonth() + 1).padStart(2, '0')}/${startDate.getFullYear()}`;
+        }
+
+        // TRƯỜNG HỢP C: KỲ HẠN 4 THÁNG HOẶC THÁNG
         let kyHanValue = parseFloat(hui.ky_han_value);
         if (isNaN(kyHanValue) || kyHanValue <= 0) {
             kyHanValue = (kyHanText === "4 Tháng") ? 4 : 1;
@@ -269,12 +288,11 @@
             return `${String(safeDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
         }
 
-        // TRƯỜNG HỢP C: NGÀY, TUẦN
-        const daysToAdd = Math.floor((kyIndex - 1) * kyHanValue);
+        // TRƯỜNG HỢP D: NGÀY, TUẦN, NGÀY/2-3-4 LẦN
+        const daysToAdd = Math.floor(((kyIndex - 1) * kyHanValue) + 0.0001);
         const targetDate = new Date(startYear, startMonth - 1, startDay + daysToAdd, 12, 0, 0);
         return `${String(targetDate.getDate()).padStart(2, '0')}/${String(targetDate.getMonth() + 1).padStart(2, '0')}/${targetDate.getFullYear()}`;
     }
-
     // =====================================================================
     // 3. HÀM ĐỐI SOÁT TRẠNG THÁI "ĐÃ KHUI" (KHÔI PHỤC HOÀN TOÀN CHÍNH XÁC)
     // =====================================================================
