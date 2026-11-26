@@ -124,14 +124,18 @@
         .footer-notes { font-size: 14pt; font-weight: bold; text-align: center; margin-top: 10px; color: red; }
 
                 /* --- CSS KHỐI CẢNH BÁO ÂM HỤI ĐỂ THÊM VÀO CUỐI FOOTER --- */
-        .warning-box {
+.warning-box {
             background-color: rgba(255, 255, 255, 0.95);
             border: 2px solid #d90000;
             border-radius: 12px;
             padding: 15px;
+            margin-top: 15px;
+            margin-bottom: 25px;
             text-align: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             color: #111;
+            margin-left: 20px;
+            margin-right: 20px;
         }
         .warning-header {
             color: #d90000;
@@ -155,8 +159,8 @@
         }
         .warning-col { flex: 1; text-align: center; }
         .warning-divider { width: 2px; height: 50px; background-color: #eee; margin: 0 10px; }
-        .warning-label { font-size: 12pt; color: #555; font-weight: bold; margin-bottom: 5px;}
-        .warning-value { font-size: 20pt; color: #d90000; font-weight: bold; }
+        .warning-label { font-size: 11pt; color: #555; font-weight: bold; margin-bottom: 5px;}
+        .warning-value { font-size: 18pt; color: #d90000; font-weight: bold; }
         
         .warning-alert {
             background-image: linear-gradient(to right, #b82220, #e53935);
@@ -267,7 +271,7 @@
                     </table>
                 </div>
             </div>
-            <div class="warning-box" style="display: none;">
+                <div class="warning-box" style="display: none;">
                 <div class="warning-header">
                     ⚠️ CẢNH BÁO ÂM HỤI
                 </div>
@@ -281,9 +285,16 @@
                         <div class="warning-label">ÂM HIỆN TẠI</div>
                         <div class="warning-value" data-field="am_hien_tai_text">0</div>
                     </div>
+                    <div class="warning-divider"></div>
+                    <div class="warning-col">
+                        <div class="warning-label">MỨC ÂM VƯỢT</div>
+                        <div class="warning-value" data-field="muc_am_vuot_text">0</div>
+                    </div>
                 </div>
                 <div class="warning-alert">ĐÃ VƯỢT QUÁ MỨC ÂM CHO PHÉP</div>
-                <div class="warning-footer">Vui lòng tất toán sớm để cân bằng Âm - Dương !</div>
+                <div class="warning-footer">
+                    Vui lòng tất toán ít nhất <span data-field="muc_am_vuot_text_footer" style="color: #d90000; font-weight: 900; font-size: 15pt;"></span> sớm để cân bằng Âm - Dương !
+                </div>
             </div>
         </div>
     </template>
