@@ -40,7 +40,7 @@
         .title-section h1 {
             font-family: 'Times New Roman', Times, serif;
             font-size: 34pt;
-            color: #000000;
+            color: #111;
             margin: 0;
         }
         .title-section p {
@@ -62,7 +62,7 @@
         th {
             background-color: #ffdf7a;
             font-weight: bold;
-            color: #000000;
+            color: #111;
         }
         tr:nth-child(even) td {
             background-color: #f8f9fa;
@@ -74,7 +74,7 @@
             text-align: left;
         }
         .col-day-hui {
-            width: 35%;
+            width: 30%;
         }
         .bill-controls {
             position: absolute;
@@ -129,6 +129,7 @@
                     <th>KỲ HẠN</th>
                     <th>KỲ</th>
                     <th class="text-right">TIỀN HỤI</th>
+                    <th>TRẠNG THÁI</th>
                 </tr>
             </thead>
             <tbody id="details-tbody">
@@ -143,85 +144,209 @@
     </div>
 
 <script>
-    let billData = {}; // Biến toàn cục để lưu dữ liệu
+    let billData = {};
 
-    // --- CÁC HÀM TIỆN ÍCH ---
-    function parseDate(dateString) {
-        if (!dateString) return null;
-        if (dateString.includes('-')) {
-            const parts = dateString.split('-');
-            return new Date(parts[0], parts[1] - 1, parts[2]);
-        }
-        const parts = dateString.split('/');
-        return new Date(parts[2], parts[1] - 1, parts[0]);
-    }
+    // --- 1. CÁC HÀM TIỆN ÍCH PHÂN TÍCH NGÀY CHUẨN XÁC ---
 
-    /**
-     * HÀM ADDPERIOD ĐÃ ĐƯỢC SỬA LỖI ĐỂ TÍNH THÁNG CHÍNH XÁC
-     */
-    function addPeriod(startDate, value, unit) {
-        const date = new Date(startDate.getTime()); // Tạo bản sao để không thay đổi ngày gốc
-        const numericValue = parseInt(value) || 0;
-        if (numericValue === 0) return date;
+    // Phân tích chuỗi ngày mở hụi hoặc ngày in bill (Ưu tiên DD/MM/YYYY)
+    function parseCustomDate(dateStr) {
+        if (!dateStr || typeof dateStr !== 'string') return null;
+        const clean = dateStr.trim();
+        const parts = clean.includes('/') ? clean.split('/') : clean.split('-');
+        if (parts.length !== 3) return null;
 
-        if ((unit || '').toLowerCase().includes('tháng')) {
-            const originalDay = date.getDate();
-            // Đặt ngày về mùng 1 để tránh lỗi tràn ngày khi cộng tháng
-            date.setDate(1);
-            date.setMonth(date.getMonth() + numericValue);
-            // Lấy ngày cuối cùng của tháng mới
-            const lastDayOfNewMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-            // Đặt lại ngày, chọn ngày nhỏ hơn giữa ngày gốc và ngày cuối tháng mới
-            date.setDate(Math.min(originalDay, lastDayOfNewMonth));
+        let day, month, year;
+        if (parts[0].length === 4) {
+            // Dạng YYYY-MM-DD
+            year = parseInt(parts[0], 10);
+            month = parseInt(parts[1], 10) - 1;
+            day = parseInt(parts[2], 10);
         } else {
-            // Giữ nguyên cách tính cho Ngày và Tuần
-            date.setDate(date.getDate() + numericValue);
+            // Dạng DD/MM/YYYY
+            day = parseInt(parts[0], 10);
+            month = parseInt(parts[1], 10) - 1;
+            year = parseInt(parts[2], 10);
         }
-        return date;
-    }
-    
-    function areDatesEqual(date1, date2) {
-        return date1.getFullYear() === date2.getFullYear() &&
-               date1.getMonth() === date2.getMonth() &&
-               date1.getDate() === date2.getDate();
-    }
-    
-    function formatCurrency(num) {
-        if (typeof num !== 'number' || num === null) return '';
-        return num.toLocaleString('vi-VN');
+        return { day, month, year };
     }
 
-    // --- HÀM XỬ LÝ CHÍNH ---
+    // Phân tích danh sách phieu_da_khui từ AppSheet (Thường là dạng MM/DD/YYYY)
+    function parseAppSheetDateItem(dateStr) {
+        if (!dateStr || typeof dateStr !== 'string') return "";
+        const clean = dateStr.trim().replace(/\s+/g, '');
+        const parts = clean.split(/[/|-]/).map(Number);
+        if (parts.length < 3) return "";
+
+        let day, month, year;
+        if (parts[0] > 1000) {
+            // YYYY-MM-DD
+            year = parts[0]; month = parts[1]; day = parts[2];
+        } else {
+            // AppSheet List mặc định: MM/DD/YYYY (parts[0] = Tháng, parts[1] = Ngày)
+            month = parts[0];
+            day = parts[1];
+            year = parts[2];
+
+            // Dự phòng nếu người dùng đã định dạng sẵn thành DD/MM/YYYY (tháng > 12)
+            if (month > 12 && day <= 12) {
+                let temp = month; month = day; day = temp;
+            }
+        }
+        return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+    }
+
+    function formatCurrency(num) {
+        return (typeof num === 'number' && num !== null) ? num.toLocaleString('vi-VN') : '';
+    }
+
+// =====================================================================
+    // 2. HÀM TÍNH NGÀY KỲ THỨ K (THÁNG 2-3 LẦN, TUẦN 2-3 LẦN, 4 THÁNG, NGÀY... & APP CŨ)
+    // =====================================================================
+    function calculateKyDateStr(hui, kyIndex) {
+        const parsed = parseCustomDate(hui.ngay_khui);
+        if (!parsed) return "";
+
+        const startDay = parsed.day;
+        const startMonth = parsed.month + 1; // 1 - 12
+        const startYear = parsed.year;
+        const kyHanText = (hui.ky_han_text || '').trim();
+
+        const parseMocList = (val) => {
+            if (!val) return [];
+            if (Array.isArray(val)) return val.map(Number).filter(n => !isNaN(n) && n > 0).sort((a, b) => a - b);
+            return String(val).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0).sort((a, b) => a - b);
+        };
+
+        // TRƯỜNG HỢP A: CỐ ĐỊNH THÁNG / 2 LẦN HOẶC 3 LẦN (Tương thích ngược moc_1, moc_2)
+        let mocNgayList = parseMocList(hui.moc_ngay);
+        if (mocNgayList.length === 0) {
+            const d1 = parseInt(hui.moc_1, 10) || 0;
+            const d2 = parseInt(hui.moc_2, 10) || 0;
+            if (d1 > 0 && d2 > 0) mocNgayList = [d1, d2].sort((a, b) => a - b);
+        }
+
+        if (mocNgayList.length >= 2 || kyHanText.includes('Cố định Tháng/')) {
+            if (mocNgayList.length === 0) {
+                let d1 = (startDay <= 15) ? startDay : (startDay - 15);
+                let d2 = (startDay <= 15) ? (startDay + 15) : startDay;
+                mocNgayList = [d1, d2].sort((a, b) => a - b);
+            }
+
+            const N = mocNgayList.length;
+            const startIdx = mocNgayList.filter(d => d < startDay).length;
+            const totalIdx = startIdx + (kyIndex - 1);
+            const monthsToAdd = Math.floor(totalIdx / N);
+            const targetDay = mocNgayList[totalIdx % N];
+
+            const totalMonths = (startMonth - 1) + monthsToAdd;
+            const finalYear = startYear + Math.floor(totalMonths / 12);
+            const finalMonth = (totalMonths % 12) + 1;
+
+            // Chặn lỗi ngày 29, 30, 31 rơi vào tháng thiếu ngày
+            const maxDaysInNewMonth = new Date(finalYear, finalMonth, 0).getDate();
+            const safeDay = Math.min(targetDay, maxDaysInNewMonth);
+
+            return `${String(safeDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
+        }
+
+        // TRƯỜNG HỢP B: TUẦN / 2 LẦN HOẶC 3 LẦN (AppSheet: 1=CN, 2=T2 ... 7=T7)
+        let mocThuList = parseMocList(hui.moc_thu);
+        if (mocThuList.length >= 2 && (kyHanText.includes('Tuần/2') || kyHanText.includes('Tuần/3') || mocThuList.length > 0)) {
+            const startDate = new Date(startYear, startMonth - 1, startDay, 12, 0, 0);
+            const startWeekdayAS = startDate.getDay() + 1; // Đổi JS (0..6) -> AppSheet (1..7)
+
+            const N = mocThuList.length;
+            const startIdx = mocThuList.filter(w => w < startWeekdayAS).length;
+            const totalIdx = startIdx + (kyIndex - 1);
+            const weeksToAdd = Math.floor(totalIdx / N);
+            const targetWeekdayAS = mocThuList[totalIdx % N];
+
+            const daysToAdd = (weeksToAdd * 7) + (targetWeekdayAS - startWeekdayAS);
+            startDate.setDate(startDate.getDate() + daysToAdd);
+
+            return `${String(startDate.getDate()).padStart(2, '0')}/${String(startDate.getMonth() + 1).padStart(2, '0')}/${startDate.getFullYear()}`;
+        }
+
+        // TRƯỜNG HỢP C: KỲ HẠN 4 THÁNG HOẶC THÁNG
+        let kyHanValue = parseFloat(hui.ky_han_value);
+        if (isNaN(kyHanValue) || kyHanValue <= 0) {
+            kyHanValue = (kyHanText === "4 Tháng") ? 4 : 1;
+        }
+
+        const unit = (hui.ky_han_unit || '').toLowerCase();
+        const isMonthType = unit.includes('tháng') || kyHanText.includes('Tháng');
+
+        if (isMonthType) {
+            const monthsToAdd = Math.floor((kyIndex - 1) * kyHanValue);
+            const totalMonths = (startMonth - 1) + monthsToAdd;
+            const finalYear = startYear + Math.floor(totalMonths / 12);
+            const finalMonth = (totalMonths % 12) + 1;
+
+            const maxDaysInNewMonth = new Date(finalYear, finalMonth, 0).getDate();
+            const safeDay = Math.min(startDay, maxDaysInNewMonth);
+
+            return `${String(safeDay).padStart(2, '0')}/${String(finalMonth).padStart(2, '0')}/${finalYear}`;
+        }
+
+        // TRƯỜNG HỢP D: NGÀY, TUẦN, NGÀY/2-3-4 LẦN
+        const daysToAdd = Math.floor(((kyIndex - 1) * kyHanValue) + 0.0001);
+        const targetDate = new Date(startYear, startMonth - 1, startDay + daysToAdd, 12, 0, 0);
+        return `${String(targetDate.getDate()).padStart(2, '0')}/${String(targetDate.getMonth() + 1).padStart(2, '0')}/${targetDate.getFullYear()}`;
+    }
+    // =====================================================================
+    // 3. HÀM ĐỐI SOÁT TRẠNG THÁI "ĐÃ KHUI" (KHÔI PHỤC HOÀN TOÀN CHÍNH XÁC)
+    // =====================================================================
+    function checkDaKhui(targetDateStr, phieuInput) {
+        if (!phieuInput) return "";
+        if (phieuInput === "Đã Khui") return "Đã Khui";
+
+        const cleanTarget = (targetDateStr || '').trim();
+        if (!cleanTarget) return "";
+
+        // Tách chuỗi danh sách ngày khui từ AppSheet
+        const rawList = Array.isArray(phieuInput) ? phieuInput : String(phieuInput).split(/[,|\n]/);
+
+        // Đối soát trực tiếp chuỗi ngày
+        const matched = rawList.some(item => {
+            const strItem = String(item).trim();
+            if (!strItem) return false;
+            if (strItem === "Đã Khui") return true;
+
+            const formattedDate = parseAppSheetDateItem(strItem);
+            return formattedDate === cleanTarget;
+        });
+
+        return matched ? "Đã Khui" : "";
+    }
+
+    // =====================================================================
+    // 4. HÀM HIỂN THỊ LỊCH KHUI
+    // =====================================================================
     function generateBill(data) {
         billData = data;
         document.getElementById('chu-hui-ten').textContent = data.chu_hui_ten || '';
         document.getElementById('chu-hui-sdt').textContent = data.chu_hui_sdt || '';
         document.getElementById('ngay-in-bill').textContent = data.ngay_in_bill || '';
-        
-        const tbody = document.getElementById('details-tbody');
-        tbody.innerHTML = '';
-        
-        const targetDate = parseDate(data.ngay_in_bill);
-        let todaysHuis = [];
 
-        if (data.danh_sach_day_hui && Array.isArray(data.danh_sach_day_hui)) {
+        const tbody = document.getElementById('details-tbody');
+        const targetDateStr = (data.ngay_in_bill || '').trim();
+        const todaysHuis = [];
+
+        if (Array.isArray(data.danh_sach_day_hui)) {
             data.danh_sach_day_hui.forEach(hui => {
-                const startDate = parseDate(hui.ngay_khui);
                 const maxKy = parseInt(hui.so_ky_toi_da) || 0;
-                const soNgayKy = parseFloat(hui.ky_han_value) || 1;
-                
+
                 for (let ky = 1; ky <= maxKy; ky++) {
-                    const periodsToAdd = Math.floor((ky - 1) * soNgayKy);
-                    const currentDate = addPeriod(startDate, periodsToAdd, hui.ky_han_text);
-                    
-                    if (areDatesEqual(currentDate, targetDate)) {
+                    const kyDateStr = calculateKyDateStr(hui, ky);
+
+                    if (kyDateStr === targetDateStr) {
+                        // Kiểm tra trạng thái đã khui từ phieu_da_khui hoặc trang_thai
+                        const trangThaiKhui = checkDaKhui(targetDateStr, hui.phieu_da_khui || hui.trang_thai);
+
                         todaysHuis.push({
-                            ten_hui: hui.ten_hui,
-                            ngay_khui: hui.ngay_khui,
-                            gio_dau: hui.gio_dau,
-                            ky_han_text: hui.ky_han_text,
+                            ...hui,
                             ky: `${ky}/${maxKy}`,
-                            tien_hui: hui.tien_hui
+                            trang_thai: trangThaiKhui
                         });
                         break;
                     }
@@ -229,99 +354,106 @@
             });
         }
 
+        // Sắp xếp theo giờ đấu
         todaysHuis.sort((a, b) => (a.gio_dau || '').localeCompare(b.gio_dau || ''));
 
-        if(todaysHuis.length === 0){
-             tbody.innerHTML = `<tr><td colspan="7">Không có lịch khui hụi trong ngày.</td></tr>`;
+        // Render ra bảng HTML
+        if (todaysHuis.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8">Không có lịch khui hụi trong ngày.</td></tr>`;
         } else {
-            todaysHuis.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td class="text-left">${item.ten_hui}</td>
-                    <td>${item.ngay_khui}</td>
-                    <td>${item.gio_dau}</td>
-                    <td>${item.ky_han_text}</td>
+            tbody.innerHTML = todaysHuis.map((item, idx) => `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td class="text-left">${item.ten_hui || ''}</td>
+                    <td>${item.ngay_khui || ''}</td>
+                    <td>${item.gio_dau || ''}</td>
+                    <td>${item.ky_han_text || ''}</td>
                     <td>${item.ky}</td>
                     <td class="text-right">${formatCurrency(item.tien_hui)}</td>
-                `;
-                tbody.appendChild(row);
-            });
+                    <td style="${item.trang_thai === 'Đã Khui' ? 'color: red; font-weight: bold;' : ''}">${item.trang_thai || ''}</td>
+                </tr>
+            `).join('');
         }
 
-        const billElement = document.getElementById('bill-container');
-        document.querySelector('.download-btn').addEventListener('click', () => downloadBillAsImage(billElement));
-        document.querySelector('.copy-btn').addEventListener('click', () => copyBillAsImage(billElement));
-        document.querySelector('.share-btn').addEventListener('click', () => shareBillAsImage(billElement));
+        const billEl = document.getElementById('bill-container');
+        document.querySelector('.download-btn').onclick = () => downloadBillAsImage(billEl);
+        document.querySelector('.copy-btn').onclick = () => copyBillAsImage(billEl);
+        document.querySelector('.share-btn').onclick = () => shareBillAsImage(billEl);
     }
 
-    // --- TẢI DỮ LIỆU KHI MỞ TRANG ---
-    window.onload = function() {
+    // =====================================================================
+    // 5. KHỞI TẠO & CÁC NÚT ĐIỀU KHIỂN
+    // =====================================================================
+    window.onload = function () {
         try {
-            const encodedData = window.location.hash.substring(1);
-            if (!encodedData) {
-                const sampleData = { "chu_hui_ten": "Lê Minh", "chu_hui_sdt": "0938338272", "ngay_in_bill": "22/09/2025", "danh_sach_day_hui": [ { "ten_hui": "HH36", "ngay_khui": "22/08/2025", "gio_dau": "15:00", "ky_han_text": "Tháng", "ky_han_value": 1, "so_ky_toi_da": 12, "tien_hui": 5000000 } ] };
+            const hash = window.location.hash.substring(1);
+            if (!hash) {
+                const sampleData = { 
+                    "chu_hui_ten": "Lê Minh", 
+                    "chu_hui_sdt": "0938338272", 
+                    "ngay_in_bill": "25/08/2026", 
+                    "danh_sach_day_hui": [
+                        { "ten_hui": "TH 100K_Cố định Tháng/2 Lần", "ngay_khui": "09/08/2026", "gio_dau": "11:00", "ky_han_text": "Cố định Tháng/2 Lần", "moc_1": 9, "moc_2": 25, "so_ky_toi_da": 10, "tien_hui": 100000, "phieu_da_khui": "08/09/2026 , 08/25/2026" },
+                        { "ten_hui": "TH 1Tr_4 Tháng", "ngay_khui": "25/04/2026", "gio_dau": "14:00", "ky_han_text": "4 Tháng", "ky_han_value": 4, "ky_han_unit": "tháng", "so_ky_toi_da": 5, "tien_hui": 1000000, "phieu_da_khui": "" }
+                    ] 
+                };
                 generateBill(sampleData);
                 return;
             }
-            const jsonData = decodeURIComponent(encodedData);
-            const billData = JSON.parse(jsonData);
-            generateBill(billData);
-        } catch (error) {
-            document.body.innerHTML = `<h2 style="color: red; text-align: center;">Lỗi!</h2><p style="text-align: center;">${error.message}</p>`;
-            console.error("Lỗi:", error);
+            generateBill(JSON.parse(decodeURIComponent(hash)));
+        } catch (err) {
+            document.body.innerHTML = `<h2 style="color:red;text-align:center;">Lỗi dữ liệu!</h2><p style="text-align:center;">${err.message}</p>`;
         }
     };
 
-        async function captureBill(element, callback) {
-            const controls = element.querySelector('.bill-controls');
-            if (controls) controls.style.display = 'none';
-            try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-                await callback(canvas);
-            } catch (error) {
-                console.error('Lỗi khi tạo ảnh:', error);
-                alert('Đã có lỗi xảy ra khi tạo ảnh.');
-            } finally {
-                if (controls) controls.style.display = 'flex';
-            }
+    async function captureBill(element, callback) {
+        const controls = element.querySelector('.bill-controls');
+        if (controls) controls.style.display = 'none';
+        try {
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+            await callback(canvas);
+        } catch (err) {
+            console.error('Lỗi tạo ảnh:', err);
+            alert('Đã có lỗi xảy ra khi tạo ảnh.');
+        } finally {
+            if (controls) controls.style.display = 'flex';
         }
+    }
 
-        function downloadBillAsImage(element) {
-            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
-            captureBill(element, canvas => {
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            });
-        }
+    function downloadBillAsImage(el) {
+        const name = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+        captureBill(el, canvas => {
+            const link = document.createElement('a');
+            link.download = name;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
 
-        function copyBillAsImage(element) {
-            captureBill(element, canvas => {
-                canvas.toBlob(blob => {
-                    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+    function copyBillAsImage(el) {
+        captureBill(el, canvas => {
+            canvas.toBlob(blob => {
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
                     .then(() => alert('Đã sao chép ảnh vào bộ nhớ tạm!'))
-                    .catch(err => alert('Lỗi khi copy.'));
-                });
+                    .catch(() => alert('Lỗi khi copy.'));
             });
-        }
+        });
+    }
 
-        async function shareBillAsImage(element) {
-            const filename = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
-            const textshare = `Lịch khui hụi ngày ${billData.ngay_in_bill}.`;
-            if (!navigator.share) {
-                alert('Trình duyệt không hỗ trợ chức năng này. Vui lòng dùng nút "Copy Bill".');
-                return;
-            }
-            captureBill(element, async canvas => {
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                const file = new File([blob], filename, { type: 'image/png' });
-                try {
-                    await navigator.share({ title: `Lịch Khui Hụi`, text: textshare, files: [file] });
-                } catch (error) { console.log('Người dùng đã hủy chia sẻ.'); }
-            });
+    async function shareBillAsImage(el) {
+        if (!navigator.share) {
+            alert('Trình duyệt không hỗ trợ chia sẻ trực tiếp. Hãy dùng nút "Copy Bill".');
+            return;
         }
-    </script>
+        const name = `LichKhuiHui_${billData.ngay_in_bill || 'bill'}.png`.replace(/\//g, '-');
+        captureBill(el, async canvas => {
+            try {
+                const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                const file = new File([blob], name, { type: 'image/png' });
+                await navigator.share({ title: 'Lịch Khui Hụi', text: `Lịch khui hụi ngày ${billData.ngay_in_bill}`, files: [file] });
+            } catch (e) { }
+        });
+    }
+</script>
 </body>
 </html>
