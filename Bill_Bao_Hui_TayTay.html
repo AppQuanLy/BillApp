@@ -38,7 +38,7 @@
         .text-red { color: #d90000; }
         .text-green { color: #00b050; }
         .text-pink { color: #e7046a; }
-        .text-blue { color: #070485; }
+        .text-xanh { color: #0bcdcf; }
         .label-text { font-size: 14pt; font-weight: bold; color: #555; }
         
         /* --- CSS GIAO DIỆN BILL KHỐI NỀN --- */
@@ -565,7 +565,7 @@
                 banner.textContent = 'Hụi Viên được nhận tiền'; 
                 banner.style.backgroundColor = '#00b050'; 
                 q('[data-field="final_text_label"]').textContent = 'Được Nhận:';
-                q('[data-field="final_text_label"]').classList.add('text-blue');
+                q('[data-field="final_text_label"]').classList.add('text-xanh');
                 const amountPayable = tongHot - tongDong;
                 q('[data-field="final_amount"]').textContent = formatTotalCurrency(amountPayable); 
                 q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; 
