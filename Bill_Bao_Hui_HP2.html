@@ -258,7 +258,7 @@
                 </table>
                 
                 <table class="details-table text-center">
-                    <thead><tr><th style="width: 4%;">STT</th><th>Dây Hụi</th><th>Kỳ</th><th>Khui</th><th>SỐNG</th><th>CHẾT</th><th>Tiền Hốt</th><th>Tiền Đóng</th><th>Thăm</th></tr></thead>
+                    <thead><tr><th style="width: 4%;">STT</th><th>Dây Hụi</th><th>Kỳ</th><th>SỐNG</th><th>CHẾT</th><th>Thăm</th><th>Tiền Đóng</th><th>Ghi Chú</th></tr></thead>
                     <tbody data-field="details_tbody"></tbody>
                 </table>
             </div>
@@ -493,7 +493,7 @@
                             row.style.backgroundColor = 'rgba(255, 240, 240, 0.8)'; 
                             row.innerHTML = `<td colspan="7" style="text-align: left; font-weight: bold;">${d.khui}</td><td class="font-bold">${formatCurrency(d.tien_dong)}</td><td></td>`;
                         } else {
-                            row.innerHTML = `<td>${sttCounter}</td><td>${d.day_hui || ''}</td><td>${d.ky || ''}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tien_hot)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${formatCurrency(d.tham)}</td>`;
+                            row.innerHTML = `<td>${sttCounter}</td><td class="font-bold text-red">${d.khui || ''}</td><td>${d.ky || ''}</td><td>${d.song || 0}</td><td>${d.chet || 0}</td><td>${formatCurrency(d.tham)}</td><td>${formatCurrency(d.tien_dong)}</td><td class="font-bold text-red">${d.ghi_chu}</td>`;
                             sttCounter++;
                         }
                         detailsBody.appendChild(row);
