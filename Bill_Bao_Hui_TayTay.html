@@ -38,6 +38,7 @@
         .text-red { color: #d90000; }
         .text-green { color: #00b050; }
         .text-pink { color: #e7046a; }
+        .text-blue { color: #070485; }
         .label-text { font-size: 14pt; font-weight: bold; color: #555; }
         
         /* --- CSS GIAO DIỆN BILL KHỐI NỀN --- */
@@ -543,7 +544,8 @@
             if (tongDong > tongHot) { 
                 banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; 
                 banner.style.backgroundColor = '#d90000'; 
-                q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; 
+                q('[data-field="final_text_label"]').textContent = 'Phải Đóng:';
+                q('[data-field="final_text_label"]').classList.add('text-pink');
                 const amount = tongDong - tongHot;
                 q('[data-field="final_amount"]').textContent = formatTotalCurrency(amount); 
                 q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; 
@@ -562,7 +564,8 @@
             } else { 
                 banner.textContent = 'Hụi Viên được nhận tiền'; 
                 banner.style.backgroundColor = '#00b050'; 
-                q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; 
+                q('[data-field="final_text_label"]').textContent = 'Được Nhận:';
+                q('[data-field="final_text_label"]').classList.add('text-blue');
                 const amountPayable = tongHot - tongDong;
                 q('[data-field="final_amount"]').textContent = formatTotalCurrency(amountPayable); 
                 q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; 
