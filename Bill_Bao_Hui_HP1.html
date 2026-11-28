@@ -64,7 +64,19 @@
             background-position: top center;
             background-repeat: no-repeat;
         }
-        .header-left { position: absolute; left: 25px; top: 35px; font-weight: bold; font-size: 14pt; line-height: 1.5; max-width: 30%; background-color: #ffffffa8; padding: 15px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 2px solid #fca202; }
+        .header-left { 
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            font-weight: bold;
+            font-size: 14pt;
+            line-height: 1.5;
+            max-width: 30%;
+            background-color: #ffffffe6;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);    
+        }
         .header-left p { margin: 0; }
         
         .header-title-date { position: absolute; left: 55%; top: 40px; transform: translateX(-50%); text-align: center; width: 60%; z-index: 2; }
@@ -79,7 +91,7 @@
             z-index: 10;
         }
         
-        .qr-code { width: 180px; height: 180px; position: absolute; right: 35px; top: 30px; background-color: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 2px solid #fca202; }
+        .qr-code { width: 180px; height: 180px; position: absolute; right: 35px; top: 30px; background-color: white; padding: 5px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .qr-code img { width: 100%; height: 100%; display: block; }
 
         .info-panel button { padding: 10px 20px; font-size: 14px; font-weight: bold; }
@@ -103,14 +115,14 @@
         
         table { width: 100%; border-collapse: collapse; margin-bottom: 10px; color: #111; }
         th, td { border: 1px solid #fca202; padding: 4px 6px; vertical-align: middle; }
-        th { background-color: #fca202; font-weight: bold; text-transform: uppercase; color: #fff; background-image: linear-gradient(to right, #e4a508, #c68804); }
+        th { font-weight: bold; text-transform: uppercase; background-color: #18739f; color: #ffca30; }
         td { background-color: #ffffffa8; }
         
         .text-center { text-align: center; } .text-right { text-align: right; } .no-border, .no-border td { border: none; background: transparent; }
         .font-bold { font-weight: bold; } .font-large { font-size: 14pt; } .font-xlarge { font-size: 16pt; }
         
         .summary-table th { background-color: rgba(2, 136, 209, 0.2); }
-        .summary-table .highlight { background-color: #fca202; color: #fff; background-image: linear-gradient(to right, #e4a508, #c68804); } 
+        .summary-table .highlight { background-color: #18739f; color: #ffca30; } 
         .details-table { margin-bottom: 20px; font-size: 14pt; font-weight: bold; }
         
         /* KHỐI FOOTER LÀM BACKGROUND */
@@ -124,7 +136,17 @@
             margin-top: 0px; 
         } 
         .footer-left { width: 42%; font-size: 18pt; font-weight: bold; text-align: center; background-color: #ffffffa8; padding: 15px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 2px solid #fca202; }
-        .footer-right { width: 55%; background-color: #ffffffa8; padding: 15px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 2px solid #fca202; }
+        .footer-right { 
+            display: inline-block;
+            background-color: #ffffff;
+            padding: 15px 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            margin: 0 auto;
+            text-align: left;
+            position: relative;
+            z-index: 5;    
+        }
         
         .footer-banner { padding: 5px; text-align: center; font-size: 14pt; color: white; margin-bottom: 5px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .totals-table td { padding: 5px 7px; font-size: 16pt; }
@@ -251,7 +273,7 @@
             <div class="bill-body-content">
                 <table class="summary-table text-center">
                     <thead><tr><th class="highlight" data-field="summary_title_hui_vien"></th><th class="highlight" data-field="summary_title_hui_chet"></th><th class="highlight" data-field="summary_title_hui_song"></th><th class="highlight">Âm/Dương *</th><th class="highlight">Lợi Nhuận</th></tr></thead>
-                    <tbody><tr><td class="font-bold" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="font-bold" data-field="am_duong"></td><td class="font-bold" data-field="loi_nhuan"></td></tr></tbody>
+                    <tbody><tr><td class="font-bold text-red" data-field="hoi_vien"></td><td data-field="tong_hui_chet"></td><td data-field="tong_hui_song"></td><td class="font-bold" data-field="am_duong"></td><td class="font-bold" data-field="loi_nhuan"></td></tr></tbody>
                 </table>
                 
                 <table class="details-table text-center">
@@ -271,9 +293,11 @@
                 </div>
                 <div class="footer-right">
                     <table class="totals-table no-border">
-                        <tr><td class="font-bold">Tổng Tiền Đóng:</td><td class="text-right font-large font-bold" data-field="bill_tong_dong"></td><td style="width: 25px;" class="text-center">(1)</td><td class="text-blue font-bold" data-field="tong_tham"></td></tr>
-                        <tr><td class="font-bold">Tổng Tiền Hốt:</td><td class="text-right font-large font-bold" data-field="bill_tong_hot"></td><td class="text-center">(2)</td><td class="text-blue font-bold" data-field="tong_thao"></td></tr>
-                        <tr><td class="font-bold" data-field="final_text_label"></td><td class="text-right font-xlarge font-bold text-red" data-field="final_amount"></td><td class="text-center font-bold"></td><td class="text-center font-bold" data-field="final_formula_text"></td></tr>
+                       <tr>
+                            <td class="font-bold">Tổng Tiền Đóng:</td>
+                            <td class="text-right font-large font-bold" data-field="bill_tong_dong" style="font-size: 30pt; color: #d90000;"></td>
+                            <td class="text-blue font-bold" data-field="tong_tham" style="padding-left: 40px; color: #0275d8;"></td>
+                        </tr>
                     </table>
                 </div>
             </div>
