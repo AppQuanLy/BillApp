@@ -37,6 +37,8 @@
         .total-box { font-size: 28pt; font-weight: bold; margin: 10px 0; }
         .text-red { color: #d90000; }
         .text-green { color: #00b050; }
+        .text-pink { color: #e7046a; }
+        .text-blue { color: #070485; }
         .label-text { font-size: 14pt; font-weight: bold; color: #555; }
         
         /* --- CSS GIAO DIỆN BILL KHỐI NỀN --- */
@@ -539,34 +541,51 @@
             const qrContainer = q('[data-field="qr_container"]');
             qrContainer.innerHTML = "";
 
-            if (tongDong > tongHot) { 
-                banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên'; 
-                banner.style.backgroundColor = '#d90000'; 
-                q('[data-field="final_text_label"]').textContent = 'Phải Đóng:'; 
+            const finalLabel = q('[data-field="final_text_label"]');
+            const banner = q('[data-field="footer_banner"]');
+            const tongDong = kh.bill_tong_dong || 0;
+            const tongHot = kh.bill_tong_hot || 0;
+            const qrContainer = q('[data-field="qr_container"]');
+            qrContainer.innerHTML = "";
+
+            if (tongDong > tongHot) {
+                banner.textContent = 'Chủ Hụi phải thu tiền Hụi Viên';
+                banner.style.backgroundColor = '#d90000';
+
+                finalLabel.textContent = 'Phải Đóng:';
+                finalLabel.classList.remove('text-blue');
+                finalLabel.classList.add('text-pink');
+
                 const amount = tongDong - tongHot;
-                q('[data-field="final_amount"]').textContent = formatTotalCurrency(amount); 
-                q('[data-field="final_formula_text"]').textContent = '=(1)-(2)'; 
-                
-                const qrRawData = kh.qr_bill_url; 
+                q('[data-field="final_amount"]').textContent = formatTotalCurrency(amount);
+                q('[data-field="final_formula_text"]').textContent = '=(1)-(2)';
+
+                const qrRawData = kh.qr_bill_url;
                 if (qrRawData) {
                     const qrPayload = VietQR.parseRawData(qrRawData);
                     if (qrPayload) {
                         new QRCode(qrContainer, { text: qrPayload, width: 170, height: 170, correctLevel: QRCode.CorrectLevel.L });
-                    } else { qrContainer.innerHTML = "<div style='color:red;font-size:12px;text-align:center;padding-top:60px;font-weight:bold'>Lỗi: Thiếu BIN<br>hoặc STK</div>"; }
+                    } else {
+                        qrContainer.innerHTML = "<div style='color:red;font-size:12px;text-align:center;padding-top:60px;font-weight:bold'>Lỗi: Thiếu BIN<br>hoặc STK</div>";
+                    }
                 }
-                
+
                 listThu.push({ name: kh.hoi_vien, amount: amount });
                 totalThu += amount;
 
-            } else { 
-                banner.textContent = 'Hụi Viên được nhận tiền'; 
-                banner.style.backgroundColor = '#00b050'; 
-                q('[data-field="final_text_label"]').textContent = 'Được Nhận:'; 
+            } else {
+                banner.textContent = 'Hụi Viên được nhận tiền';
+                banner.style.backgroundColor = '#00b050';
+
+                finalLabel.textContent = 'Được Nhận:';
+                finalLabel.classList.remove('text-plink');
+                finalLabel.classList.add('text-blue');
+
                 const amountPayable = tongHot - tongDong;
-                q('[data-field="final_amount"]').textContent = formatTotalCurrency(amountPayable); 
-                q('[data-field="final_formula_text"]').textContent = '=(2)-(1)'; 
+                q('[data-field="final_amount"]').textContent = formatTotalCurrency(amountPayable);
+                q('[data-field="final_formula_text"]').textContent = '=(2)-(1)';
                 qrContainer.style.display = 'none';
-                
+
                 listGiao.push({ name: kh.hoi_vien, amount: amountPayable });
                 totalGiao += amountPayable;
             }
